@@ -1,0 +1,167 @@
+/*
+  Zutok Softwares Main Stylesheet
+  Extracted from index.html
+*/
+
+:root {
+  --bg: #081126;
+  --bg-2: #0a1a33;
+  --ink: #f7f9ff;
+  --muted: #c8d2e8;
+  --accent: #ffffff;
+  --accent-2: #a8bdfc;
+  --gold: #f6c56b;
+  --gold-soft: rgba(246, 197, 107, 0.25);
+  --gold-strong: rgba(246, 197, 107, 0.45);
+  --card: #0d1a33;
+  --card-2: #0a152b;
+  --stroke: rgba(255, 255, 255, 0.1);
+  --glow: rgba(168, 189, 252, 0.35);
+  --shadow: 0 30px 80px rgba(2, 10, 30, 0.6);
+  --text-on-accent: #081228;
+  --cta-height: 100px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Manrope", system-ui, sans-serif;
+  background: radial-gradient(1200px 800px at 80% -10%, rgba(159, 182, 255, 0.3), transparent 60%),
+    radial-gradient(900px 600px at -10% 20%, rgba(255, 255, 255, 0.15), transparent 60%),
+    linear-gradient(180deg, var(--bg), #070f20 40%, #060c1a 100%);
+  color: var(--ink);
+  min-height: 100vh;
+  line-height: 1.6;
+  padding-bottom: var(--cta-height);
+}
+
+body[data-theme="light"] {
+  --bg: #f4f6fb;
+  --bg-2: #ffffff;
+  --ink: #0b1a33;
+  --muted: #4b5c7c;
+  --card: #ffffff;
+  --card-2: #f1f4fb;
+  --stroke: rgba(12, 26, 51, 0.12);
+  --shadow: 0 24px 60px rgba(12, 26, 51, 0.12);
+  --text-on-accent: #0b1a33;
+}
+
+body[data-theme="light"] {
+  background: radial-gradient(1200px 800px at 80% -10%, rgba(168, 189, 252, 0.25), transparent 60%),
+    radial-gradient(900px 600px at -10% 20%, rgba(246, 197, 107, 0.2), transparent 60%),
+    linear-gradient(180deg, var(--bg), #eef2f9 45%, #f7f9ff 100%);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 70px 70px;
+  opacity: 0.25;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body[data-theme="light"]::before {
+  background-image:
+    linear-gradient(rgba(12, 26, 51, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(12, 26, 51, 0.05) 1px, transparent 1px);
+  opacity: 0.3;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.page {
+  position: relative;
+  overflow-x: clip;
+}
+
+.grain {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.1'/%3E%3C/svg%3E");
+  mix-blend-mode: soft-light;
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.container {
+  width: min(1200px, 92vw);
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+header {
+  padding: 20px 0 14px;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  background: linear-gradient(180deg, rgba(8, 17, 38, 0.92), rgba(8, 17, 38, 0.6));
+  border-bottom: 1.5px solid #f6c56b;
+  box-shadow: 0 2px 16px 0 rgba(246,197,107,0.08);
+  transition: background 0.3s, border-bottom 0.3s;
+}
+
+body[data-theme="light"] header {
+  background: rgba(244, 246, 251, 0.85);
+  border-bottom: 1px solid rgba(12, 26, 51, 0.08);
+  border-bottom: 1.5px solid #f6c56b;
+  box-shadow: 0 2px 16px 0 rgba(246,197,107,0.08);
+}
+
+/* ...existing code... (continue extracting all CSS from <style> and @media blocks) ... */
+
+@media (max-width: 600px) {
+  body {
+    padding-bottom: 80px;
+  }
+  .quick-actions {
+    position: fixed;
+    right: 10px;
+    bottom: 90px;
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: 0 4px 16px 0 rgba(0,0,0,0.10);
+  }
+  .quick-actions .quick-btn {
+    animation: none !important;
+    width: 54px;
+    height: 54px;
+    min-width: 54px;
+    min-height: 54px;
+    max-width: 54px;
+    max-height: 54px;
+    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
+  }
+  .mobile-cta {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 50px;
+    z-index: 50;
+    background: #fff;
+    box-shadow: 0 -2px 16px 0 rgba(0,0,0,0.08);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px 0 8px 0;
+    border-top: 1px solid #e5e5e5;
+  }
+}
