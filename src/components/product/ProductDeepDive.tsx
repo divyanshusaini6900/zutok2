@@ -1,8 +1,8 @@
 "use client";
 
-import { motion } from "motion/react";
-import { Clock, Crown, Heart, MoonStar, Send, ShieldCheck, Trophy } from "lucide-react";
-import type { ReactNode } from "react";
+import { LayoutGroup, motion, useInView } from "motion/react";
+import { Check, Clock, Crown, Heart, MoonStar, Send, ShieldCheck, Trophy } from "lucide-react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Reveal } from "@/components/ui/Reveal";
 import { WhatsAppIcon } from "@/components/ui/BrandIcons";
 import { QRGlyph, QRStandee } from "@/components/mock/LoyaltyMocks";
@@ -337,7 +337,220 @@ function QRCampaigns() {
   );
 }
 
+const stages = [
+  { stage: "Enquiry", color: "#8b5cf6" },
+  { stage: "Follow-up", color: "#0ea5e9" },
+  { stage: "Hot", color: "#ff6b1a" },
+  { stage: "Customer", color: "#16a34a" },
+];
+
+const leads = [
+  { name: "Neha Gupta", src: "Meta Lead Ads", c: "#2563eb", value: "₹45,000", stage: "Enquiry" },
+  { name: "Kabir Joshi", src: "Website form", c: "#0d9488", value: "₹12,000", stage: "Enquiry" },
+  { name: "Aarav Mehta", src: "IndiaMART", c: "#ea580c", value: "₹80,000", stage: "Follow-up" },
+  { name: "Sana Qureshi", src: "Instagram", c: "#db2777", value: "₹9,500", stage: "Follow-up" },
+  { name: "Meera Iyer", src: "WhatsApp", c: "#16a34a", value: "₹1,20,000", stage: "Hot" },
+  { name: "Riya Kapoor", src: "WhatsApp", c: "#16a34a", value: "₹4,299", stage: "Customer" },
+];
+const MOVER = "Meera Iyer";
+
+function PipelineBoard() {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { margin: "-80px" });
+  const [won, setWon] = useState(false);
+
+  useEffect(() => {
+    if (!inView) return;
+    const id = setInterval(() => setWon((w) => !w), 2600);
+    return () => clearInterval(id);
+  }, [inView]);
+
+  const stageOf = (l: (typeof leads)[number]) => (l.name === MOVER && won ? "Customer" : l.stage);
+
+  return (
+    <div ref={ref} className="card rounded-[2rem] p-4 sm:p-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-[#6d28d9]">Leads</div>
+          <div className="text-lg font-extrabold">Sales pipeline</div>
+        </div>
+        <span className="rounded-full border-2 border-ink bg-[#8b5cf6] px-3 py-0.5 text-[11px] font-extrabold text-ink">6 leads</span>
+      </div>
+      <LayoutGroup>
+        <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+          {stages.map((s) => {
+            const here = leads.filter((l) => stageOf(l) === s.stage);
+            return (
+              <div key={s.stage} className="min-w-0 rounded-2xl bg-smoke p-2">
+                <div
+                  className="flex items-center justify-between rounded-lg px-2 py-1 text-[11px] font-extrabold text-white"
+                  style={{ background: s.color }}
+                >
+                  {s.stage}
+                  <span className="rounded-full bg-white/25 px-1.5">{here.length}</span>
+                </div>
+                <div className="mt-2 min-h-[7.5rem] space-y-2">
+                  {here.map((l) => {
+                    const justWon = l.name === MOVER && won;
+                    return (
+                      <motion.div
+                        key={l.name}
+                        layoutId={`lead-${l.name}`}
+                        layout
+                        transition={{ type: "spring", stiffness: 260, damping: 26 }}
+                        className={cx(
+                          "rounded-xl border-2 border-ink bg-white p-2",
+                          justWon ? "shadow-[3px_3px_0_#16a34a]" : "shadow-[2px_2px_0_#0b0b0b]",
+                        )}
+                      >
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="truncate text-[12px] font-bold">{l.name}</span>
+                          {justWon && (
+                            <motion.span
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="rounded-full bg-[#16a34a] px-1.5 text-[9px] font-extrabold text-white"
+                            >
+                              WON
+                            </motion.span>
+                          )}
+                        </div>
+                        <div className="mt-1 flex items-center justify-between gap-1">
+                          <span
+                            className="truncate rounded-full px-1.5 text-[9px] font-bold"
+                            style={{ background: `${l.c}1f`, color: l.c }}
+                          >
+                            {l.src}
+                          </span>
+                          <span className="shrink-0 text-[10px] font-semibold text-ink/55">{l.value}</span>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </LayoutGroup>
+    </div>
+  );
+}
+
+function InvoiceCard() {
+  const lines = [
+    ["Website redesign", "₹18,000"],
+    ["SEO setup", "₹7,000"],
+  ];
+  const totals = [
+    ["Subtotal", "₹25,000"],
+    ["CGST 9%", "₹2,250"],
+    ["SGST 9%", "₹2,250"],
+  ];
+  const timeline = ["Proposal accepted", "Invoice sent", "Paid via UPI"];
+  return (
+    <div className="card relative mx-auto max-w-md overflow-hidden rounded-[2rem]">
+      <div className="flex items-center justify-between bg-ink px-5 py-4 text-white">
+        <div>
+          <div className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#c4b5fd]">Tax invoice</div>
+          <div className="text-lg font-extrabold">INV-0248</div>
+        </div>
+        <div className="text-right text-[11px] leading-snug text-white/70">
+          Issued today
+          <br />
+          Due in 15 days
+        </div>
+      </div>
+      <div className="p-5">
+        <div className="text-[10px] font-bold uppercase tracking-[0.25em] text-ink/45">Billed to</div>
+        <div className="font-bold">Pixel &amp; Co. Studio</div>
+        <div className="text-[12px] text-ink/55">GSTIN 27AAB••••1Z5 · Pune</div>
+
+        <div className="mt-4 space-y-2 border-y-2 border-ink/10 py-3 text-sm">
+          {lines.map(([k, v]) => (
+            <div key={k} className="flex justify-between">
+              <span className="font-medium">{k}</span>
+              <span className="font-semibold">{v}</span>
+            </div>
+          ))}
+        </div>
+        <div className="mt-3 space-y-1 text-[13px] text-ink/65">
+          {totals.map(([k, v]) => (
+            <div key={k} className="flex justify-between">
+              <span>{k}</span>
+              <span>{v}</span>
+            </div>
+          ))}
+        </div>
+        <div className="mt-3 flex items-end justify-between">
+          <span className="text-sm font-bold">Total</span>
+          <span className="font-display text-4xl tracking-wide">₹29,500</span>
+        </div>
+
+        <div className="mt-5 grid grid-cols-3 gap-2">
+          {timeline.map((t, i) => (
+            <motion.div
+              key={t}
+              className="rounded-xl border-2 border-ink px-2 py-2 text-center text-[11px] font-bold"
+              initial={{ backgroundColor: "#ffffff" }}
+              whileInView={{ backgroundColor: i === 2 ? "#22c55e" : "#ede9fe" }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4 + i * 0.45 }}
+            >
+              <Check className="mx-auto mb-1 size-4" aria-hidden />
+              {t}
+            </motion.div>
+          ))}
+        </div>
+      </div>
+      <motion.div
+        className="pointer-events-none absolute right-6 top-24 rounded-xl border-[3px] border-[#16a34a] px-3 py-1 font-display text-3xl tracking-widest text-[#16a34a]"
+        initial={{ opacity: 0, scale: 2.2, rotate: -28 }}
+        whileInView={{ opacity: 1, scale: 1, rotate: -12 }}
+        viewport={{ once: true }}
+        transition={{ delay: 1.6, type: "spring", stiffness: 300, damping: 14 }}
+      >
+        PAID
+      </motion.div>
+    </div>
+  );
+}
+
 export function ProductDeepDive({ slug }: { slug: ProductSlug }) {
+  if (slug === "crm") {
+    const deep = "#0b0b0b";
+    return (
+      <div className="space-y-32">
+        <Row
+          deep={deep}
+          accent="#8b5cf6"
+          kicker="Leads & pipeline"
+          title={
+            <>
+              Every enquiry, <span className="font-serif font-normal italic text-[#6d28d9]">one pipeline.</span>
+            </>
+          }
+          body="Leads from WhatsApp and Instagram chats, Meta Lead Ads, IndiaMART and your website's estimate requests land on one board. Move them from Enquiry to Customer and never miss a follow-up."
+          bullets={["Meta Lead Ads and IndiaMART leads sync in", "Every ZChat conversation becomes a lead", "Tasks and reminders on every lead"]}
+          visual={<PipelineBoard />}
+        />
+        <Row
+          deep={deep}
+          flip
+          accent="#22c55e"
+          kicker="GST invoicing"
+          title={
+            <>
+              Quote. Invoice. <span className="font-serif font-normal italic text-[#16a34a]">Get paid.</span>
+            </>
+          }
+          body="Send a proposal or estimate, turn it into a GST invoice once it's accepted and record the payment. Recurring invoices and credit notes are built in."
+          bullets={["Tax rates like CGST and SGST on every line", "Recurring invoices and overdue reminders", "Bulk PDF export for your accountant"]}
+          visual={<InvoiceCard />}
+        />
+      </div>
+    );
+  }
   if (slug === "zchat") {
     const deep = "#0b0b0b";
     return (

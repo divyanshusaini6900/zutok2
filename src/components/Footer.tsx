@@ -7,9 +7,7 @@ import { site } from "@/lib/site";
 const cols = [
   {
     title: "Products",
-    links: productList.map((p) => ({ label: p.name, href: `/products/${p.slug}` })).concat([
-      { label: "Zutok CRM", href: "/#platform" },
-    ]),
+    links: productList.map((p) => ({ label: p.name, href: `/products/${p.slug}` })),
   },
   {
     title: "Platform",

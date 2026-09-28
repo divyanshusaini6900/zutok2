@@ -25,7 +25,7 @@ const compare: { feature: string; cells: (boolean | string)[] }[] = [
   { feature: "AI sales agent with your catalogue", cells: [false, false, false, "Growth+"] },
   { feature: "Store automation (ZShop)", cells: [false, false, false, true] },
   { feature: "Loyalty & memberships (Zloya)", cells: [false, false, false, true] },
-  { feature: "Multi-tenant SaaS & API", cells: [false, false, true, "Enterprise"] },
+  { feature: "Dedicated account manager", cells: [false, false, true, "Enterprise"] },
 ];
 
 const faqs = [

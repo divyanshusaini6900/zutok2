@@ -5,6 +5,8 @@ import { ArrowUpRight } from "lucide-react";
 import { ProductHero } from "@/components/product/ProductHero";
 import { FeatureGrid } from "@/components/product/FeatureGrid";
 import { ProductDeepDive } from "@/components/product/ProductDeepDive";
+import { ExplodedCRM } from "@/components/sections/ExplodedCRM";
+import { ModulesAccordion } from "@/components/sections/ModulesAccordion";
 import { SalesAgent } from "@/components/sections/SalesAgent";
 import { ShopJourney } from "@/components/sections/ShopJourney";
 import { ZloyaStack } from "@/components/sections/ZloyaStack";
@@ -35,6 +37,14 @@ export async function generateMetadata(props: PageProps<"/products/[slug]">): Pr
 }
 
 function Signature({ slug }: { slug: ProductSlug }) {
+  if (slug === "crm") {
+    return (
+      <>
+        <ExplodedCRM cta={{ href: "#modules", label: "See all modules" }} />
+        <ModulesAccordion cta={false} />
+      </>
+    );
+  }
   if (slug === "zchat") return <SalesAgent />;
   if (slug === "zshop") return <ShopJourney />;
   return <ZloyaStack from="#ffffff" />;
@@ -168,21 +178,21 @@ export default async function ProductPage(props: PageProps<"/products/[slug]">) 
           <Reveal>
             <h2 className="text-3xl font-extrabold text-ink">Works even better with</h2>
           </Reveal>
-          <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2">
+          <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-3">
             {others.map((o, i) => (
-              <Reveal key={o.slug} delay={i * 0.1}>
+              <Reveal key={o.slug} delay={i * 0.1} className="h-full">
                 <Link
                   href={`/products/${o.slug}`}
-                  className="group relative flex items-end justify-between overflow-hidden rounded-[2rem] border-[2.5px] border-ink p-8 shadow-[6px_6px_0_#0b0b0b] transition duration-500 hover:-translate-y-1 hover:shadow-[9px_9px_0_#0b0b0b]"
+                  className="group relative flex h-full flex-col justify-between gap-8 overflow-hidden rounded-[2rem] border-[2.5px] border-ink p-7 shadow-[6px_6px_0_#0b0b0b] transition duration-500 hover:-translate-y-1 hover:shadow-[9px_9px_0_#0b0b0b]"
                   style={{ background: o.theme.pop, color: o.theme.popOn }}
                 >
-                  <div className="relative">
-                    <div className="font-display text-6xl uppercase tracking-wide">{o.name}</div>
-                    <div className="mt-2 max-w-xs text-sm font-semibold opacity-80">{o.kicker}</div>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="font-display text-5xl uppercase leading-none tracking-wide">{o.name}</div>
+                    <span className="grid size-12 shrink-0 place-items-center rounded-full border-2 border-ink bg-white text-ink transition duration-500 group-hover:rotate-45 group-hover:bg-ink group-hover:text-white">
+                      <ArrowUpRight className="size-5" aria-hidden />
+                    </span>
                   </div>
-                  <span className="relative grid size-14 place-items-center rounded-full border-2 border-ink bg-white text-ink transition duration-500 group-hover:rotate-45 group-hover:bg-ink group-hover:text-white">
-                    <ArrowUpRight className="size-6" aria-hidden />
-                  </span>
+                  <div className="max-w-xs text-sm font-semibold opacity-80">{o.kicker}</div>
                 </Link>
               </Reveal>
             ))}

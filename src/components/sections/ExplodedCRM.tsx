@@ -224,7 +224,11 @@ function Callout({ c, p }: { c: (typeof callouts)[number]; p: MotionValue<number
   );
 }
 
-export function ExplodedCRM() {
+export function ExplodedCRM({
+  cta = { href: "/products/crm", label: "Explore Zutok CRM" },
+}: {
+  cta?: { href: string; label: string };
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   const p = useSpring(scrollYProgress, { stiffness: 120, damping: 28, mass: 0.35 });
@@ -290,8 +294,8 @@ export function ExplodedCRM() {
         </div>
 
         <div className="absolute bottom-8 right-8 hidden lg:block">
-          <Button href="/#modules" variant="light">
-            See all modules
+          <Button href={cta.href} variant="light">
+            {cta.label}
           </Button>
         </div>
       </div>

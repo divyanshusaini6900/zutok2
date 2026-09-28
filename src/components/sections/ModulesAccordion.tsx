@@ -3,6 +3,7 @@
 import { AnimatePresence, motion, useInView } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { Check, Plus } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { Reveal } from "@/components/ui/Reveal";
 import { SplitText } from "@/components/ui/SplitText";
@@ -162,7 +163,7 @@ function MobileList() {
   );
 }
 
-export function ModulesAccordion() {
+export function ModulesAccordion({ cta = true }: { cta?: boolean }) {
   return (
     <section id="modules" className="relative bg-paper py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
@@ -193,6 +194,11 @@ export function ModulesAccordion() {
         <div className="mt-10 lg:hidden">
           <MobileList />
         </div>
+        {cta && (
+          <div className="mt-12 flex justify-center">
+            <Button href="/products/crm">Explore Zutok CRM</Button>
+          </div>
+        )}
       </div>
     </section>
   );

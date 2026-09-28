@@ -2,10 +2,11 @@
 
 import { motion, useScroll, useTransform } from "motion/react";
 import { useRef, type ComponentType } from "react";
-import { Bot, Crown, Gift, PackageCheck, ShoppingCart, Star, Truck } from "lucide-react";
+import { Bot, Boxes, Briefcase, Crown, Gift, PackageCheck, Receipt, ShoppingCart, Star, Truck, Users } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { InstagramIcon, MessengerIcon, WhatsAppIcon } from "@/components/ui/BrandIcons";
 import { Wave } from "@/components/ui/Wave";
+import { DashboardMock } from "@/components/mock/DashboardMock";
 import { InboxMock } from "@/components/mock/InboxMock";
 import { OrderMock } from "@/components/mock/OrderMock";
 import { ChatScreen, PhoneShell } from "@/components/mock/Phone";
@@ -32,9 +33,24 @@ const stickers: Record<ProductSlug, { Icon: ComponentType<{ className?: string }
     { Icon: Gift, bg: "#6c2bd9", pos: "right-[4%] top-[-6%]" },
     { Icon: Star, bg: "#ff6b1a", pos: "left-[44%] bottom-[-6%]" },
   ],
+  crm: [
+    { Icon: Users, bg: "#8b5cf6", pos: "left-[-2%] top-[-6%]" },
+    { Icon: Receipt, bg: "#ff6b1a", pos: "right-[4%] top-[-8%]" },
+    { Icon: Briefcase, bg: "#22c55e", pos: "right-[-2%] bottom-[10%]" },
+    { Icon: Boxes, bg: "#ff4d8d", pos: "left-[-3%] bottom-[14%]" },
+  ],
 };
 
 function Visual({ slug }: { slug: ProductSlug }) {
+  if (slug === "crm") {
+    return (
+      <div className="overflow-hidden rounded-[20px] border-[2.5px] border-ink shadow-[8px_8px_0_#0b0b0b]">
+        <ScaledFrame width={1200} height={740}>
+          <DashboardMock />
+        </ScaledFrame>
+      </div>
+    );
+  }
   if (slug === "zchat") {
     return (
       <ScaledFrame width={1200} height={720}>

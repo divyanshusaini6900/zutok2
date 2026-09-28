@@ -71,9 +71,9 @@ export function Navbar() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 6, scale: 0.98 }}
                     transition={{ duration: 0.25 }}
-                    className="absolute left-1/2 top-full w-[36rem] -translate-x-1/2 pt-4"
+                    className="absolute left-1/2 top-full w-[46rem] -translate-x-1/2 pt-4"
                   >
-                    <div className="brut grid grid-cols-3 gap-2.5 rounded-3xl bg-white p-2.5">
+                    <div className="brut grid grid-cols-4 gap-2.5 rounded-3xl bg-white p-2.5">
                       {productList.map((p) => (
                         <Link
                           key={p.slug}

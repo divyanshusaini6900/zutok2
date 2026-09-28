@@ -62,7 +62,7 @@ export const pricing: PricingGroup[] = [
         name: "Suite Enterprise",
         monthly: 11499,
         worth: 18996,
-        blurb: "Unlimited everything, with white-label and a dedicated manager.",
+        blurb: "Unlimited everything, with a dedicated success manager.",
         features: [
           "CRM Enterprise: unlimited users",
           "ZChat Scale: 15 seats, multiple AI agents",
@@ -110,13 +110,13 @@ export const pricing: PricingGroup[] = [
       {
         name: "Enterprise",
         monthly: 1999,
-        blurb: "For large teams, agencies and SaaS resellers.",
+        blurb: "For large teams, agencies and multi-branch businesses.",
         features: [
           "Unlimited users",
           "Everything in Growth",
           "Real Estate suite",
-          "Multi-tenant SaaS & API",
-          "ZTheme custom branding",
+          "Custom fields for every module",
+          "Dedicated account manager",
           "Priority support",
         ],
       },

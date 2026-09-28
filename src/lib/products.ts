@@ -1,6 +1,6 @@
 import type { IconName } from "@/components/ui/Icon";
 
-export type ProductSlug = "zchat" | "zshop" | "zloya";
+export type ProductSlug = "zchat" | "zshop" | "zloya" | "crm";
 
 export type Theme = {
   color: string;
@@ -355,9 +355,133 @@ export const products: Record<ProductSlug, Product> = {
       },
     ],
   },
+
+  crm: {
+    slug: "crm",
+    name: "Zutok CRM",
+    kicker: "Sales, people, stock & support",
+    headline: ["Every lead.", "Every invoice.", "One CRM."],
+    summary:
+      "Leads, customers, proposals, GST invoices, projects, HRM, payroll and inventory in one CRM built for Indian businesses. Chats from ZChat, orders from ZShop and guests from Zloya land in the same place.",
+    theme: {
+      color: "#ffffff",
+      color2: "#f2f2f2",
+      accent: "#0b0b0b",
+      accentOn: "#ffffff",
+      deep: "#0b0b0b",
+      on: "#0b0b0b",
+      pop: "#8b5cf6",
+      popOn: "#0b0b0b",
+    },
+    marquee: [
+      "Leads",
+      "Meta Lead Ads",
+      "IndiaMART",
+      "Proposals",
+      "Estimates",
+      "GST invoices",
+      "Payments",
+      "Projects",
+      "Timesheets",
+      "HRM & payroll",
+      "Inventory",
+      "Support tickets",
+      "Reports",
+    ],
+    features: [
+      {
+        icon: "users",
+        title: "Leads & pipeline",
+        body: "Leads from chats, Meta Lead Ads, IndiaMART and estimate requests move from Enquiry to Follow-up, Hot and Customer.",
+      },
+      {
+        icon: "building",
+        title: "Customers & contracts",
+        body: "Every customer with their contacts, invoices, projects and tickets on one profile, plus contracts that remind you before renewal.",
+      },
+      {
+        icon: "file",
+        title: "Proposals & estimates",
+        body: "Send proposals and estimates, collect estimate requests from your website and turn accepted ones into invoices.",
+      },
+      {
+        icon: "receipt",
+        title: "GST invoices & payments",
+        body: "Invoices in rupees with tax fields, recurring invoices, payments, credit notes and bulk PDF export for your accountant.",
+      },
+      {
+        icon: "briefcase",
+        title: "Projects & tasks",
+        body: "Milestones, tasks, timesheets and meeting notes, all linked to the customer they belong to.",
+      },
+      {
+        icon: "usercog",
+        title: "HRM & payroll",
+        body: "Staff records, contracts, insurance and salary, with alerts before a contract expires.",
+      },
+      {
+        icon: "calendar",
+        title: "Attendance & leave",
+        body: "Shift planner, attendance and leave requests without the spreadsheets.",
+      },
+      {
+        icon: "boxes",
+        title: "Inventory & warehouse",
+        body: "Stock in, stock out, losses and adjustments, with a full history for every warehouse.",
+      },
+      {
+        icon: "home",
+        title: "Real estate suite",
+        body: "Properties, owners, agents, brokers, buy and rent requests, and tenants in one place.",
+      },
+      {
+        icon: "wallet",
+        title: "Subscriptions & expenses",
+        body: "Recurring billing, expense tracking and a clear expenses vs income view.",
+      },
+      {
+        icon: "support",
+        title: "Support & knowledge base",
+        body: "Tickets, a knowledge base and surveys that keep customers happy after the sale.",
+      },
+      {
+        icon: "chart",
+        title: "Automation & reports",
+        body: "Custom email and SMS templates, scheduled jobs, company goals and reports on sales, leads and timesheets.",
+      },
+    ],
+    steps: [
+      { title: "Bring your data in", body: "Import customers, leads and items from Excel or your old CRM. We help you during onboarding." },
+      { title: "Set up your team", body: "Add staff with roles and permissions, your lead stages, tax rates and invoice format." },
+      { title: "Run the whole business", body: "Leads, invoices, projects, payroll and stock in one place, with ZChat, ZShop or Zloya plugged in when you need them." },
+    ],
+    stats: [
+      { value: 30, suffix: "+", label: "modules, from leads to payroll" },
+      { value: 4, label: "lead stages, enquiry to customer" },
+      { value: 3, label: "products that plug in: ZChat, ZShop, Zloya" },
+    ],
+    faqs: [
+      {
+        q: "Can I bring in my existing data?",
+        a: "Yes. Import customers, leads and items from Excel or CSV, or from your old CRM. We help with the import during onboarding.",
+      },
+      {
+        q: "Does invoicing support GST?",
+        a: "Yes. Proposals, estimates, invoices and credit notes are in rupees with tax fields, and you can export them in bulk as PDF.",
+      },
+      {
+        q: "Can I control what each staff member sees?",
+        a: "Yes. Each staff member gets a role with its own permissions, so sales, accounts and HR only see what they need.",
+      },
+      {
+        q: "Do I need ZChat, ZShop or Zloya to use the CRM?",
+        a: "No. Zutok CRM works on its own. When you add a product, its chats, orders or guests land in the same CRM.",
+      },
+    ],
+  },
 };
 
-export const productList = [products.zchat, products.zshop, products.zloya];
+export const productList = [products.zchat, products.zshop, products.zloya, products.crm];
 
 export const platformModules: {
   title: string;
@@ -432,9 +556,9 @@ export const platformModules: {
     points: ["Sales & order reports", "Lead reports", "Goals tracking"],
   },
   {
-    title: "SaaS & White-label",
-    body: "Run your own multi-tenant CRM with packages, an API and ZTheme branding.",
-    icon: "palette",
-    points: ["Tenants & packages", "API access", "ZTheme NextGen"],
+    title: "Customers & Contracts",
+    body: "Customer profiles with contacts and full history, plus contracts that remind you before renewal.",
+    icon: "building",
+    points: ["Customers & contacts", "Contract renewals", "Bulk PDF & CSV export"],
   },
 ];
