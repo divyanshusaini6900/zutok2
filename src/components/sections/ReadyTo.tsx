@@ -90,7 +90,7 @@ function Screen({ slug }: { slug: ProductSlug }) {
 
 function Verb({ word }: { word: string }) {
   return (
-    <span className="flex" aria-label={word}>
+    <span className="flex" aria-hidden>
       {word.split("").map((ch, i) => (
         <motion.span
           key={i}
@@ -99,7 +99,6 @@ function Verb({ word }: { word: string }) {
           animate={{ y: "0%", rotate: 0 }}
           exit={{ y: "-105%", rotate: -8 }}
           transition={{ duration: 0.6, delay: i * 0.045, ease: [0.16, 1, 0.3, 1] }}
-          aria-hidden
         >
           {ch}
         </motion.span>
@@ -137,12 +136,12 @@ function Details({ item, compact = false }: { item: Item; compact?: boolean }) {
   const t = p.theme;
   return (
     <div>
-      <div
+      <h2
         className="inline-flex items-center gap-2 rounded-full border-2 px-4 py-1.5 text-sm font-bold"
         style={{ background: t.pop, color: t.popOn, borderColor: t.on }}
       >
         {p.name} <span className="opacity-60">·</span> {p.kicker}
-      </div>
+      </h2>
       <p className={cx(`mt-5 max-w-lg font-semibold leading-snug ${compact ? "text-lg" : "text-2xl"}`)}>{item.line}</p>
       <ul className="mt-5 space-y-2.5">
         {item.bullets.map((b) => (

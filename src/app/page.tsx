@@ -14,37 +14,57 @@ import { FAQ } from "@/components/sections/FAQ";
 import { DemoCTA } from "@/components/sections/DemoCTA";
 import { Reveal } from "@/components/ui/Reveal";
 import { SplitText } from "@/components/ui/SplitText";
+import { homeFaqs as faqs } from "@/lib/company";
+import { productList } from "@/lib/products";
+import {
+  HOME_DESCRIPTION,
+  HOME_TITLE,
+  JsonLd,
+  absoluteUrl,
+  brandedName,
+  faqLd,
+  ogImage,
+  pageMetadata,
+  webPageLd,
+} from "@/lib/seo";
 
-const faqs = [
+export const metadata = pageMetadata({
+  title: HOME_TITLE,
+  description: HOME_DESCRIPTION,
+  path: "/",
+  absoluteTitle: true,
+  keywords: [
+    "Zutok",
+    "Zutok Softwares",
+    "all-in-one CRM for Indian businesses",
+    "CRM with WhatsApp integration India",
+    "WhatsApp and Instagram inbox with CRM",
+    "CRM with GST invoices",
+    "ZChat ZShop Zloya",
+  ],
+});
+
+const jsonLd = [
+  webPageLd({ path: "/", name: HOME_TITLE, description: HOME_DESCRIPTION, image: ogImage("site") }),
   {
-    q: "Can I buy just one product?",
-    a: "Yes. ZChat, ZShop and Zloya are each sold on their own, and each includes the CRM features it needs. The Complete Suite bundles all of them for less.",
+    "@type": "ItemList",
+    "@id": `${absoluteUrl("/")}#products`,
+    name: "Zutok products",
+    itemListElement: productList.map((p, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: brandedName(p),
+      description: p.kicker,
+      url: absoluteUrl(`/products/${p.slug}/`),
+    })),
   },
-  {
-    q: "How does the ZChat AI know my prices?",
-    a: "You add each product with your own columns and rows, like size, paper, quantity, price and order link. The AI asks the customer each choice and quotes only from the row that matches, so it never makes up a price.",
-  },
-  {
-    q: "Is my data safe, and who owns it?",
-    a: "Your data belongs to you. It is stored on secure servers with regular database backups, and you can export customers, leads and invoices to CSV or PDF whenever you like.",
-  },
-  {
-    q: "Do you help with WhatsApp Business API approval?",
-    a: "Yes. We guide you through connecting your number to the official WhatsApp Business Platform and getting your message templates approved by Meta.",
-  },
-  {
-    q: "Do invoices support GST?",
-    a: "Yes. Proposals, estimates, invoices and credit notes are all in rupees with tax fields, and you can export them in bulk as PDF.",
-  },
-  {
-    q: "Is there a setup fee or lock-in?",
-    a: "There is no setup fee. Monthly plans can be cancelled at the end of any month, and yearly plans give you two months free.",
-  },
+  faqLd(faqs, "/"),
 ];
 
 export default function Home() {
   return (
     <>
+      <JsonLd data={jsonLd} />
       <Loader />
       <Hero delay={1.75} />
       <TickerBand />

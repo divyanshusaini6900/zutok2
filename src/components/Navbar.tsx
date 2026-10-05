@@ -4,15 +4,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react";
 import { ArrowUpRight, ChevronDown, Menu, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { Logo } from "@/components/ui/Logo";
 import { productList } from "@/lib/products";
 import { site } from "@/lib/site";
 import { cx } from "@/lib/cx";
 
 const links = [
+  { label: "Solutions", href: "/solutions/" },
+  { label: "Industries", href: "/industries/" },
   { label: "Platform", href: "/#platform" },
-  { label: "Pricing", href: "/pricing" },
+  { label: "Pricing", href: "/pricing/" },
   { label: "FAQ", href: "/#faq" },
 ];
 
@@ -22,6 +24,7 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
   const [drop, setDrop] = useState(false);
   const pathname = usePathname();
+  const dropId = useId();
 
   useMotionValueEvent(scrollY, "change", (y) => {
     const prev = scrollY.getPrevious() ?? 0;
@@ -58,48 +61,49 @@ export function Navbar() {
             <li className="relative" onMouseEnter={() => setDrop(true)} onMouseLeave={() => setDrop(false)}>
               <button
                 type="button"
-                className="flex items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold text-ink transition hover:bg-smoke"
+                className="flex items-center gap-1 rounded-full px-3 py-2 text-sm font-semibold text-ink transition hover:bg-smoke xl:px-4"
                 aria-expanded={drop}
+                aria-controls={dropId}
                 onClick={() => setDrop((d) => !d)}
               >
                 Products <ChevronDown className={cx(`size-4 transition ${drop ? "rotate-180" : ""}`)} aria-hidden />
               </button>
-              <AnimatePresence>
-                {drop && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                    transition={{ duration: 0.25 }}
-                    className="absolute left-1/2 top-full w-[46rem] -translate-x-1/2 pt-4"
-                  >
-                    <div className="brut grid grid-cols-4 gap-2.5 rounded-3xl bg-white p-2.5">
-                      {productList.map((p) => (
-                        <Link
-                          key={p.slug}
-                          href={`/products/${p.slug}`}
-                          className="brut-sm group relative overflow-hidden rounded-2xl p-4 transition duration-300 hover:-translate-y-1"
-                          style={{ background: p.theme.color, color: p.theme.on }}
-                        >
-                          <span
-                            className="absolute -right-6 -top-6 size-20 rounded-full opacity-80 blur-xl transition group-hover:scale-150"
-                            style={{ background: p.theme.pop }}
-                          />
-                          <span className="relative mb-10 flex items-center justify-between">
-                            <span className="font-display text-2xl uppercase tracking-wide">{p.name}</span>
-                            <ArrowUpRight className="size-4 transition group-hover:rotate-45" aria-hidden />
-                          </span>
-                          <span className="relative block text-xs font-semibold leading-snug opacity-90">{p.kicker}</span>
-                        </Link>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {/* Stays mounted so the product links are crawlable; hidden and inert while closed. */}
+              <motion.div
+                id={dropId}
+                inert={!drop}
+                initial={false}
+                animate={drop ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 6, scale: 0.98 }}
+                transition={{ duration: 0.25 }}
+                className={cx(`absolute left-1/2 top-full w-[46rem] -translate-x-1/2 pt-4 transition-[visibility] duration-[250ms] ${
+                  drop ? "visible" : "pointer-events-none invisible"
+                }`)}
+              >
+                <div className="brut grid grid-cols-4 gap-2.5 rounded-3xl bg-white p-2.5">
+                  {productList.map((p) => (
+                    <Link
+                      key={p.slug}
+                      href={`/products/${p.slug}`}
+                      className="brut-sm group relative overflow-hidden rounded-2xl p-4 transition duration-300 hover:-translate-y-1"
+                      style={{ background: p.theme.color, color: p.theme.on }}
+                    >
+                      <span
+                        className="absolute -right-6 -top-6 size-20 rounded-full opacity-80 blur-xl transition group-hover:scale-150"
+                        style={{ background: p.theme.pop }}
+                      />
+                      <span className="relative mb-10 flex items-center justify-between">
+                        <span className="font-display text-2xl uppercase tracking-wide">{p.name}</span>
+                        <ArrowUpRight className="size-4 transition group-hover:rotate-45" aria-hidden />
+                      </span>{" "}
+                      <span className="relative block text-xs font-semibold leading-snug opacity-90">{p.kicker}</span>{" "}
+                    </Link>
+                  ))}
+                </div>
+              </motion.div>
             </li>
             {links.map((l) => (
               <li key={l.href}>
-                <Link href={l.href} className="rounded-full px-4 py-2 text-sm font-semibold text-ink transition hover:bg-smoke">
+                <Link href={l.href} className="rounded-full px-3 py-2 text-sm font-semibold text-ink transition hover:bg-smoke xl:px-4">
                   {l.label}
                 </Link>
               </li>
@@ -109,13 +113,13 @@ export function Navbar() {
           <div className="flex items-center gap-2">
             <a
               href={site.loginUrl}
-              className="hidden rounded-full px-4 py-2 text-sm font-semibold text-ink transition hover:bg-smoke sm:block"
+              className="hidden whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold text-ink transition hover:bg-smoke sm:block"
             >
               Log in
-            </a>
+            </a>{" "}
             <Link
               href="/#demo"
-              className="hidden rounded-full border-2 border-ink bg-ink px-5 py-2 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:shadow-[3px_3px_0_#111] sm:block"
+              className="hidden whitespace-nowrap rounded-full border-2 border-ink bg-ink px-5 py-2 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:shadow-[3px_3px_0_#111] sm:block"
             >
               Book a demo
             </Link>

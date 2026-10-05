@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useInView } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Check, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
@@ -88,18 +88,18 @@ function Row({ start, offset }: { start: number; offset: number }) {
                   <span className="mb-auto ml-auto grid size-16 place-items-center rounded-2xl border-[2.5px] border-current bg-white/20">
                     <Icon name={m.icon} className="size-8" />
                   </span>
-                  <span className="block text-3xl font-extrabold leading-tight">{m.title}</span>
+                  <span className="block text-3xl font-extrabold leading-tight">{m.title}</span>{" "}
                   <span className="mt-2 block max-w-sm text-[15px] font-medium leading-snug opacity-85">{m.body}</span>
                   <span className="mt-4 flex flex-wrap gap-2">
                     {m.points.map((pt) => (
                       <span key={pt} className="flex items-center gap-1.5 rounded-full bg-white/25 px-3 py-1 text-xs font-bold">
-                        <Check className="size-3.5" aria-hidden /> {pt}
+                        <Check className="size-3.5" aria-hidden /> {pt}{" "}
                       </span>
                     ))}
                   </span>
                 </motion.span>
               )}
-            </AnimatePresence>
+            </AnimatePresence>{" "}
           </button>
         );
       })}
@@ -109,11 +109,13 @@ function Row({ start, offset }: { start: number; offset: number }) {
 
 function MobileList() {
   const [open, setOpen] = useState<number | null>(0);
+  const uid = useId();
   return (
     <div className="space-y-2.5">
       {platformModules.map((m, i) => {
         const on = open === i;
         const t = tone(i);
+        const panel = `${uid}-m${i}`;
         return (
           <motion.div
             key={m.title}
@@ -123,39 +125,40 @@ function MobileList() {
             className="overflow-hidden rounded-3xl border-[2.5px] border-ink transition-colors duration-500"
             style={{ background: on ? t.bg : "#0b0b0b", color: on ? t.fg : "#ffffff" }}
           >
-            <button
-              type="button"
-              className="flex w-full items-center gap-4 px-5 py-4 text-left"
-              onClick={() => setOpen(on ? null : i)}
-              aria-expanded={on}
+            <h3>
+              <button
+                type="button"
+                className="flex w-full items-center gap-4 px-5 py-4 text-left"
+                onClick={() => setOpen(on ? null : i)}
+                aria-expanded={on}
+                aria-controls={panel}
+              >
+                <span className="font-display text-2xl opacity-70">{String(i + 1).padStart(2, "0")}</span>{" "}
+                <span className="flex-1 text-lg font-extrabold">{m.title}</span>
+                {!on && <span className="size-2.5 rounded-full" style={{ background: t.bg }} />}
+                <Plus className={cx(`size-5 transition ${on ? "rotate-45" : ""}`)} aria-hidden />
+              </button>
+            </h3>
+            {/* Always mounted so every module's details are in the static HTML; closed panels collapse and go inert. */}
+            <motion.div
+              id={panel}
+              inert={!on}
+              initial={false}
+              animate={{ height: on ? "auto" : 0 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="overflow-hidden"
             >
-              <span className="font-display text-2xl opacity-70">{String(i + 1).padStart(2, "0")}</span>
-              <span className="flex-1 text-lg font-extrabold">{m.title}</span>
-              {!on && <span className="size-2.5 rounded-full" style={{ background: t.bg }} />}
-              <Plus className={cx(`size-5 transition ${on ? "rotate-45" : ""}`)} aria-hidden />
-            </button>
-            <AnimatePresence initial={false}>
-              {on && (
-                <motion.div
-                  initial={{ height: 0 }}
-                  animate={{ height: "auto" }}
-                  exit={{ height: 0 }}
-                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                  className="overflow-hidden"
-                >
-                  <div className="px-5 pb-5">
-                    <p className="text-sm font-medium opacity-90">{m.body}</p>
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      {m.points.map((pt) => (
-                        <span key={pt} className="rounded-full bg-white/25 px-2.5 py-1 text-[11px] font-bold">
-                          {pt}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+              <div className="px-5 pb-5">
+                <p className="text-sm font-medium opacity-90">{m.body}</p>
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {m.points.map((pt) => (
+                    <span key={pt} className="rounded-full bg-white/25 px-2.5 py-1 text-[11px] font-bold">
+                      {pt}{" "}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
         );
       })}

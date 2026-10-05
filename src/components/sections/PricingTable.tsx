@@ -50,13 +50,13 @@ export function PricingTable({ initial = "suite" }: { initial?: PricingGroup["id
                 />
               )}
               <span className="relative size-2.5 shrink-0 rounded-full ring-1 ring-ink/20" style={{ background: g.stripe }} />
-              <span className="relative">{g.label}</span>
+              <span className="relative">{g.label}</span>{" "}
             </button>
           ))}
         </div>
 
         <div className="flex items-center gap-3 text-sm font-semibold">
-          <span className={yearly ? "text-ink/50" : "text-ink"}>Monthly</span>
+          <span className={yearly ? "text-ink/50" : "text-ink"}>Monthly</span>{" "}
           <button
             type="button"
             onClick={() => setYearly((y) => !y)}
@@ -71,7 +71,7 @@ export function PricingTable({ initial = "suite" }: { initial?: PricingGroup["id
               transition={{ type: "spring", stiffness: 500, damping: 30 }}
             />
           </button>
-          <span className={yearly ? "text-ink" : "text-ink/50"}>Yearly</span>
+          <span className={yearly ? "text-ink" : "text-ink/50"}>Yearly</span>{" "}
           <span className="rounded-full border-2 border-ink bg-[#22c55e] px-2.5 py-0.5 text-xs font-extrabold text-ink">2 months free</span>
         </div>
       </div>
@@ -145,6 +145,14 @@ export function PricingTable({ initial = "suite" }: { initial?: PricingGroup["id
                           ? `₹${formatINR(plan.monthly * YEARLY_MONTHS_CHARGED)} billed yearly + GST`
                           : "Billed monthly + GST")}
                     </div>
+                    {/* The other billing option too, so both prices are in the page whichever toggle is active. */}
+                    {plan.monthly !== null && (
+                      <div>
+                        {yearly
+                          ? `or ₹${formatINR(plan.monthly)}/month billed monthly`
+                          : `or ₹${formatINR(plan.monthly * YEARLY_MONTHS_CHARGED)}/year billed yearly`}
+                      </div>
+                    )}
                     {plan.worth && (
                       <div className={cx(`font-bold ${pop ? "text-white underline decoration-2 underline-offset-4" : "text-[#15803d]"}`)}>
                         ₹{formatINR(plan.worth)}/mo if bought separately

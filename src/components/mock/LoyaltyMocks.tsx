@@ -41,7 +41,9 @@ export const tiers = [
 
 export function TierCard({ tier, name = "Ananya Rao", points = "2,340" }: { tier: (typeof tiers)[number]; name?: string; points?: string }) {
   return (
+    // Every mock in this file is sample data; data-nosnippet keeps it out of search snippets and AI answers.
     <div
+      data-nosnippet=""
       className="relative aspect-[1.586] w-full overflow-hidden rounded-[22px] p-5 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.55)]"
       style={{ background: tier.bg, color: tier.ink }}
     >
@@ -79,7 +81,7 @@ export function TierCard({ tier, name = "Ananya Rao", points = "2,340" }: { tier
 export function POSMock() {
   const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "00", "0", "del"];
   return (
-    <div className="w-full overflow-hidden rounded-[26px] border-2 border-ink bg-white text-ink shadow-[8px_8px_0_#0b0b0b]">
+    <div data-nosnippet="" className="w-full overflow-hidden rounded-[26px] border-2 border-ink bg-white text-ink shadow-[8px_8px_0_#0b0b0b]">
       <div className="flex items-center justify-between bg-gradient-to-r from-[#ff4d8d] to-[#6c2bd9] px-5 py-4 text-white">
         <div>
           <div className="text-[10px] uppercase tracking-[0.25em] text-white/80">POS quick counter</div>
@@ -174,7 +176,7 @@ export function QRGlyph({ className = "", color = "#0b0b0b", seed = 7 }: { class
 
 export function QRStandee() {
   return (
-    <div className="relative mx-auto w-full max-w-[260px]">
+    <div data-nosnippet="" className="relative mx-auto w-full max-w-[260px]">
       <div className="arch relative overflow-hidden border-2 border-ink bg-gradient-to-b from-[#ff4d8d] to-[#6c2bd9] px-6 pb-6 pt-14 text-center text-paper shadow-[8px_8px_0_#0b0b0b]">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.35),transparent_70%)]" />
         <div className="relative text-[10px] uppercase tracking-[0.35em] text-white/80">Table 07</div>
@@ -194,7 +196,7 @@ export function QRStandee() {
 
 export function ReviewMock() {
   return (
-    <div className="w-full rounded-[26px] border-2 border-ink bg-white p-5 text-ink shadow-[8px_8px_0_#0b0b0b]">
+    <div data-nosnippet="" className="w-full rounded-[26px] border-2 border-ink bg-white p-5 text-ink shadow-[8px_8px_0_#0b0b0b]">
       <div className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#db2777]">How was your evening?</div>
       {[
         ["Food & taste", 5],

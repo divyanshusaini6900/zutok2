@@ -1,14 +1,22 @@
 "use client";
 
+import Link from "next/link";
 import { motion, useMotionValue, useSpring, useTransform } from "motion/react";
+import { ArrowUpRight } from "lucide-react";
 import type { MouseEvent } from "react";
+import { Button } from "@/components/ui/Button";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { Reveal } from "@/components/ui/Reveal";
 import { SplitText } from "@/components/ui/SplitText";
+import { onboardingSteps } from "@/lib/onboarding";
+import type { IndustrySlug } from "@/lib/industries";
 import { cx } from "@/lib/cx";
 
-const industries: { icon: IconName; title: string; body: string; uses: string[]; bg: string; fg: string }[] = [
+// Each card opens its guide at /industries/<slug>/. Only the slug type is imported, so the guides' copy stays out of
+// this client bundle.
+const industries: { slug: IndustrySlug; icon: IconName; title: string; body: string; uses: string[]; bg: string; fg: string }[] = [
   {
+    slug: "restaurants-cafes",
     icon: "food",
     title: "Restaurants & cafés",
     body: "Points at the counter, QR on every table and delivery box, birthday journeys and Google reviews.",
@@ -17,6 +25,7 @@ const industries: { icon: IconName; title: string; body: string; uses: string[];
     fg: "#0b0b0b",
   },
   {
+    slug: "d2c-fashion-brands",
     icon: "bag",
     title: "D2C & fashion brands",
     body: "WhatsApp order updates, COD confirmation, cart recovery and an AI that answers “is it in stock?”",
@@ -25,6 +34,7 @@ const industries: { icon: IconName; title: string; body: string; uses: string[];
     fg: "#0b0b0b",
   },
   {
+    slug: "real-estate",
     icon: "home",
     title: "Real estate",
     body: "Properties, owners, brokers, buy and rent requests, and site-visit leads from Meta ads.",
@@ -33,6 +43,7 @@ const industries: { icon: IconName; title: string; body: string; uses: string[];
     fg: "#0b0b0b",
   },
   {
+    slug: "agencies-services",
     icon: "briefcase",
     title: "Agencies & services",
     body: "Proposals, GST invoices, projects, timesheets and a shared inbox for every client.",
@@ -41,6 +52,7 @@ const industries: { icon: IconName; title: string; body: string; uses: string[];
     fg: "#ffffff",
   },
   {
+    slug: "clinics-labs-salons",
     icon: "clinic",
     title: "Clinics, labs & salons",
     body: "Appointment chats, test price lists the AI can quote, memberships and repeat-visit reminders.",
@@ -49,6 +61,7 @@ const industries: { icon: IconName; title: string; body: string; uses: string[];
     fg: "#ffffff",
   },
   {
+    slug: "retail-franchises",
     icon: "store",
     title: "Retail & franchises",
     body: "Inventory, staff attendance, loyalty across outlets, and one view of every customer.",
@@ -81,43 +94,57 @@ function TiltCard({ item, i }: { item: (typeof industries)[number]; i: number })
       whileInView={{ opacity: 1, y: 0, rotate: 0 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ type: "spring", stiffness: 120, damping: 16, delay: (i % 3) * 0.08 }}
-      className="[perspective:1000px]"
     >
-      <motion.div
-        onMouseMove={onMove}
-        onMouseLeave={onLeave}
-        style={{ rotateX: rx, rotateY: ry, background: item.bg, color: item.fg, transformStyle: "preserve-3d" }}
-        className="relative h-full overflow-hidden rounded-[2rem] border-[2.5px] border-ink p-7 shadow-[6px_6px_0_#0b0b0b]"
+      <Link
+        href={`/industries/${item.slug}/`}
+        className="group block h-full rounded-[2rem] [perspective:1000px] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink"
       >
-        <motion.div className="pointer-events-none absolute inset-0" style={{ background: glare }} />
-        <div className="pointer-events-none absolute -bottom-16 -right-16 size-48 rounded-full bg-white/15" />
-        <span
-          className="relative grid size-14 place-items-center rounded-2xl border-[2.5px] border-current bg-white/20"
-          style={{ transform: "translateZ(40px)" }}
+        <motion.div
+          onMouseMove={onMove}
+          onMouseLeave={onLeave}
+          style={{ rotateX: rx, rotateY: ry, background: item.bg, color: item.fg, transformStyle: "preserve-3d" }}
+          className="relative h-full overflow-hidden rounded-[2rem] border-[2.5px] border-ink p-7 shadow-[6px_6px_0_#0b0b0b]"
         >
-          <Icon name={item.icon} className="size-7" />
-        </span>
-        <h3 className="relative mt-10 text-2xl font-extrabold" style={{ transform: "translateZ(30px)" }}>
-          {item.title}
-        </h3>
-        <p className="relative mt-2 text-[15px] leading-relaxed opacity-90">{item.body}</p>
-        <div className="relative mt-6 flex flex-wrap gap-2">
-          {item.uses.map((u) => (
-            <span key={u} className="rounded-full border-2 border-current px-3 py-0.5 text-xs font-bold">
-              {u}
+          <motion.div className="pointer-events-none absolute inset-0" style={{ background: glare }} />
+          <div className="pointer-events-none absolute -bottom-16 -right-16 size-48 rounded-full bg-white/15" />
+          <span className="relative flex items-start justify-between gap-4 [transform-style:preserve-3d]">
+            <span
+              className="grid size-14 place-items-center rounded-2xl border-[2.5px] border-current bg-white/20"
+              style={{ transform: "translateZ(40px)" }}
+            >
+              <Icon name={item.icon} className="size-7" />
             </span>
-          ))}
-        </div>
-      </motion.div>
+            <span
+              className="grid size-11 shrink-0 place-items-center rounded-full border-2 border-ink bg-white text-ink transition duration-500 group-hover:rotate-45 group-hover:bg-ink group-hover:text-white"
+              aria-hidden
+            >
+              <ArrowUpRight className="size-5" />
+            </span>
+          </span>
+          <h3 className="relative mt-10 text-2xl font-extrabold" style={{ transform: "translateZ(30px)" }}>
+            {item.title}
+          </h3>
+          <p className="relative mt-2 text-[15px] leading-relaxed opacity-90">{item.body}</p>
+          <div className="relative mt-6 flex flex-wrap gap-2">
+            {item.uses.map((u) => (
+              <span key={u} className="rounded-full border-2 border-current px-3 py-0.5 text-xs font-bold">
+                {u}{" "}
+              </span>
+            ))}
+          </div>
+        </motion.div>
+      </Link>
     </motion.div>
   );
 }
 
-const steps = [
-  { n: "01", title: "Book a demo", body: "We look at how you sell today and show you the parts of Zutok that fit.", pop: "#a78bfa", dark: true },
-  { n: "02", title: "We set it up with you", body: "Channels, store, catalogue, tiers and team, configured together on a call.", pop: "#ff4d8d", dark: false },
-  { n: "03", title: "Watch it run", body: "Chats get answered, orders confirmed and guests come back, all in one CRM.", pop: "#22c55e", dark: true },
+// Card styles for the onboarding steps, in step order.
+const stepStyles = [
+  { pop: "#a78bfa", dark: true },
+  { pop: "#ff4d8d", dark: false },
+  { pop: "#22c55e", dark: true },
 ];
+const steps = onboardingSteps.map((s, i) => ({ ...s, ...stepStyles[i % stepStyles.length] }));
 
 export function Industries() {
   return (
@@ -141,6 +168,11 @@ export function Industries() {
             <TiltCard key={ind.title} item={ind} i={i} />
           ))}
         </div>
+        <Reveal className="mt-10 flex justify-center">
+          <Button href="/industries/" variant="ghost">
+            Read the industry guides
+          </Button>
+        </Reveal>
 
         <div className="relative mt-28">
           <Reveal>
@@ -160,8 +192,11 @@ export function Industries() {
                   s.dark ? "bg-ink text-white shadow-[6px_6px_0_#b5b5b5]" : "bg-white text-ink shadow-[6px_6px_0_#0b0b0b]"
                 }`)}
               >
-                <span className={cx(`absolute -right-3 -top-8 font-display text-[9rem] leading-none ${s.dark ? "text-white/15" : "text-ink/10"}`)}>
-                  {s.n}
+                <span
+                  className={cx(`absolute -right-3 -top-8 font-display text-[9rem] leading-none ${s.dark ? "text-white/15" : "text-ink/10"}`)}
+                  aria-hidden
+                >
+                  {s.n}{" "}
                 </span>
                 <span
                   className="relative inline-block rounded-full border-2 border-ink px-3 py-0.5 text-xs font-extrabold uppercase tracking-[0.2em] text-ink"

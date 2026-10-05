@@ -7,7 +7,9 @@ import { cx } from "@/lib/cx";
 
 export function PhoneShell({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
+    // Sample chats only: data-nosnippet keeps them out of search snippets and AI answers.
     <div
+      data-nosnippet=""
       className={cx(`relative mx-auto aspect-[9/19] w-full rounded-[2.6rem] bg-[#141018] p-[7px] shadow-[0_40px_80px_-30px_rgba(0,0,0,0.65),inset_0_0_0_2px_rgba(255,255,255,0.08)] ${className}`)}
     >
       <div className="absolute left-1/2 top-3 z-30 h-[18px] w-[34%] -translate-x-1/2 rounded-full bg-black" />

@@ -3,6 +3,7 @@
 import { motion, useScroll, useTransform } from "motion/react";
 import { useRef, type ComponentType } from "react";
 import { Bot, Boxes, Briefcase, Crown, Gift, PackageCheck, Receipt, ShoppingCart, Star, Truck, Users } from "lucide-react";
+import { Breadcrumbs, type Crumb } from "@/components/industries/Breadcrumbs";
 import { Button } from "@/components/ui/Button";
 import { InstagramIcon, MessengerIcon, WhatsAppIcon } from "@/components/ui/BrandIcons";
 import { Wave } from "@/components/ui/Wave";
@@ -41,11 +42,18 @@ const stickers: Record<ProductSlug, { Icon: ComponentType<{ className?: string }
   ],
 };
 
+const visualLabels: Record<ProductSlug, string> = {
+  zchat: "Preview of the ZChat omnichannel inbox",
+  zshop: "Preview of a ZShop order with its COD confirmation and shipping updates on WhatsApp",
+  zloya: "Preview of Zloya VIP tier cards and a Zloya Pass on a phone",
+  crm: "Preview of the Zutok CRM dashboard",
+};
+
 function Visual({ slug }: { slug: ProductSlug }) {
   if (slug === "crm") {
     return (
       <div className="overflow-hidden rounded-[20px] border-[2.5px] border-ink shadow-[8px_8px_0_#0b0b0b]">
-        <ScaledFrame width={1200} height={740}>
+        <ScaledFrame width={1200} height={740} label={visualLabels.crm}>
           <DashboardMock />
         </ScaledFrame>
       </div>
@@ -53,14 +61,14 @@ function Visual({ slug }: { slug: ProductSlug }) {
   }
   if (slug === "zchat") {
     return (
-      <ScaledFrame width={1200} height={720}>
+      <ScaledFrame width={1200} height={720} label={visualLabels.zchat}>
         <InboxMock />
       </ScaledFrame>
     );
   }
   if (slug === "zshop") {
     return (
-      <div className="grid grid-cols-1 items-center gap-10 md:grid-cols-[1.25fr_1fr]">
+      <div className="grid grid-cols-1 items-center gap-10 md:grid-cols-[1.25fr_1fr]" role="img" aria-label={visualLabels.zshop}>
         <OrderMock />
         <div className="mx-auto w-[min(270px,70vw)]">
           <PhoneShell>
@@ -82,7 +90,7 @@ function Visual({ slug }: { slug: ProductSlug }) {
     );
   }
   return (
-    <div className="grid grid-cols-1 items-center gap-10 md:grid-cols-[1.3fr_1fr]">
+    <div className="grid grid-cols-1 items-center gap-10 md:grid-cols-[1.3fr_1fr]" role="img" aria-label={visualLabels.zloya}>
       <div className="relative mx-auto h-[300px] w-full max-w-xl sm:h-[340px]">
         {tiers.map((t, i) => (
           <motion.div
@@ -106,7 +114,7 @@ function Visual({ slug }: { slug: ProductSlug }) {
   );
 }
 
-export function ProductHero({ slug }: { slug: ProductSlug }) {
+export function ProductHero({ slug, crumbs }: { slug: ProductSlug; crumbs: Crumb[] }) {
   const p = products[slug];
   const t = p.theme;
   const ref = useRef<HTMLDivElement>(null);
@@ -137,29 +145,35 @@ export function ProductHero({ slug }: { slug: ProductSlug }) {
       </motion.div>
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
-        <motion.span
-          className="relative inline-flex items-center gap-2 rounded-full border-2 px-4 py-1.5 text-xs font-extrabold uppercase tracking-[0.25em]"
-          style={{ background: t.pop, color: t.popOn, borderColor: t.on, boxShadow: `3px 3px 0 ${t.on}` }}
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          {p.name} · {p.kicker}
-        </motion.span>
-
-        <h1 className="mt-8 text-[14vw] font-extrabold leading-[0.9] tracking-[-0.045em] sm:text-8xl lg:text-[8.5rem]">
-          {p.headline.map((line, i) => (
-            <span key={line} className="block overflow-hidden pb-2">
-              <motion.span
-                className={cx(`inline-block ${i === 2 ? "rounded-3xl border-[3px] px-4 pb-1 font-serif font-normal italic tracking-[-0.02em]" : ""}`)}
-                style={i === 2 ? { background: t.pop, color: t.popOn, borderColor: t.on } : undefined}
-                initial={{ y: "105%", rotate: 3 }}
-                animate={{ y: 0, rotate: 0 }}
-                transition={{ delay: 0.15 + i * 0.12, duration: 1, ease: [0.16, 1, 0.3, 1] }}
-              >
-                {line}
-              </motion.span>
-            </span>
-          ))}
+        <div className="mb-6">
+          <Breadcrumbs items={crumbs} tone={dark ? "light" : "dark"} />
+        </div>
+        {/* The pill sits inside the h1 so the heading names the product, not just the slogan. */}
+        <h1>
+          <motion.span
+            className="relative inline-flex items-center gap-2 rounded-full border-2 px-4 py-1.5 text-xs font-extrabold uppercase tracking-[0.25em]"
+            style={{ background: t.pop, color: t.popOn, borderColor: t.on, boxShadow: `3px 3px 0 ${t.on}` }}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            {/* Branded like seo.ts `brandedName`, inlined so this client component doesn't pull in seo.ts. */}
+            {p.name.startsWith("Zutok") ? p.name : `Zutok ${p.name}`} · {p.kicker}
+          </motion.span>{" "}
+          <span className="mt-8 block text-[14vw] font-extrabold leading-[0.9] tracking-[-0.045em] sm:text-8xl lg:text-[8.5rem]">
+            {p.headline.map((line, i) => (
+              <span key={line} className="block overflow-hidden pb-2">
+                <motion.span
+                  className={cx(`inline-block ${i === 2 ? "rounded-3xl border-[3px] px-4 pb-1 font-serif font-normal italic tracking-[-0.02em]" : ""}`)}
+                  style={i === 2 ? { background: t.pop, color: t.popOn, borderColor: t.on } : undefined}
+                  initial={{ y: "105%", rotate: 3 }}
+                  animate={{ y: 0, rotate: 0 }}
+                  transition={{ delay: 0.15 + i * 0.12, duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  {line}
+                </motion.span>{" "}
+              </span>
+            ))}
+          </span>
         </h1>
 
         <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[1.3fr_1fr] lg:items-end">

@@ -269,8 +269,8 @@ function Steps({ phase, compact = false }: { phase: number; compact?: boolean })
             <s.icon className="size-5" aria-hidden />
           </span>
           <span>
-            <span className="block text-xs font-bold uppercase tracking-[0.2em] text-[#4ade80]">Step {phase + 1} of 4</span>
-            <span className="block font-bold">{s.title}</span>
+            <span className="block text-xs font-bold uppercase tracking-[0.2em] text-[#4ade80]">Step {phase + 1} of 4</span>{" "}
+            <span className="block font-bold">{s.title}</span>{" "}
             <span className="block text-sm text-white/75">{s.body}</span>
           </span>
         </motion.div>
@@ -304,7 +304,7 @@ function Steps({ phase, compact = false }: { phase: number; compact?: boolean })
                 {done ? <Check className="size-5" aria-hidden /> : <s.icon className="size-5" aria-hidden />}
               </span>
               <span className={active ? "" : "opacity-70"}>
-                <span className="block text-[15px] font-bold leading-tight">{s.title}</span>
+                <span className="block text-[15px] font-bold leading-tight">{s.title}</span>{" "}
                 <motion.span
                   className="block overflow-hidden text-[13px] leading-snug"
                   initial={false}
@@ -321,7 +321,7 @@ function Steps({ phase, compact = false }: { phase: number; compact?: boolean })
       <div className="mt-auto flex flex-wrap gap-1.5 pt-5">
         {["OpenAI", "Claude", "Gemini", "Vertex AI", "Your own model"].map((m) => (
           <span key={m} className="rounded-full border border-white/30 px-2.5 py-1 text-[11px] font-bold">
-            {m}
+            {m}{" "}
           </span>
         ))}
       </div>

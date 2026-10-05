@@ -120,13 +120,17 @@ export function Hero({ delay = 0 }: { delay?: number }) {
                   />
                 ))}
                 <span className="relative">
-                  <WordRotator words={platforms.map((pl) => pl.word)} onChange={setWord} />
+                  <WordRotator
+                    words={platforms.map((pl) => pl.word)}
+                    label="WhatsApp, Instagram, Messenger and Telegram."
+                    onChange={setWord}
+                  />
                 </span>
               </span>
-            </Line>
+            </Line>{" "}
             <Line i={1} delay={delay}>
               Ship on time.
-            </Line>
+            </Line>{" "}
             <Line i={2} delay={delay} className="font-serif font-normal italic tracking-[-0.02em]">
               Bring them back.
             </Line>
@@ -161,7 +165,7 @@ export function Hero({ delay = 0 }: { delay?: number }) {
             className="relative w-[min(92vw,1200px,139vh)]"
           >
             <div className="overflow-hidden rounded-[20px] border-[2.5px] border-ink shadow-[8px_8px_0_#b5b5b5]">
-              <ScaledFrame width={1200} height={740}>
+              <ScaledFrame width={1200} height={740} label="Preview of the Zutok CRM dashboard">
                 <DashboardMock />
               </ScaledFrame>
             </div>
@@ -192,7 +196,9 @@ function Chip({ chip, p }: { chip: (typeof chips)[number]; p: MotionValue<number
   const y = useTransform(p, [0.3, 0.7], [0, chip.y * 90]);
   const opacity = useTransform(p, [0, 0.2, 0.55, 0.75], [0, 1, 1, 0]);
   return (
+    // Sample notifications: data-nosnippet keeps them out of search snippets and AI answers.
     <motion.div
+      data-nosnippet=""
       className={cx(`brut-sm absolute z-10 hidden items-center gap-3 rounded-2xl bg-white py-3 pl-3 pr-5 lg:flex ${chip.pos}`)}
       style={{ x, y, opacity }}
     >

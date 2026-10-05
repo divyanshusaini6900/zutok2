@@ -260,7 +260,7 @@ export const products: Record<ProductSlug, Product> = {
     kicker: "Loyalty, memberships & retention",
     headline: ["First visit.", "Second visit.", "Regular for life."],
     summary:
-      "A loyalty and retention system for restaurants, cafés, salons and stores. Award points at the counter, sell memberships, run automated win-back journeys and turn happy guests into Google reviews.",
+      "A loyalty and retention system for restaurants, cafés, salons and stores. Award points at the counter, sell memberships, run automated win-back journeys and collect guest feedback and Google reviews.",
     theme: {
       color: "#0b0b0b",
       color2: "#1c1c1c",
@@ -312,7 +312,7 @@ export const products: Record<ProductSlug, Product> = {
       {
         icon: "star",
         title: "Reputation booster",
-        body: "Guests rate food, service, ambience and cleanliness. Happy guests are sent to Google Reviews and unhappy ones alert you first.",
+        body: "Guests rate food, service, ambience and cleanliness, and low ratings alert you first so a manager can follow up. The booster also points guests to your Google review page.",
       },
       {
         icon: "pie",

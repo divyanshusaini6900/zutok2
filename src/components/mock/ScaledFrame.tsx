@@ -8,11 +8,14 @@ export function ScaledFrame({
   height,
   children,
   className = "",
+  label,
 }: {
   width: number;
   height: number;
   children: ReactNode;
   className?: string;
+  /** Describes the mock as one image for screen readers instead of its sample data. */
+  label?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState<number | null>(null);
@@ -26,7 +29,15 @@ export function ScaledFrame({
   }, [width]);
 
   return (
-    <div ref={ref} className={cx(`relative w-full ${className}`)} style={{ aspectRatio: `${width} / ${height}` }}>
+    // data-nosnippet keeps the mock's sample figures out of search snippets and AI answers; nothing visible changes.
+    <div
+      ref={ref}
+      data-nosnippet=""
+      className={cx(`relative w-full ${className}`)}
+      style={{ aspectRatio: `${width} / ${height}` }}
+      role={label ? "img" : undefined}
+      aria-label={label}
+    >
       <div
         className="absolute left-0 top-0 origin-top-left"
         style={{ width, height, transform: `scale(${scale ?? 0.5})`, visibility: scale === null ? "hidden" : "visible" }}

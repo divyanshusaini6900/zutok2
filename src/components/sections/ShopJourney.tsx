@@ -243,7 +243,7 @@ export function ShopJourney() {
                       </span>
                       <div>
                         <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#c2410c]">Stop {i + 1}</div>
-                        <div className="text-lg font-extrabold leading-tight">{s.title}</div>
+                        <h3 className="text-lg font-extrabold leading-tight">{s.title}</h3>
                       </div>
                     </div>
                     <div className="mt-3">{s.body}</div>
@@ -260,12 +260,12 @@ export function ShopJourney() {
               );
             })}
             <div className="flex h-full w-[90vw] shrink-0 flex-col justify-end pb-40 pl-10 sm:w-[640px] sm:pb-44">
-              <div className="font-display text-5xl uppercase leading-none sm:text-7xl">Runs itself.</div>
+              <h3 className="font-display text-5xl uppercase leading-none sm:text-7xl">Runs itself.</h3>
               <div className="mt-4 flex max-w-md flex-wrap gap-2">
                 {["32 Shopify webhook topics", "Quiet hours for promos", "One do-not-contact list", "Estimates from real deliveries"].map(
                   (t) => (
                     <span key={t} className="rounded-full bg-ink px-3 py-1.5 text-xs font-bold text-white">
-                      {t}
+                      {t}{" "}
                     </span>
                   ),
                 )}

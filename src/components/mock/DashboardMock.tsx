@@ -71,7 +71,7 @@ const arcs = donut.map((d, i) => ({
 
 function Donut() {
   return (
-    <svg viewBox="0 0 160 160" className="size-40 -rotate-90">
+    <svg viewBox="0 0 160 160" className="size-40 -rotate-90" aria-hidden>
       <circle cx="80" cy="80" r={R} fill="none" stroke="#f1eff7" strokeWidth="22" />
       {arcs.map((d, i) => (
         <motion.circle

@@ -112,7 +112,7 @@ export function ZloyaStack({ from = "#ffffff" }: { from?: string }) {
             <Reveal delay={0.3} className="mt-7 flex flex-wrap gap-2">
               {segments.map((s) => (
                 <span key={s} className="rounded-full border border-paper/25 bg-white/5 px-3.5 py-1.5 text-sm font-semibold">
-                  {s}
+                  {s}{" "}
                 </span>
               ))}
             </Reveal>

@@ -35,7 +35,14 @@ export function Loader() {
   return (
     <AnimatePresence>
       {phase !== "done" && (
-        <motion.div className="fixed inset-0 z-[100]" exit={{ opacity: 0 }} transition={{ duration: 0.2 }} aria-hidden>
+        <motion.div
+          className="fixed inset-0 z-[100]"
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          aria-hidden
+          // The letters and counter are decoration, not page text, so keep them out of search snippets.
+          data-nosnippet=""
+        >
           <motion.div
             className="absolute inset-0 flex flex-col items-center justify-center bg-paper text-ink"
             animate={{ y: phase === "wipe" ? "-100%" : "0%" }}

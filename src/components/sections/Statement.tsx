@@ -49,6 +49,7 @@ function Word({ t, i, n, p }: { t: Token; i: number; n: number; p: MotionValue<n
       <motion.span style={{ opacity, color }} className={accent ? "px-1" : ""}>
         {t.word}
       </motion.span>
+      {/* Not drawn (end of the inline-block's line); keeps words apart in the raw HTML text. */}{" "}
     </span>
   );
 }

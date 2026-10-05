@@ -17,8 +17,22 @@ import { Counter } from "@/components/ui/Counter";
 import { Marquee } from "@/components/ui/Marquee";
 import { Reveal } from "@/components/ui/Reveal";
 import { SplitText } from "@/components/ui/SplitText";
+import { industriesHub, industryList, industryPath } from "@/lib/industries";
 import { productList, products, type ProductSlug } from "@/lib/products";
+import { solutionPath, solutionsFor } from "@/lib/solutions";
 import { cx } from "@/lib/cx";
+import {
+  JsonLd,
+  brandedName,
+  breadcrumbLd,
+  faqLd,
+  ogImage,
+  pageMetadata,
+  productSeo,
+  softwareAppId,
+  softwareAppLd,
+  webPageLd,
+} from "@/lib/seo";
 
 export const dynamicParams = false;
 
@@ -30,10 +44,14 @@ export async function generateMetadata(props: PageProps<"/products/[slug]">): Pr
   const { slug } = await props.params;
   const p = products[slug as ProductSlug];
   if (!p) return {};
-  return {
-    title: `${p.name}: ${p.kicker}`,
-    description: p.summary,
-  };
+  const seo = productSeo[p.slug];
+  return pageMetadata({
+    ...seo,
+    path: `/products/${p.slug}/`,
+    absoluteTitle: true,
+    image: ogImage(p.slug),
+    imageAlt: `${brandedName(p)}: ${p.kicker}`,
+  });
 }
 
 function Signature({ slug }: { slug: ProductSlug }) {
@@ -56,10 +74,31 @@ export default async function ProductPage(props: PageProps<"/products/[slug]">) 
   if (!p) notFound();
   const t = p.theme;
   const others = productList.filter((o) => o.slug !== p.slug);
+  const useCases = solutionsFor(p.slug);
+  const usedBy = industryList.filter((i) => i.uses.includes(p.slug));
+  const path = `/products/${p.slug}/`;
+  const crumbs = [
+    { name: "Home", path: "/" },
+    { name: brandedName(p), path },
+  ];
+  const jsonLd = [
+    webPageLd({
+      path,
+      name: productSeo[p.slug].title,
+      description: productSeo[p.slug].description,
+      about: { "@id": softwareAppId(p.slug) },
+      image: ogImage(p.slug),
+      breadcrumb: true,
+    }),
+    breadcrumbLd(crumbs),
+    softwareAppLd(p),
+    faqLd(p.faqs, path),
+  ];
 
   return (
     <div className="bg-paper">
-      <ProductHero slug={p.slug} />
+      <JsonLd data={jsonLd} />
+      <ProductHero slug={p.slug} crumbs={crumbs} />
 
       <div className="-rotate-1 border-y-[2.5px] border-ink py-5" style={{ background: t.pop }}>
         <Marquee
@@ -174,6 +213,59 @@ export default async function ProductPage(props: PageProps<"/products/[slug]">) 
       </section>
 
       <section className="bg-paper pb-24">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-4 sm:px-6 lg:grid-cols-2">
+          <div>
+            <Reveal>
+              <h2 className="text-3xl font-extrabold text-ink">{p.name} use cases</h2>
+            </Reveal>
+            <ul className="mt-8 space-y-3">
+              {useCases.map((s) => (
+                <li key={s.slug}>
+                  <Link
+                    href={solutionPath(s.slug)}
+                    className="group flex items-center justify-between gap-4 rounded-2xl border-[2.5px] border-ink bg-white px-5 py-4 text-ink shadow-[4px_4px_0_#0b0b0b] transition duration-300 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_#0b0b0b]"
+                  >
+                    <span className="flex items-center gap-3 font-extrabold">
+                      <span className="size-3 shrink-0 rounded-full border-2 border-ink" style={{ background: t.pop }} />
+                      {s.name}
+                    </span>
+                    <ArrowUpRight className="size-5 shrink-0 transition duration-300 group-hover:rotate-45" aria-hidden />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <Link href="/solutions/" className="mt-5 inline-block text-sm font-bold text-ink underline decoration-2 underline-offset-4">
+              Every Zutok solution
+            </Link>
+          </div>
+          <div>
+            <Reveal>
+              <h2 className="text-3xl font-extrabold text-ink">{p.name} by industry</h2>
+            </Reveal>
+            <ul className="mt-8 space-y-3">
+              {usedBy.map((ind) => (
+                <li key={ind.slug}>
+                  <Link
+                    href={industryPath(ind.slug)}
+                    className="group flex items-center justify-between gap-4 rounded-2xl border-[2.5px] border-ink bg-white px-5 py-4 text-ink shadow-[4px_4px_0_#0b0b0b] transition duration-300 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_#0b0b0b]"
+                  >
+                    <span className="flex items-center gap-3 font-extrabold">
+                      <span className="size-3 shrink-0 rounded-full border-2 border-ink" style={{ background: ind.theme.bg }} />
+                      {ind.name}
+                    </span>
+                    <ArrowUpRight className="size-5 shrink-0 transition duration-300 group-hover:rotate-45" aria-hidden />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <Link href={industriesHub.path} className="mt-5 inline-block text-sm font-bold text-ink underline decoration-2 underline-offset-4">
+              Every industry guide
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-paper pb-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <Reveal>
             <h2 className="text-3xl font-extrabold text-ink">Works even better with</h2>
@@ -182,7 +274,7 @@ export default async function ProductPage(props: PageProps<"/products/[slug]">) 
             {others.map((o, i) => (
               <Reveal key={o.slug} delay={i * 0.1} className="h-full">
                 <Link
-                  href={`/products/${o.slug}`}
+                  href={`/products/${o.slug}/`}
                   className="group relative flex h-full flex-col justify-between gap-8 overflow-hidden rounded-[2rem] border-[2.5px] border-ink p-7 shadow-[6px_6px_0_#0b0b0b] transition duration-500 hover:-translate-y-1 hover:shadow-[9px_9px_0_#0b0b0b]"
                   style={{ background: o.theme.pop, color: o.theme.popOn }}
                 >

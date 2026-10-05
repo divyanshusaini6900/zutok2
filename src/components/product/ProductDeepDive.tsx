@@ -37,9 +37,9 @@ function Row({
         >
           {kicker}
         </span>
-        <h3 className="mt-5 text-4xl font-extrabold leading-[1] tracking-tight sm:text-5xl" style={{ color: deep }}>
+        <h2 className="mt-5 text-4xl font-extrabold leading-[1] tracking-tight sm:text-5xl" style={{ color: deep }}>
           {title}
-        </h3>
+        </h2>
         <p className="mt-5 text-lg font-medium leading-relaxed text-ink/70">{body}</p>
         {bullets && (
           <ul className="mt-6 space-y-3">

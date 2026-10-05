@@ -264,7 +264,8 @@ export function ExplodedCRM({
           </h2>
         </motion.div>
 
-        <div className="absolute inset-x-0 bottom-0 top-[30%] flex items-center justify-center [perspective:2200px]">
+        {/* The layers hold sample figures; data-nosnippet keeps them out of search snippets and AI answers. */}
+        <div data-nosnippet="" className="absolute inset-x-0 bottom-0 top-[30%] flex items-center justify-center [perspective:2200px]">
           <motion.div style={{ scale: stackScale, y: stackY }} className="origin-center scale-[0.55] sm:scale-75 lg:scale-100">
             <motion.div
               className="relative"
@@ -288,7 +289,7 @@ export function ExplodedCRM({
         <div className="absolute inset-x-4 bottom-6 flex flex-wrap justify-center gap-2 lg:hidden">
           {callouts.map((c) => (
             <span key={c.t} className="rounded-full border border-white/30 bg-white/10 px-3 py-1.5 text-xs font-bold backdrop-blur">
-              {c.t}
+              {c.t}{" "}
             </span>
           ))}
         </div>

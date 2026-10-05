@@ -1,0 +1,27 @@
+import type { MetadataRoute } from "next";
+import { site } from "@/lib/site";
+import { HOME_DESCRIPTION } from "@/lib/seo";
+
+// Rendered to out/manifest.webmanifest by the static export.
+export const dynamic = "force-static";
+
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    name: site.company,
+    short_name: site.name,
+    description: HOME_DESCRIPTION,
+    start_url: "/",
+    scope: "/",
+    display: "standalone",
+    background_color: "#ffffff",
+    theme_color: "#ffffff",
+    lang: "en-IN",
+    categories: ["business", "productivity"],
+    icons: [
+      { src: "/icon.svg", sizes: "any", type: "image/svg+xml" },
+      { src: "/brand/icon-192.png", sizes: "192x192", type: "image/png" },
+      { src: "/brand/logo-512.png", sizes: "512x512", type: "image/png" },
+      { src: "/brand/maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+    ],
+  };
+}

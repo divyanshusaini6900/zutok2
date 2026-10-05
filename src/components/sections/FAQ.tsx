@@ -1,8 +1,8 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
+import { motion } from "motion/react";
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { useId, useState } from "react";
 
 export type QA = { q: string; a: string };
 
@@ -19,10 +19,13 @@ export function FAQ({
   pop?: string;
 }) {
   const [open, setOpen] = useState<number | null>(0);
+  const uid = useId();
   return (
     <div className="space-y-3.5">
       {items.map((it, i) => {
         const isOpen = open === i;
+        const qid = `${uid}-q${i}`;
+        const aid = `${uid}-a${i}`;
         return (
           <motion.div
             key={it.q}
@@ -34,38 +37,42 @@ export function FAQ({
               boxShadow: isOpen ? `6px 6px 0 ${pop}` : "3px 3px 0 #0b0b0b",
             }}
           >
-            <button
-              type="button"
-              className="flex w-full items-center justify-between gap-6 px-6 py-5 text-left"
-              onClick={() => setOpen(isOpen ? null : i)}
-              aria-expanded={isOpen}
-            >
-              <span className="text-lg font-bold sm:text-xl">{it.q}</span>
-              <motion.span
-                className="grid size-10 shrink-0 place-items-center rounded-full border-2"
-                style={{
-                  background: isOpen ? pop : "#ffffff",
-                  borderColor: isOpen ? pop : "#0b0b0b",
-                  color: "#0b0b0b",
-                }}
-                animate={{ rotate: isOpen ? 45 : 0 }}
+            <h3>
+              <button
+                type="button"
+                id={qid}
+                className="flex w-full items-center justify-between gap-6 px-6 py-5 text-left"
+                onClick={() => setOpen(isOpen ? null : i)}
+                aria-expanded={isOpen}
+                aria-controls={aid}
               >
-                <Plus className="size-5" aria-hidden />
-              </motion.span>
-            </button>
-            <AnimatePresence initial={false}>
-              {isOpen && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                  className="overflow-hidden"
+                <span className="text-lg font-bold sm:text-xl">{it.q}</span>
+                <motion.span
+                  className="grid size-10 shrink-0 place-items-center rounded-full border-2"
+                  style={{
+                    background: isOpen ? pop : "#ffffff",
+                    borderColor: isOpen ? pop : "#0b0b0b",
+                    color: "#0b0b0b",
+                  }}
+                  animate={{ rotate: isOpen ? 45 : 0 }}
                 >
-                  <p className="max-w-3xl px-6 pb-6 font-medium leading-relaxed opacity-85">{it.a}</p>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  <Plus className="size-5" aria-hidden />
+                </motion.span>
+              </button>
+            </h3>
+            {/* Every answer stays mounted so it is in the static HTML; closed ones collapse to zero height and go inert. */}
+            <motion.div
+              id={aid}
+              role="region"
+              aria-labelledby={qid}
+              inert={!isOpen}
+              initial={false}
+              animate={isOpen ? { height: "auto", opacity: 1 } : { height: 0, opacity: 0 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="overflow-hidden"
+            >
+              <p className="max-w-3xl px-6 pb-6 font-medium leading-relaxed opacity-85">{it.a}</p>
+            </motion.div>
           </motion.div>
         );
       })}

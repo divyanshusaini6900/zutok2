@@ -1,28 +1,51 @@
 import Link from "next/link";
 import { Logo, LogoMark } from "@/components/ui/Logo";
 import { Marquee } from "@/components/ui/Marquee";
+import { industriesHub, industryList, industryPath } from "@/lib/industries";
 import { productList } from "@/lib/products";
+import { solutionBySlug, solutionPath, type SolutionSlug } from "@/lib/solutions";
 import { site } from "@/lib/site";
+
+const solutionLink = (slug: SolutionSlug, label = solutionBySlug[slug].name) => ({ label, href: solutionPath(slug) });
 
 const cols = [
   {
     title: "Products",
-    links: productList.map((p) => ({ label: p.name, href: `/products/${p.slug}` })),
+    links: productList.map((p) => ({ label: p.name, href: `/products/${p.slug}/` })),
   },
   {
     title: "Platform",
     links: [
-      { label: "Leads & Pipeline", href: "/#modules" },
-      { label: "GST Invoicing", href: "/#modules" },
-      { label: "HRM & Payroll", href: "/#modules" },
-      { label: "Inventory", href: "/#modules" },
-      { label: "Real Estate", href: "/#modules" },
+      solutionLink("indiamart-meta-lead-ads-crm", "IndiaMART & Meta leads"),
+      solutionLink("gst-invoicing-crm", "GST invoicing"),
+      solutionLink("crm-with-hrm-payroll", "HRM & payroll"),
+      { label: "Real estate CRM", href: industryPath("real-estate") },
+      { label: "All CRM modules", href: "/products/crm/#modules" },
+    ],
+  },
+  {
+    title: "Solutions",
+    links: [
+      solutionLink("whatsapp-ai-sales-agent"),
+      solutionLink("whatsapp-cod-confirmation"),
+      solutionLink("abandoned-cart-recovery-whatsapp", "Abandoned cart recovery"),
+      solutionLink("restaurant-membership-prepaid-wallet"),
+      solutionLink("automated-winback-birthday-campaigns"),
+      { label: "All solutions", href: "/solutions/" },
+    ],
+  },
+  {
+    title: "Industries",
+    links: [
+      ...industryList.map((i) => ({ label: i.name, href: industryPath(i.slug) })),
+      { label: "All industries", href: industriesHub.path },
     ],
   },
   {
     title: "Company",
     links: [
-      { label: "Pricing", href: "/pricing" },
+      { label: "About Zutok", href: "/about/" },
+      { label: "Pricing", href: "/pricing/" },
       { label: "Book a demo", href: "/#demo" },
       { label: "FAQ", href: "/#faq" },
       { label: "Log in", href: site.loginUrl },
@@ -49,8 +72,8 @@ export function Footer() {
 
       <div className="dots pointer-events-none absolute inset-0 top-20 opacity-50" />
       <div className="relative mx-auto mt-20 max-w-7xl px-4 sm:px-6">
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
-          <div>
+        <div className="grid grid-cols-2 gap-x-8 gap-y-12 md:grid-cols-3 xl:grid-cols-[1.3fr_repeat(5,minmax(0,1fr))]">
+          <div className="col-span-2 md:col-span-3 xl:col-span-1">
             <Logo className="text-lg shadow-[4px_4px_0_#111]" />
             <p className="mt-6 max-w-sm text-sm font-medium leading-relaxed text-ink/70">
               {site.tagline} Built in India for businesses that sell on WhatsApp, Instagram and at the counter.

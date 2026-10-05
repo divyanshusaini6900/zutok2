@@ -13,7 +13,11 @@ const steps = [
 
 export function OrderMock({ progress = 3 }: { progress?: number }) {
   return (
-    <div className="relative w-full overflow-hidden rounded-[28px] border border-shop/10 bg-white p-6 text-shop-deep shadow-[0_50px_100px_-40px_rgba(244,81,30,0.55)]">
+    // Sample order only: data-nosnippet keeps it out of search snippets and AI answers.
+    <div
+      data-nosnippet=""
+      className="relative w-full overflow-hidden rounded-[28px] border border-shop/10 bg-white p-6 text-shop-deep shadow-[0_50px_100px_-40px_rgba(244,81,30,0.55)]"
+    >
       <div className="pointer-events-none absolute -right-16 -top-16 size-48 rounded-full bg-[#ffe1cc]" />
       <div className="relative flex items-center justify-between">
         <div className="flex items-center gap-2 rounded-full bg-[#f2f8e8] px-3 py-1 text-[11px] font-semibold text-[#3f6212]">

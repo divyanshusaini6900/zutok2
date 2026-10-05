@@ -33,9 +33,9 @@ export function SplitText({
     : { initial: "hidden", whileInView: "show", viewport: { once: true, margin: "-40px" } };
 
   return (
-    <Tag className={className} variants={variants} {...trigger} aria-label={text}>
+    <Tag className={className} variants={variants} {...trigger}>
       {words.map((w, i) => (
-        <span key={i} className="inline-block overflow-hidden pb-[0.12em] -mb-[0.12em] align-bottom" aria-hidden>
+        <span key={i} className="inline-block overflow-hidden pb-[0.12em] -mb-[0.12em] align-bottom">
           <motion.span
             className={cx(`inline-block will-change-transform ${wordClassName}`)}
             variants={{
@@ -44,7 +44,9 @@ export function SplitText({
             }}
           >
             {w}
-            {i < words.length - 1 ? " " : ""}
+            {/* Non-breaking space between words; the last word's plain space is dropped at the end of
+                its line, so it only keeps this text apart from the next block in the raw HTML. */}
+            {i < words.length - 1 ? "\u00a0" : " "}
           </motion.span>
         </span>
       ))}
