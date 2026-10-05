@@ -1,0 +1,27 @@
+User-Agent: *
+Allow: /
+
+User-Agent: Googlebot
+User-Agent: Bingbot
+User-Agent: GPTBot
+User-Agent: OAI-SearchBot
+User-Agent: ChatGPT-User
+User-Agent: ClaudeBot
+User-Agent: Claude-SearchBot
+User-Agent: Claude-User
+User-Agent: anthropic-ai
+User-Agent: PerplexityBot
+User-Agent: Perplexity-User
+User-Agent: Google-Extended
+User-Agent: Applebot
+User-Agent: Applebot-Extended
+User-Agent: DuckAssistBot
+User-Agent: Amazonbot
+User-Agent: Meta-ExternalAgent
+User-Agent: CCBot
+User-Agent: cohere-ai
+User-Agent: YouBot
+Allow: /
+
+Host: https://www.zutok.in
+Sitemap: https://www.zutok.in/sitemap.xml
