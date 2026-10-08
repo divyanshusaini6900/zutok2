@@ -1,6 +1,9 @@
 import { homeFaqs, onboardingSteps, pricingFaqs, type QA } from "@/lib/company";
 import { industriesHub, industryH1, industryList, industryPath } from "@/lib/industries";
 import {
+  CRM_PER_USER,
+  CRM_PRICES,
+  crmPrices,
   formatINR,
   getGroup,
   isBundled,
@@ -10,7 +13,6 @@ import {
   productPriceNote,
   yearlyTotal,
   zchatFrom,
-  YEARLY_MONTHS_CHARGED,
   ZSHOP_ZLOYA_INCLUDED,
   ZSHOP_ZLOYA_NOTE,
   type PricingGroup,
@@ -49,14 +51,17 @@ const keyFacts = [
   `- Website: ${absoluteUrl("/")}`,
   `- Company: ${site.company}, also called ${site.name}. Its products are always named with the brand: ${family.map(brandedName).join(", ")}.`,
   "- Market: businesses in India that sell on WhatsApp, Instagram and at the counter.",
-  `- Prices: in Indian Rupees (INR), excluding 18% GST. The plans are Zutok ZChat and Zutok CRM, billed monthly or yearly. ` +
-    `${ZSHOP_ZLOYA_NOTE} They aren't sold separately. ` +
-    `Zutok CRM yearly billing charges ${YEARLY_MONTHS_CHARGED} months for 12; ZChat yearly prices are ${zchatYearly}. No setup fee.`,
+  `- Prices: in Indian Rupees (INR), excluding 18% GST. Zutok ZChat is sold as plans and Zutok CRM is priced per user ` +
+    `(one CRM license is one user), billed monthly or yearly. ${ZSHOP_ZLOYA_NOTE} They aren't sold separately. ` +
+    `${CRM_PRICES}. ZChat yearly prices are ${zchatYearly}. No setup fee.`,
   "- WhatsApp: ZChat connects to the official WhatsApp Business Platform. Meta's per-message charges for WhatsApp template messages are billed separately at Meta's published rates.",
   `- Contact: ${site.email}. Book a demo at ${absoluteUrl("/#demo")}. Customers log in at ${new URL(site.loginUrl).href}.`,
 ];
 
-const productLine = (p: Product) => `${p.kicker}. ${p.summary} ${productPriceNote(p.slug)}`;
+/** The kicker then the summary, unless the summary already opens with the kicker (Zutok CRM, Zloya). */
+const lead = (p: Product) => (p.summary.toLowerCase().startsWith(p.kicker.toLowerCase()) ? p.summary : `${p.kicker}. ${p.summary}`);
+
+const productLine = (p: Product) => `${lead(p)} ${productPriceNote(p.slug)}`;
 
 /** The short index: what Zutok is and where each topic lives. */
 export function llmsTxt(): string {
@@ -79,11 +84,14 @@ export function llmsTxt(): string {
     "## Pricing",
     [
       link("Zutok plans and prices", "/pricing/", PRICING_DESCRIPTION),
+      // Zutok CRM lists every per-user price, so its ₹999 never appears without the "5 or more users" condition.
       ...pricing.map((g) =>
         link(
           groupName(g),
           `/products/${g.id}/#pricing`,
-          `from ${price(startingPrice(g.id))}/month billed monthly, excl. 18% GST.${g.note ? ` ${g.note}` : ""}`,
+          g.perUser
+            ? `${crmPrices()}, excl. 18% GST. One CRM license is one user.`
+            : `from ${price(startingPrice(g.id))}/month billed monthly, excl. 18% GST.${g.note ? ` ${g.note}` : ""}`,
         ),
       ),
       link(
@@ -106,21 +114,27 @@ export function llmsTxt(): string {
 const planLines = (g: PricingGroup) =>
   g.plans.map((p) => {
     const year = yearlyTotal(p);
+    // Zutok CRM prices are per user; ZChat prices are per plan.
+    const u = g.perUser ? " per user" : "";
     const cost =
       p.monthly === null || year === null
         ? "Custom price"
-        : `${price(p.monthly)}/month billed monthly, or ${price(year)}/year billed yearly` +
-          (p.yearly ? ` (shown as ${price(p.yearly.perMonth)}/month)` : "");
-    // A ZChat blurb already lists the plan's allowances, which are its whole feature list.
-    const includes = p.limits ? "" : ` Includes: ${p.features.join("; ")}.`;
+        : `${price(p.monthly)}${u}/month billed monthly, or ${price(year)}${u}/year billed yearly ` +
+          `(shown as ${price(p.yearly.perMonth)}${u}/month)`;
+    // A ZChat blurb already lists the plan's allowances, which are its whole feature list. Zutok CRM's list is the same
+    // at every user count, so it's given once for the group (see `sharedLine`).
+    const includes = p.limits || g.sharedFeatures ? "" : ` Includes: ${p.features.join("; ")}.`;
     return `- **${p.name}**: ${cost}. ${p.blurb}${includes}`;
   });
+
+/** "Every price includes: ...": Zutok CRM's module list, the same for every user count. */
+const sharedLine = (g: PricingGroup) => (g.sharedFeatures ? [`Every price includes: ${g.sharedFeatures.join("; ")}.`] : []);
 
 const productSection = (p: Product) =>
   [
     `### ${brandedName(p)}`,
     `URL: ${absoluteUrl(`/products/${p.slug}/`)}`,
-    `${p.kicker}. ${p.summary}`,
+    lead(p),
     "#### Features",
     p.features.map((f) => `- **${f.title}**: ${f.body}`).join("\n"),
     ...(p.slug === "crm"
@@ -130,11 +144,13 @@ const productSection = (p: Product) =>
     p.steps.map((s, i) => `${i + 1}. **${s.title}**: ${s.body}`).join("\n"),
     "#### In numbers",
     p.stats.map((s) => `- ${s.prefix ?? ""}${s.value}${s.suffix ?? ""} ${s.label}`).join("\n"),
-    "#### Plans",
+    // Zutok CRM has per-user prices rather than plans.
+    p.slug === "crm" ? "#### Prices" : "#### Plans",
     isBundled(p.slug)
       ? `${brandedName(p)} isn't sold separately: it's ${ZSHOP_ZLOYA_INCLUDED}, excl. 18% GST. See Zutok ZChat under Pricing below.`
-      : `From ${p.slug === "zchat" ? zchatFrom() : `${price(startingPrice("crm"))}/month billed monthly`}, excl. 18% GST. ` +
-        "Every plan is listed under Pricing below.",
+      : p.slug === "zchat"
+        ? `From ${zchatFrom()}, excl. 18% GST. Every plan is listed under Pricing below.`
+        : `${CRM_PER_USER} ${CRM_PRICES}, excl. 18% GST. Every price is listed under Pricing below.`,
     "#### FAQ",
     faqBlock(p.faqs),
   ].join("\n\n");
@@ -160,10 +176,12 @@ export function llmsFullTxt(): string {
 
     "## Pricing",
     `URL: ${absoluteUrl("/pricing/")}`,
-    `Yearly Zutok CRM billing charges ${YEARLY_MONTHS_CHARGED} months for 12 (two months free); yearly ZChat prices are listed per plan. ` +
-      `${ZSHOP_ZLOYA_NOTE} Prices exclude 18% GST.`,
+    `Zutok CRM is priced per user (one CRM license is one user) and costs ${getGroup("crm").yearlyOff}% less billed yearly; ` +
+      `yearly ZChat prices are listed per plan. ${ZSHOP_ZLOYA_NOTE} Prices exclude 18% GST.`,
     pricing
-      .map((g) => [`### ${groupName(g)}`, ...(g.note ? [g.note] : []), planLines(g).join("\n")].join("\n\n"))
+      .map((g) =>
+        [`### ${groupName(g)}`, ...(g.note ? [g.note] : []), planLines(g).join("\n"), ...sharedLine(g)].join("\n\n"),
+      )
       .join("\n\n"),
     "### Billing questions",
     faqBlock(pricingFaqs),

@@ -9,7 +9,15 @@ import { SplitText } from "@/components/ui/SplitText";
 import { homeFaqs, onboardingSteps, pricingFaqs } from "@/lib/company";
 import { cx } from "@/lib/cx";
 import { industriesHub, industryList, industryPath } from "@/lib/industries";
-import { BUNDLED_PRODUCTS, bundlePlanNames, formatINR, pricing, productPriceNote } from "@/lib/pricing";
+import {
+  BUNDLED_PRODUCTS,
+  bundlePlanNames,
+  crmPriceRange,
+  crmTiers,
+  formatINR,
+  pricing,
+  productPriceNote,
+} from "@/lib/pricing";
 import { products } from "@/lib/products";
 import { site } from "@/lib/site";
 import {
@@ -71,7 +79,8 @@ const facts: { label: string; value: string; href?: string }[] = [
   {
     label: "Prices",
     value:
-      `In Indian Rupees, excluding 18% GST: Zutok CRM from ₹${formatINR(startingPrice("crm"))}/month, ` +
+      // Zutok CRM is priced per user; its ₹999 price is only ever shown with the "5 or more users" condition.
+      `In Indian Rupees, excluding 18% GST: Zutok CRM ${crmPriceRange()}, ` +
       `ZChat from ₹${formatINR(startingPrice("zchat"))}/month`,
   },
   { label: "Email", value: site.email, href: `mailto:${site.email}` },
@@ -149,8 +158,8 @@ export default function AboutPage() {
           <div className="max-w-3xl">
             <h2 className="text-4xl font-extrabold leading-[1] tracking-tight text-ink sm:text-5xl">What does Zutok Softwares make?</h2>
             <p className="mt-5 text-lg font-medium leading-relaxed text-ink/70">
-              One CRM and three products that plug into it. Zutok CRM and ZChat are sold as plans, every ZChat plan includes
-              CRM licenses, and ZShop and Zloya come free with ZChat {bundlePlanNames()}.
+              One CRM and three products that plug into it. Zutok CRM is priced per user, ZChat is sold as plans that each
+              include CRM licenses, and ZShop and Zloya come free with ZChat {bundlePlanNames()}.
             </p>
           </div>
           <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2">
@@ -254,8 +263,11 @@ export default function AboutPage() {
                     <span className="size-3 shrink-0 rounded-full ring-1 ring-ink/20" style={{ background: g.stripe }} />
                     {groupName(g)}
                   </span>
+                  {/* Zutok CRM: the 1-user price, never an unconditioned "from ₹999". */}
                   <span className="whitespace-nowrap text-sm font-bold text-ink/80">
-                    from ₹{formatINR(startingPrice(g.id))}/month
+                    {g.perUser
+                      ? `₹${formatINR(crmTiers()[0].monthly)} per user/month`
+                      : `from ₹${formatINR(startingPrice(g.id))}/month`}
                   </span>
                 </li>
               ))}

@@ -4,19 +4,22 @@ import { groupName } from "@/lib/seo";
 
 /**
  * Every plan's monthly and yearly price as a plain table. The tabbed PricingTable only renders one group at a time,
- * so this is what puts all of them in the page's HTML, matching the OfferCatalog JSON-LD on /pricing/.
+ * so this is what puts all of them in the page's HTML, matching the OfferCatalog JSON-LD on /pricing/. Zutok CRM's
+ * rows are its per-user prices for 1 user, 3 users and 5 or more users, with the CRM note in the group header.
  * With `linkProducts`, each group heading links to its product page, and the ZChat group's last row links to ZShop
  * and Zloya, which come free with ZChat Growth and Scale.
  */
 export function PlanPriceTable({ ids, linkProducts = false }: { ids?: PricingGroupId[]; linkProducts?: boolean }) {
   const groups = ids ? pricing.filter((g) => ids.includes(g.id)) : pricing;
+  // ZChat rows are plans; Zutok CRM rows are user counts ("1 user", "3 users", "5 or more users").
+  const rowHeading = groups.every((g) => g.perUser) ? "Users" : groups.some((g) => g.perUser) ? "Plan or users" : "Plan";
   return (
     <div className="overflow-x-auto rounded-[2rem] border-[2.5px] border-ink bg-white shadow-[6px_6px_0_#0b0b0b]">
       <table className="w-full min-w-[640px] text-left">
         <thead>
           <tr className="bg-ink text-sm text-white">
             <th scope="col" className="p-5 font-bold">
-              Plan
+              {rowHeading}
             </th>
             <th scope="col" className="p-5 font-bold">
               What it covers
@@ -38,8 +41,10 @@ export function PlanPriceTable({ ids, linkProducts = false }: { ids?: PricingGro
                     <span className="size-2.5 shrink-0 rounded-full ring-1 ring-ink/20" style={{ background: g.stripe }} />
                     {linkProducts ? (
                       <Link href={`/products/${g.id}/`} className="underline decoration-2 underline-offset-4 hover:decoration-[3px]">
-                        {groupName(g)} plans
+                        {g.perUser ? `${groupName(g)} prices per user` : `${groupName(g)} plans`}
                       </Link>
+                    ) : g.perUser ? (
+                      `${groupName(g)} prices per user`
                     ) : (
                       groupName(g)
                     )}
@@ -73,7 +78,7 @@ export function PlanPriceTable({ ids, linkProducts = false }: { ids?: PricingGro
                     ) : (
                       <>
                         <span className="text-lg font-extrabold text-ink">₹{formatINR(p.monthly)}</span>
-                        <span className="text-xs font-semibold text-ink/55">/month</span>
+                        <span className="text-xs font-semibold text-ink/55">{g.perUser ? "/user/month" : "/month"}</span>
                       </>
                     )}
                   </td>
@@ -83,9 +88,11 @@ export function PlanPriceTable({ ids, linkProducts = false }: { ids?: PricingGro
                     ) : (
                       <>
                         <span className="text-lg font-extrabold text-ink">₹{formatINR(year)}</span>
-                        <span className="text-xs font-semibold text-ink/55">/year</span>
-                        <span className="block text-xs font-medium text-ink/55">
-                          ₹{formatINR(priceFor(p, true) ?? 0)}/month billed yearly
+                        <span className="text-xs font-semibold text-ink/55">{g.perUser ? "/user/year" : "/year"}</span>
+                        <span className="block whitespace-normal text-xs font-medium text-ink/55">
+                          ₹{formatINR(priceFor(p, true) ?? 0)}
+                          {g.perUser ? " per user" : ""}/month billed yearly
+                          {g.yearlyOff ? ` (${g.yearlyOff}% off)` : ""}
                         </span>
                       </>
                     )}

@@ -19,7 +19,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { SplitText } from "@/components/ui/SplitText";
 import { industriesHub, industryList, industryPath } from "@/lib/industries";
 import { productList, products, type Product, type ProductSlug } from "@/lib/products";
-import { isBundled, ZSHOP_ZLOYA_INCLUDED } from "@/lib/pricing";
+import { crmTiers, isBundled, listJoin, ZSHOP_ZLOYA_INCLUDED } from "@/lib/pricing";
 import { solutionBySlug, solutionPath, solutionsFor } from "@/lib/solutions";
 import { productExtraSolutions } from "@/lib/crosslinks";
 import { cx } from "@/lib/cx";
@@ -56,7 +56,10 @@ export async function generateMetadata(props: PageProps<"/products/[slug]">): Pr
   });
 }
 
-/** The line under the pricing heading. ZShop and Zloya have no plans of their own, so their pages explain the bundle. */
+/**
+ * The line under the pricing heading. ZShop and Zloya have no plans of their own, so their pages explain the bundle;
+ * Zutok CRM is priced per user (owner, 2026-10-09).
+ */
 function PricingNote({ p }: { p: Product }) {
   if (isBundled(p.slug)) {
     return (
@@ -69,7 +72,8 @@ function PricingNote({ p }: { p: Product }) {
     );
   }
   if (p.slug === "zchat") return <>Pick a plan by how many contacts and channels you need. Every plan includes CRM licenses.</>;
-  return <>Flat plan prices, not per user. Billed monthly, or yearly with two months free.</>;
+  // The per-user and yearly-discount note sits above the cards (PricingTable), so this line doesn't repeat it.
+  return <>Prices per user for {listJoin(crmTiers().map((t) => t.name))}, each with every Zutok CRM module.</>;
 }
 
 function Signature({ slug }: { slug: ProductSlug }) {

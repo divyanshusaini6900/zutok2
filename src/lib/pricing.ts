@@ -12,13 +12,18 @@ export type Plan = {
   name: string;
   monthly: number | null;
   /**
-   * The owner's yearly price: the total billed for 12 months and the per-month figure shown for it. Both are stored as
-   * given and neither is computed from the other (₹1,599 × 12 is ₹19,188, not ₹19,200). Plans without it (Zutok CRM)
-   * charge YEARLY_MONTHS_CHARGED months for 12.
+   * The owner's yearly price: the total billed for 12 months and the per-month figure shown for it, both stored as
+   * given and neither computed from the other (₹1,599 × 12 is ₹19,188, not ₹19,200; Zutok CRM ₹1,039 × 12 = ₹12,468).
+   * Zutok CRM figures are per user.
    */
-  yearly?: { total: number; perMonth: number };
+  yearly: { total: number; perMonth: number };
   /** ZChat only: contacts, channels and CRM licenses. */
   limits?: PlanLimits;
+  /**
+   * Zutok CRM only: the number of users a per-user price applies to, as the owner stated it: exactly `min` users, or
+   * `min` or more with `orMore`. No other user counts are priced (nothing is published for 2 or 4 users).
+   */
+  users?: { min: number; orMore?: boolean };
   /** Zutok ZShop and Zutok Zloya come free with this plan. Neither is sold separately. */
   includesZShopAndZloya?: boolean;
   blurb: string;
@@ -42,11 +47,17 @@ export type PricingGroup = {
   pop: string;
   stripe: string;
   note?: string;
+  /** Every price is per user (one license = one user). Zutok CRM only. */
+  perUser?: boolean;
+  /** Owner-stated yearly discount, shown as a badge ("20% off"). Zutok CRM only; the yearly figures themselves are stored as given. */
+  yearlyOff?: number;
+  /**
+   * Zutok CRM only: what every price includes, the same at every user count, so it is shown once for the group rather
+   * than as a list on each price card. Each CRM plan's `features` is this same list.
+   */
+  sharedFeatures?: string[];
   plans: Plan[];
 };
-
-/** Zutok CRM only: a yearly CRM plan charges 10 months for 12. ZChat's yearly prices are the explicit `plan.yearly` values. */
-export const YEARLY_MONTHS_CHARGED = 10;
 
 /** Products that aren't sold on their own: they come free with the ZChat plans flagged `includesZShopAndZloya`. */
 export const BUNDLED_PRODUCTS = ["zshop", "zloya"] as const satisfies readonly ProductSlug[];
@@ -92,7 +103,28 @@ function zchatPlan(p: Omit<Plan, "blurb" | "features" | "limits"> & { limits: Pl
   };
 }
 
-/** Plans as the owner set them on 2026-10-09: ZChat first, then Zutok CRM. The order drives the tabs and every table. */
+/**
+ * What Zutok CRM includes, the same for every user count: nothing is gated by the number of users. Every module is part
+ * of Zutok CRM, priced per user.
+ */
+export const CRM_FEATURES = [
+  "Leads, pipeline, Meta Lead Ads & IndiaMART",
+  "Proposals, estimates & GST invoices",
+  "Projects, tasks & timesheets",
+  "HRM, attendance & leave",
+  "Inventory & warehouse",
+  "Real Estate suite",
+  "Subscriptions, expenses & support tickets",
+  "Automation, reports & custom fields",
+];
+
+/** The owner's stated yearly discount on Zutok CRM (2026-10-09). The yearly figures are stored as given, not computed. */
+const CRM_YEARLY_OFF = 20;
+
+/**
+ * Prices as the owner set them on 2026-10-09: ZChat plans first, then Zutok CRM's per-user prices (1 user, 3 users,
+ * 5 or more users). The order drives the tabs and every table.
+ */
 export const pricing: PricingGroup[] = [
   {
     id: "zchat",
@@ -135,45 +167,35 @@ export const pricing: PricingGroup[] = [
     color2: "#2e2e2e",
     pop: "#6c2bd9",
     stripe: "#6c2bd9",
+    note: `Zutok CRM is priced per user: one CRM license is one user. Billed yearly, it costs ${CRM_YEARLY_OFF}% less.`,
+    perUser: true,
+    yearlyOff: CRM_YEARLY_OFF,
+    sharedFeatures: CRM_FEATURES,
+    // Owner's per-user prices (2026-10-09), stored exactly as given. No tier is marked popular: there is no data for it.
     plans: [
       {
-        name: "Starter",
-        monthly: 799,
-        blurb: "Leads, sales and projects for small teams.",
-        features: [
-          "Up to 3 users",
-          "Leads, customers & pipeline",
-          "Proposals, estimates & GST invoices",
-          "Projects, tasks & tickets",
-          "Meta Lead Ads & IndiaMART leads",
-        ],
-      },
-      {
-        name: "Growth",
+        name: "1 user",
+        users: { min: 1 },
         monthly: 1299,
-        popular: true,
-        blurb: "Run sales, people and stock from one place.",
-        features: [
-          "Up to 10 users",
-          "Everything in Starter",
-          "HRM, payroll, attendance & leave",
-          "Inventory & warehouse",
-          "Contracts, expenses, subscriptions",
-          "Automation & reports",
-        ],
+        yearly: { total: 12468, perMonth: 1039 },
+        blurb: "For one user, with every Zutok CRM module.",
+        features: CRM_FEATURES,
       },
       {
-        name: "Enterprise",
-        monthly: 1999,
-        blurb: "For large teams, agencies and multi-branch businesses.",
-        features: [
-          "Unlimited users",
-          "Everything in Growth",
-          "Real Estate suite",
-          "Custom fields for every module",
-          "Dedicated account manager",
-          "Priority support",
-        ],
+        name: "3 users",
+        users: { min: 3 },
+        monthly: 1199,
+        yearly: { total: 11508, perMonth: 959 },
+        blurb: "Per user, for 3 users, with every Zutok CRM module.",
+        features: CRM_FEATURES,
+      },
+      {
+        name: "5 or more users",
+        users: { min: 5, orMore: true },
+        monthly: 999,
+        yearly: { total: 9588, perMonth: 799 },
+        blurb: "Per user, for 5 or more users, with every Zutok CRM module.",
+        features: CRM_FEATURES,
       },
     ],
   },
@@ -201,7 +223,10 @@ export function getPlan(group: PricingGroupId, name: string): PricedPlan {
   return plan;
 }
 
-/** The cheapest priced plan in a group (ZChat Starter, CRM Starter). */
+/**
+ * The cheapest priced plan in a group: ZChat Starter, or Zutok CRM "5 or more users" (₹999 per user). Never quote the
+ * CRM one as "from ₹999" without its 5-or-more condition: use `crmLowest` or `crmPriceRange`.
+ */
 export const cheapestPlan = (group: PricingGroupId) =>
   pricedPlans(getGroup(group)).reduce((a, b) => (b.monthly < a.monthly ? b : a));
 
@@ -212,30 +237,83 @@ export const bundlePlans = () => pricedPlans(getGroup("zchat")).filter((p) => p.
 /* Prices                                                             */
 /* ------------------------------------------------------------------ */
 
-/** What one year costs: ZChat's stated yearly total, or the CRM's monthly price × YEARLY_MONTHS_CHARGED. */
+/** What one year costs: the owner's stated yearly total (per user for Zutok CRM). */
 export function yearlyTotal(plan: Plan) {
   if (plan.monthly === null) return null;
-  return plan.yearly?.total ?? plan.monthly * YEARLY_MONTHS_CHARGED;
+  return plan.yearly.total;
 }
 
-/** The per-month figure shown for a plan: the monthly price, or when billed yearly ZChat's stated figure / the CRM's yearly ÷ 12. */
+/** The per-month figure shown for a plan: the monthly price, or the stated per-month figure when billed yearly (per user for Zutok CRM). */
 export function priceFor(plan: Plan, yearly: boolean) {
   if (plan.monthly === null) return null;
-  if (!yearly) return plan.monthly;
-  return plan.yearly?.perMonth ?? Math.round((plan.monthly * YEARLY_MONTHS_CHARGED) / 12);
+  return yearly ? plan.yearly.perMonth : plan.monthly;
 }
 
-/** "₹2,000/month, or ₹1,599/month billed yearly" (CRM: "₹799/month, or ₹666/month billed yearly"). */
+/** " per user" for Zutok CRM, "" for ZChat: goes straight after a price ("₹1,299 per user/month"). */
+const perUserSuffix = (group: PricingGroupId) => (getGroup(group).perUser ? " per user" : "");
+
+/** "₹2,000/month, or ₹1,599/month billed yearly"; Zutok CRM: "₹1,299 per user/month, or ₹1,039 per user/month billed yearly". */
 export function priceBothWays(group: PricingGroupId, name: string) {
   const p = getPlan(group, name);
-  return `${inr(p.monthly)}/month, or ${inr(priceFor(p, true) ?? p.monthly)}/month billed yearly`;
+  const u = perUserSuffix(group);
+  return `${inr(p.monthly)}${u}/month, or ${inr(priceFor(p, true) ?? p.monthly)}${u}/month billed yearly`;
 }
 
 /** "₹2,000/month, or ₹1,599/month billed yearly": where ZChat plans start. */
 export const zchatFrom = () => priceBothWays("zchat", cheapestPlan("zchat").name);
 
-/** "₹799/month": where Zutok CRM plans start, billed monthly. */
-export const crmFrom = () => `${inr(cheapestPlan("crm").monthly)}/month`;
+/* ------------------------------------------------------------------ */
+/* Zutok CRM: priced per user (owner, 2026-10-09)                      */
+/* One CRM license is one user. Prices exist only for 1 user, 3 users  */
+/* and 5 or more users: never state a price for 2 or 4 users.          */
+/* ------------------------------------------------------------------ */
+
+/** Zutok CRM's per-user prices, in order: "1 user", "3 users", "5 or more users". */
+export const crmTiers = () => pricedPlans(getGroup("crm"));
+
+/** "Zutok CRM is priced per user: one CRM license is one user." */
+export const CRM_PER_USER = "Zutok CRM is priced per user: one CRM license is one user.";
+
+/** "₹1,299 per user per month": Zutok CRM for 1 user, billed monthly. The default short form. */
+export const crmFrom = () => `${inr(crmTiers()[0].monthly)} per user per month`;
+
+/** "₹999 per user with 5 or more users": the lowest per-user price, always with its condition attached. */
+export const crmLowest = () => {
+  const p = cheapestPlan("crm");
+  return `${inr(p.monthly)} per user with ${p.name}`;
+};
+
+/** "₹1,299 per user per month (₹999 per user with 5 or more users)" */
+export const crmPriceRange = () => `${crmFrom()} (${crmLowest()})`;
+
+/**
+ * "₹1,299 per user per month, ₹1,199 per user with 3 users and ₹999 per user with 5 or more users; billed yearly
+ * it's 20% less (₹1,039, ₹959 and ₹799 per user per month)". Lower case, to finish a sentence; excludes GST.
+ */
+export const crmPrices = () => {
+  const [first, ...rest] = crmTiers();
+  return (
+    `${inr(first.monthly)} per user per month, ${listJoin(rest.map((p) => `${inr(p.monthly)} per user with ${p.name}`))}; ` +
+    `billed yearly it's ${getGroup("crm").yearlyOff}% less (${listJoin(crmTiers().map((p) => inr(p.yearly.perMonth)))} per user per month)`
+  );
+};
+
+/** "Zutok CRM costs ₹1,299 per user per month, ₹1,199 per user with 3 users and ... (₹1,039, ₹959 and ₹799 per user per month)". No full stop. */
+export const CRM_PRICES = `Zutok CRM costs ${crmPrices()}`;
+
+/**
+ * "₹1,039 per user per month (₹12,468 a year) for 1 user, ₹959 per user per month (₹11,508 a year) with 3 users and
+ * ₹799 per user per month (₹9,588 a year) with 5 or more users": Zutok CRM billed yearly.
+ */
+export const crmYearlyPrices = () =>
+  listJoin(
+    crmTiers().map(
+      (p, i) => `${inr(p.yearly.perMonth)} per user per month (${inr(p.yearly.total)} a year) ${i === 0 ? "for" : "with"} ${p.name}`,
+    ),
+  );
+
+/** "₹12,468, ₹11,508 and ₹9,588 per user per year" */
+export const CRM_YEARLY_TOTALS = `${listJoin(crmTiers().map((p) => inr(p.yearly.total)))} per user per year`;
 
 /** "Growth and Scale" */
 export const bundlePlanNames = () => listJoin(bundlePlans().map((p) => p.name));
@@ -263,11 +341,13 @@ export const ZSHOP_ZLOYA_NOTE = `ZShop and Zloya are included free with ZChat ${
 
 /**
  * One line on how a product is priced, for cards, sidebars and llms.txt:
- * "Plans from ₹2,000/month billed monthly, excl. 18% GST." for ZChat (₹799 for "crm"), and
+ * "Plans from ₹2,000/month billed monthly, excl. 18% GST." for ZChat,
+ * "₹1,299 per user per month billed monthly (₹999 per user with 5 or more users), excl. 18% GST." for Zutok CRM, and
  * "Included free with ZChat Growth (₹5,000/month) and Scale (₹10,000/month), excl. 18% GST." for ZShop and Zloya.
  */
 export function productPriceNote(slug: ProductSlug) {
   if (isBundled(slug)) return `${capitalise(ZSHOP_ZLOYA_INCLUDED_MONTHLY)}, excl. 18% GST.`;
+  if (planGroup(slug) === "crm") return `${capitalise(crmFrom())} billed monthly (${crmLowest()}), excl. 18% GST.`;
   return `Plans from ${inr(cheapestPlan(planGroup(slug)).monthly)}/month billed monthly, excl. 18% GST.`;
 }
 

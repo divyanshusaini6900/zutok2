@@ -1,4 +1,4 @@
-import { perMonth, priceLine, pricedPlan, type SolutionEntry } from "@/lib/solution-kit";
+import { CRM_PRICES, crmFrom, perMonth, priceLine, pricedPlan, type SolutionEntry } from "@/lib/solution-kit";
 
 /** "1, 2 or 4": one ZChat allowance across Starter, Growth and Scale, read from pricing.ts. */
 const zchatEach = (key: "channels" | "crmLicenses") => {
@@ -13,9 +13,10 @@ const zchatEach = (key: "channels" | "crmLicenses") => {
  * answers chats is /solutions/omnichannel-team-inbox/, and IndiaMART / Meta Lead Ads capture is
  * /solutions/indiamart-meta-lead-ads-crm/; both are linked rather than repeated.
  * Plan split, because the sources don't say a ZChat-only account gets the full pipeline: chat-to-lead sync is ZChat;
- * pipeline, tasks, proposals and GST invoices are Zutok CRM (from CRM Starter). Every ZChat plan includes 1, 2 or 4
- * "CRM licenses" (owner's pricing, 2026-10-09), but what a license includes is unconfirmed, so the page never says it
- * covers the pipeline or invoices, and never ties a channel or feature to a ZChat plan.
+ * pipeline, tasks, proposals and GST invoices are Zutok CRM (priced per user). Every ZChat plan includes 1, 2 or 4
+ * "CRM licenses" (owner's pricing, 2026-10-09), but what a license includes, and whether it is the same as a paid
+ * Zutok CRM user license, is unconfirmed, so the page never says it covers the pipeline or invoices, keeps the two
+ * apart, and never ties a channel or feature to a ZChat plan.
  * Not in the sources, so never claimed: lead scoring, lead auto-assignment, click-to-chat from a lead, call logging,
  * email sync, Zapier-style integrations, phone-number matching for chat leads (that is a ZShop buyer feature), a free trial.
  */
@@ -38,7 +39,7 @@ export const page: SolutionEntry = {
   ],
   h1: "The WhatsApp CRM where every chat becomes a lead",
   h1Accent: "where every chat becomes a lead",
-  answer: `A WhatsApp CRM keeps each chat as a sales lead your team can follow up. With Zutok, every new WhatsApp or Instagram chat in ZChat creates a lead in Zutok CRM, tagged with its source. Chat-to-lead sync is part of Zutok ZChat, from ${perMonth("zchat", "Starter")}; the pipeline, proposals and GST invoices are Zutok CRM features, from CRM Starter at ${perMonth("crm", "Starter")}, excl. GST.`,
+  answer: `A WhatsApp CRM keeps each chat as a sales lead your team can follow up. With Zutok, every new WhatsApp or Instagram chat in ZChat creates a lead in Zutok CRM, tagged with its source. Chat-to-lead sync is part of Zutok ZChat, from ${perMonth("zchat", "Starter")}; the pipeline, proposals and GST invoices are Zutok CRM features, at ${crmFrom()}, excl. GST.`,
   summary:
     "How Zutok turns every WhatsApp, Instagram, Messenger and Telegram chat into a CRM lead with its source, then follows it from Enquiry to Customer and invoice.",
   facts: [
@@ -67,14 +68,14 @@ export const page: SolutionEntry = {
       heading: "Can WhatsApp leads sit in the same pipeline as IndiaMART and Meta Lead Ads leads?",
       lead: "Yes. Chat leads land on the same board as IndiaMART enquiries, Facebook and Instagram lead forms (Meta Lead Ads), estimate requests from your website and the leads you import from Excel, CSV or an old CRM.",
       body: [
-        "That keeps WhatsApp lead management on one board: a buyer who fills in a lead form and a buyer who messages you are followed up the same way, and each keeps its source. The [IndiaMART and Meta Lead Ads](/solutions/indiamart-meta-lead-ads-crm/) page explains how those two sources sync in. Both are in every CRM plan from CRM Starter, and from CRM Growth, lead reports show how the pipeline is moving.",
+        "That keeps WhatsApp lead management on one board: a buyer who fills in a lead form and a buyer who messages you are followed up the same way, and each keeps its source. The [IndiaMART and Meta Lead Ads](/solutions/indiamart-meta-lead-ads-crm/) page explains how those two sources sync in. Both are part of Zutok CRM, and lead reports show how the pipeline is moving.",
       ],
     },
     {
       heading: "Can I send a quote or a GST invoice to a lead that came from WhatsApp?",
       lead: "Yes, in Zutok CRM. Send a proposal or estimate in rupees with tax fields, turn it into a GST invoice with tax rates like CGST and SGST once the customer accepts, and record the payment against it.",
       body: [
-        "When the lead becomes a customer, everything sits on one customer profile: contacts, invoices, projects and support tickets, with the full history. Proposals, estimates and GST invoices are in every CRM plan from CRM Starter, and invoices export in bulk as PDF for your accountant.",
+        "When the lead becomes a customer, everything sits on one customer profile: contacts, invoices, projects and support tickets, with the full history. Proposals, estimates and GST invoices are part of Zutok CRM, and invoices export in bulk as PDF for your accountant.",
       ],
     },
     {
@@ -116,7 +117,7 @@ export const page: SolutionEntry = {
   },
   plan: {
     heading: "How much does a WhatsApp CRM cost in India with Zutok?",
-    lead: `Chats become CRM leads with Zutok ZChat, from ${priceLine("zchat", "Starter")}, and every ZChat plan includes CRM licenses: ${zchatEach("crmLicenses")} by plan. The pipeline, tasks, proposals and GST invoices are Zutok CRM features, from CRM Starter at ${perMonth("crm", "Starter")} for up to 3 users. Meta's WhatsApp charges are billed separately.`,
+    lead: `Chats become CRM leads with Zutok ZChat, from ${priceLine("zchat", "Starter")}, and every ZChat plan includes CRM licenses: ${zchatEach("crmLicenses")} by plan. The pipeline, tasks, proposals and GST invoices are Zutok CRM features, priced per user. ${CRM_PRICES}, excl. 18% GST. Meta's WhatsApp charges are billed separately.`,
   },
   faqs: [
     {
@@ -137,7 +138,7 @@ export const page: SolutionEntry = {
     },
     {
       q: "Can the CRM remind me to follow up with a lead?",
-      a: `Yes, in Zutok CRM. Every lead carries its own tasks and reminders from Enquiry through Follow-up and Hot to Customer, so a promised call-back doesn't depend on someone remembering it. The pipeline and reminders are Zutok CRM features, from CRM Starter at ${perMonth("crm", "Starter")}.`,
+      a: `Yes, in Zutok CRM. Every lead carries its own tasks and reminders from Enquiry through Follow-up and Hot to Customer, so a promised call-back doesn't depend on someone remembering it. The pipeline and reminders are Zutok CRM features, at ${crmFrom()}.`,
     },
     {
       q: "Do I need the WhatsApp Business API for a WhatsApp CRM?",

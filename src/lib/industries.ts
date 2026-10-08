@@ -2,12 +2,17 @@ import type { IconName } from "@/components/ui/Icon";
 import type { ProductSlug } from "@/lib/products";
 import {
   bundlePlanNames,
+  cheapestPlan,
+  CRM_PRICES,
+  crmFrom,
+  crmLowest,
+  crmPrices,
+  crmTiers,
   describeLimits,
   formatINR,
   getGroup,
   getPlan,
   limitParts,
-  YEARLY_MONTHS_CHARGED,
   ZSHOP_ZLOYA_INCLUDED,
   type PricedPlan,
   type PricingGroup,
@@ -32,7 +37,10 @@ type GroupId = PricingGroupId;
 
 export type IndustryPlanPick = {
   group: GroupId;
-  /** Plan name exactly as in src/lib/pricing.ts. */
+  /**
+   * Plan name exactly as in src/lib/pricing.ts: a ZChat plan ("Growth"), or one of Zutok CRM's per-user prices
+   * ("1 user", "3 users", "5 or more users").
+   */
   plan: string;
   /** Why this plan fits the industry, from the plan's own feature list. */
   fit: string;
@@ -80,14 +88,18 @@ export function findPlan(group: GroupId, name: string): { group: PricingGroup; p
   return { group: getGroup(group), plan: getPlan(group, name) };
 }
 
-/** "Zutok ZChat Growth", "Zutok CRM Enterprise". */
+/** "Zutok ZChat Growth"; for Zutok CRM, which is priced per user, "Zutok CRM, 3 users". */
 export function planLabel(group: GroupId, name: string): string {
   const g = findPlan(group, name).group;
-  return `${g.label.startsWith("Zutok") ? g.label : `Zutok ${g.label}`} ${name}`;
+  const label = g.label.startsWith("Zutok") ? g.label : `Zutok ${g.label}`;
+  return g.perUser ? `${label}, ${name}` : `${label} ${name}`;
 }
 
-/** Monthly price, billed monthly, excluding GST: "₹2,000". */
-const inr = (group: GroupId, name: string) => `₹${formatINR(findPlan(group, name).plan.monthly)}`;
+/**
+ * A ZChat plan's monthly price, billed monthly, excluding GST: "₹2,000". ZChat only: Zutok CRM is priced per user, so
+ * its copy uses the per-user helpers from src/lib/pricing.ts (crmFrom, crmLowest, crmPrices, CRM_PRICES).
+ */
+const inr = (group: "zchat", name: string) => `₹${formatINR(findPlan(group, name).plan.monthly)}`;
 
 const capitalise = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -107,6 +119,17 @@ function zchatPick(name: string, lead?: "zshop" | "zloya"): IndustryPlanPick {
     : `${capitalise(limits)}, ZShop and Zloya included free`;
   return { group: "zchat", plan: name, fit };
 }
+
+/**
+ * One row per Zutok CRM per-user price ("1 user", "3 users", "5 or more users"), all with the same `fit`: Zutok CRM is
+ * priced per user and no module depends on the number of users, so what each row covers is the same.
+ */
+function crmPicks(fit: string): IndustryPlanPick[] {
+  return crmTiers().map((p) => ({ group: "crm", plan: p.name, fit }));
+}
+
+/** Zutok CRM's lowest per-user price ("5 or more users"), for large teams. Always quoted with its user count. */
+const largeTeam = cheapestPlan("crm");
 
 /* ------------------------------------------------------------------ */
 /* Pages                                                              */
@@ -518,7 +541,7 @@ const realEstate: Industry = {
   h1: ["Real estate CRM for Indian", "brokers and property managers"],
   answer:
     "Zutok CRM is a real estate CRM for Indian brokers, agents and property managers. Its Real Estate suite keeps properties, owners, agents, brokers, buy and rent requests and tenants in one place, while leads from Meta Lead Ads and Zutok ZChat's WhatsApp inbox enter one pipeline. " +
-    `The suite is part of CRM Enterprise at ${inr("crm", "Enterprise")}/month billed monthly, excluding 18% GST.`,
+    `The suite is part of Zutok CRM, at ${crmFrom()} billed monthly, excluding 18% GST.`,
   uses: ["crm", "zchat"],
   relatedProduct: "crm",
   problem: {
@@ -611,7 +634,7 @@ const realEstate: Industry = {
       {
         icon: "layers",
         title: "Custom fields",
-        body: "CRM Enterprise adds custom fields to every module, so you can record the details your listings need.",
+        body: "Zutok CRM has custom fields for every module, so you can record the details your listings need.",
         product: "crm",
       },
       {
@@ -649,13 +672,9 @@ const realEstate: Industry = {
   plans: {
     heading: "How much does Zutok cost for a real estate business?",
     answer:
-      `The Real Estate suite is in Zutok CRM Enterprise at ${inr("crm", "Enterprise")}/month billed monthly, excluding 18% GST. Enterprise also gives unlimited users, custom fields for every module, a dedicated account manager and priority support. ` +
+      `The Real Estate suite is part of Zutok CRM, which is priced per user: ${crmPrices()}, excluding 18% GST. ` +
       `For WhatsApp and Instagram enquiries, add a ZChat plan sized by the contacts and channels you need: Starter (${inr("zchat", "Starter")}/month) includes ${describeLimits("zchat", "Starter")}, and Growth (${inr("zchat", "Growth")}/month) ${describeLimits("zchat", "Growth")}.`,
-    picks: [
-      { group: "crm", plan: "Enterprise", fit: "Real Estate suite, unlimited users, custom fields for every module" },
-      zchatPick("Starter"),
-      zchatPick("Growth"),
-    ],
+    picks: [...crmPicks("Real Estate suite and every other Zutok CRM module"), zchatPick("Starter"), zchatPick("Growth")],
   },
   faqHeading: "Real estate CRM questions",
   faqs: [
@@ -669,7 +688,7 @@ const realEstate: Industry = {
     },
     {
       q: "How do brokers track what buyers and renters are looking for?",
-      a: "Save each requirement as a buy or rent request in the Real Estate suite, next to the properties, owners and brokers you work with. CRM Enterprise also lets you add custom fields for the details your requests need.",
+      a: "Save each requirement as a buy or rent request in the Real Estate suite, next to the properties, owners and brokers you work with. Zutok CRM also lets you add custom fields for the details your requests need.",
     },
     {
       q: "Can Zutok remind me before a rental agreement is due for renewal?",
@@ -689,7 +708,7 @@ const realEstate: Industry = {
     },
     {
       q: "How much does a real estate CRM cost with Zutok?",
-      a: `The Real Estate suite is in Zutok CRM Enterprise, at ${inr("crm", "Enterprise")}/month billed monthly as a flat price with unlimited users, excluding 18% GST. Yearly CRM billing charges ${YEARLY_MONTHS_CHARGED} months for 12. ZChat is optional for WhatsApp and Instagram enquiries, and Meta's WhatsApp charges are billed separately.`,
+      a: `The Real Estate suite is part of Zutok CRM, priced per user (one CRM license is one user). ${CRM_PRICES}, excluding 18% GST. ZChat is optional for WhatsApp and Instagram enquiries, and Meta's WhatsApp charges are billed separately.`,
     },
   ],
   related: ["agencies-services", "retail-franchises", "clinics-labs-salons"],
@@ -716,7 +735,7 @@ const agencies: Industry = {
   h1: ["CRM for agencies and", "service businesses in India"],
   answer:
     "Zutok CRM is a CRM for Indian agencies, consultancies and service firms that runs the whole client cycle: leads, proposals, projects with tasks and timesheets, GST invoices and payments, then support tickets. Zutok ZChat adds a shared WhatsApp and Instagram inbox for client conversations. " +
-    `Zutok CRM starts at ${inr("crm", "Starter")}/month billed monthly for up to three users, excluding 18% GST.`,
+    `Zutok CRM costs ${crmFrom()} billed monthly (${crmLowest()}), excluding 18% GST.`,
   uses: ["crm", "zchat"],
   relatedProduct: "crm",
   problem: {
@@ -844,15 +863,12 @@ const agencies: Industry = {
     ],
   },
   plans: {
-    heading: "Which Zutok plan fits an agency's team size?",
+    heading: "What does Zutok cost for an agency's team?",
     answer:
-      `Teams of up to three can start on Zutok CRM Starter at ${inr("crm", "Starter")}/month, which already includes proposals, estimates, GST invoices, projects, tasks and tickets. ` +
-      `CRM Growth (${inr("crm", "Growth")}/month) raises the limit to 10 users and adds contracts, expenses, subscriptions, HRM and reports. ` +
-      `CRM Enterprise (${inr("crm", "Enterprise")}/month) is made for large teams and agencies, with unlimited users and custom fields.`,
+      `Zutok CRM is priced per user, so the cost follows your team size: ${crmPrices()}, excluding 18% GST. ` +
+      "No module depends on the number of users: proposals, estimates, GST invoices, projects and timesheets, contracts, expenses, subscriptions, HRM and reports are all part of Zutok CRM.",
     picks: [
-      { group: "crm", plan: "Starter", fit: "Up to 3 users: leads, proposals, GST invoices, projects, tasks and tickets" },
-      { group: "crm", plan: "Growth", fit: "Up to 10 users: contracts, expenses, subscriptions, HRM, automation and reports" },
-      { group: "crm", plan: "Enterprise", fit: "Unlimited users, custom fields for every module, dedicated account manager" },
+      ...crmPicks("Proposals, GST invoices, projects, timesheets, HRM and reports"),
       zchatPick("Starter"),
       zchatPick("Growth"),
     ],
@@ -869,7 +885,7 @@ const agencies: Industry = {
     },
     {
       q: "Can I track project timesheets for each client?",
-      a: "Yes. Projects hold milestones, tasks, timesheets and meeting notes, and each project is linked to the customer it belongs to. Reports, including timesheet reports, come with CRM Growth and above.",
+      a: "Yes. Projects hold milestones, tasks, timesheets and meeting notes, and each project is linked to the customer it belongs to. Reports, including timesheet reports, are part of Zutok CRM too.",
     },
     {
       q: "Is a CRM project module different from a separate project tool?",
@@ -877,19 +893,19 @@ const agencies: Industry = {
     },
     {
       q: "Are project timesheets the same as staff attendance?",
-      a: "No. Project timesheets log hours against client projects, and timesheet reports show where the time went. Attendance and leave are separate HR modules that come with CRM Growth.",
+      a: "No. Project timesheets log hours against client projects, and timesheet reports show where the time went. Attendance and leave are separate HR modules in Zutok CRM.",
     },
     {
       q: "What happens after a project launches?",
-      a: "Follow-up requests come in as support tickets on the client's profile, and the client's contract reminds you before it's due for renewal. Contracts come with CRM Growth.",
+      a: "Follow-up requests come in as support tickets on the client's profile, and the client's contract reminds you before it's due for renewal.",
     },
     {
       q: "Can each client's WhatsApp chats sit next to their projects and invoices?",
       a: "They live in the same Zutok account. ZChat keeps client chats in a shared inbox and creates a CRM lead for every new chat, with its source. The client's invoices, projects and tickets sit on their customer profile in Zutok CRM.",
     },
     {
-      q: "Which plan suits an agency with a large team?",
-      a: `Zutok CRM Enterprise, at ${inr("crm", "Enterprise")}/month billed monthly, excluding GST. It has unlimited users, custom fields for every module, a dedicated account manager and priority support. Each staff member gets a role with its own permissions.`,
+      q: "What does Zutok CRM cost for a large agency team?",
+      a: `With ${largeTeam.name}, Zutok CRM costs ₹${formatINR(largeTeam.monthly)} per user per month billed monthly, or ₹${formatINR(largeTeam.yearly.perMonth)} per user per month billed yearly (₹${formatINR(largeTeam.yearly.total)} per user per year), excluding 18% GST. Every module is part of Zutok CRM whatever the number of users, and each staff member gets a role with its own permissions.`,
     },
   ],
   related: ["real-estate", "retail-franchises", "d2c-fashion-brands"],
@@ -1106,7 +1122,7 @@ const retail: Industry = {
   h1: ["CRM for retail stores,", "chains and franchises"],
   answer:
     "Zutok is a CRM for Indian retail stores, chains and franchises. Zutok CRM tracks stock across warehouses and staff attendance and leave; Zutok Zloya runs one loyalty program across every outlet with a shared customer profile; and Zutok ZShop sends WhatsApp updates for counter orders. " +
-    `CRM Growth, which adds inventory and HRM, costs ${inr("crm", "Growth")}/month billed monthly, excluding 18% GST.`,
+    `Zutok CRM, with inventory and HRM included, costs ${crmFrom()} billed monthly, excluding 18% GST.`,
   uses: ["crm", "zloya", "zshop"],
   relatedProduct: "crm",
   problem: {
@@ -1245,13 +1261,12 @@ const retail: Industry = {
     ],
   },
   plans: {
-    heading: "Which Zutok plans suit a retail chain or franchise?",
+    heading: "What does Zutok cost for a retail chain or franchise?",
     answer:
-      `Inventory, HRM, payroll, attendance and leave start on Zutok CRM Growth at ${inr("crm", "Growth")}/month for up to 10 users; CRM Enterprise (${inr("crm", "Enterprise")}/month) removes the user limit. ` +
+      `Inventory, HRM, payroll, attendance and leave are part of Zutok CRM, priced per user: ${crmPrices()}, excluding 18% GST. ` +
       `For loyalty and counter-order updates, Zloya and ZShop come free with ZChat Growth (${inr("zchat", "Growth")}/month) and Scale (${inr("zchat", "Scale")}/month). Chains with 10 or more outlets can ask for special pricing during the demo.`,
     picks: [
-      { group: "crm", plan: "Growth", fit: "Up to 10 users: inventory and warehouse, HRM, payroll, attendance and leave" },
-      { group: "crm", plan: "Enterprise", fit: "Unlimited users, custom fields for every module, dedicated account manager" },
+      ...crmPicks("Inventory and warehouse, HRM, attendance and leave"),
       zchatPick("Growth", "zloya"),
       zchatPick("Scale", "zloya"),
     ],
@@ -1264,11 +1279,11 @@ const retail: Industry = {
     },
     {
       q: "Can I manage stock across warehouses and staff attendance in the same CRM?",
-      a: "Yes. Zutok CRM Growth and above include inventory and warehouse management, with a full history for every warehouse, alongside HRM, payroll, attendance and leave.",
+      a: "Yes. Zutok CRM includes inventory and warehouse management, with a full history for every warehouse, alongside HRM, payroll, attendance and leave.",
     },
     {
       q: "Can I see stock for each warehouse separately?",
-      a: "Yes. Zutok CRM keeps a full stock history for every warehouse, with warehouse reports, from CRM Growth.",
+      a: "Yes. Zutok CRM keeps a full stock history for every warehouse, with warehouse reports.",
     },
     {
       q: "How do I record damaged or lost stock?",

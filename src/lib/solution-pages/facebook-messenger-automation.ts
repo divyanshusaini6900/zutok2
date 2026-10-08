@@ -1,4 +1,5 @@
 import {
+  crmFrom,
   describeLimits,
   perMonth,
   priceLine,
@@ -88,7 +89,7 @@ export const page: SolutionEntry = {
     },
     {
       heading: "Do Facebook lead form leads go into the same CRM as Messenger chats?",
-      lead: `Yes. Facebook and Instagram lead forms (Meta Lead Ads) sync into Zutok CRM and land in the Enquiry stage with their source and mapped fields, next to the leads your Messenger chats create. Lead Ads sync is in every Zutok CRM plan, from CRM Starter at ${perMonth("crm", "Starter")}.`,
+      lead: `Yes. Facebook and Instagram lead forms (Meta Lead Ads) sync into Zutok CRM and land in the Enquiry stage with their source and mapped fields, next to the leads your Messenger chats create. Lead Ads sync is part of Zutok CRM, at ${crmFrom()}, excl. 18% GST.`,
       body: [
         "A real estate business, for example, can run a site-visit request form on Facebook while comment rules answer its listing reels. Both kinds of enquiry land on one Enquiry → Follow-up → Hot → Customer pipeline, with tasks and reminders for the call-backs. The [IndiaMART and Meta Lead Ads](/solutions/indiamart-meta-lead-ads-crm/) page covers the lead-form side in detail.",
       ],
@@ -122,12 +123,12 @@ export const page: SolutionEntry = {
       { icon: "chart", title: "Team reports", body: "Conversations, resolution rate and load per channel, Messenger included." },
       { icon: "inbox", title: "One inbox, four apps", body: "Messenger next to WhatsApp, Instagram and Telegram." },
       { icon: "users", title: "Chats → CRM leads", body: "Each new Messenger chat becomes a lead with its source." },
-      { icon: "megaphone", title: "Lead forms in the pipeline", body: "Meta Lead Ads sync into Zutok CRM, from CRM Starter." },
+      { icon: "megaphone", title: "Lead forms in the pipeline", body: "Meta Lead Ads sync into Zutok CRM, priced per user." },
     ],
   },
   plan: {
     heading: "How much does Facebook Messenger automation cost?",
-    lead: `Messenger, the AI sales agent and comment-to-DM are part of Zutok ZChat, with plans from ${priceLine("zchat", "Starter")}; Starter, Growth and Scale include ${channelRange} channels. Facebook lead-form sync is a Zutok CRM feature, from CRM Starter at ${perMonth("crm", "Starter")}.`,
+    lead: `Messenger, the AI sales agent and comment-to-DM are part of Zutok ZChat, with plans from ${priceLine("zchat", "Starter")}; Starter, Growth and Scale include ${channelRange} channels. Facebook lead-form sync is a Zutok CRM feature, at ${crmFrom()}.`,
   },
   faqs: [
     {
@@ -140,7 +141,7 @@ export const page: SolutionEntry = {
     },
     {
       q: "Is every Messenger chat saved as a CRM lead?",
-      a: "Yes. Every new chat creates a lead in Zutok CRM with its source. With Zutok CRM, from CRM Starter, those leads share one Enquiry → Follow-up → Hot → Customer pipeline with your Facebook lead-form leads, with tasks and reminders for each follow-up.",
+      a: "Yes. Every new chat creates a lead in Zutok CRM with its source, and those leads share one Enquiry → Follow-up → Hot → Customer pipeline with your Facebook lead-form leads, with tasks and reminders for each follow-up.",
     },
     {
       q: "Can one tool handle Facebook comments, Messenger and Instagram together?",
@@ -152,7 +153,7 @@ export const page: SolutionEntry = {
     },
     {
       q: "Do Facebook lead forms need ZChat?",
-      a: `No. Facebook and Instagram lead forms (Meta Lead Ads) sync into Zutok CRM, which includes them in every plan from CRM Starter at ${perMonth("crm", "Starter")}. ZChat is what adds Messenger chats, the AI agent and comment rules.`,
+      a: `No. Facebook and Instagram lead forms (Meta Lead Ads) sync into Zutok CRM, at ${crmFrom()}. ZChat is what adds Messenger chats, the AI agent and comment rules.`,
     },
   ],
   related: [

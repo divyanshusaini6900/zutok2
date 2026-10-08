@@ -2,7 +2,11 @@ import type { ProductSlug } from "@/lib/products";
 import { pricing } from "@/lib/pricing";
 import {
   bundlePlanNames,
+  CRM_PRICES,
+  crmFrom,
+  crmLowest,
   describeLimits,
+  inr,
   perMonth,
   planGroup,
   priceLine,
@@ -26,7 +30,10 @@ export type { Solution, SolutionEntry, SolutionPlan, SolutionSection, SolutionSl
  * Use-case landing pages under /solutions/. Every claim here restates src/lib/products.ts, src/lib/pricing.ts or
  * the product sections; prices are read from pricing.ts so the copy can't drift from the plans.
  *
- * Types and the price helpers (perMonth, priceLine) live in src/lib/solution-kit.ts. Newer pages live in their own
+ * Types and the price helpers (perMonth, priceLine, and the Zutok CRM ones re-exported from pricing.ts: crmFrom,
+ * crmLowest, CRM_PRICES) live in src/lib/solution-kit.ts. Zutok CRM is priced per user (owner, 2026-10-09): CRM copy
+ * quotes "₹1,299 per user per month" (crmFrom), or all three per-user prices (CRM_PRICES), never "from ₹999" without
+ * its "5 or more users" condition, and never ties a CRM module to a user count. Newer pages live in their own
  * files under src/lib/solution-pages/ and are registered in `data` below; the key order of `data` is the page order.
  * Copy may link with "[label](/path/)" markup (src/lib/inline-links.ts); pages render it, JSON-LD gets plain text.
  *
@@ -35,8 +42,8 @@ export type { Solution, SolutionEntry, SolutionPlan, SolutionSection, SolutionSl
  *   or RTO scores. (A "what it doesn't do" section was removed rather than guessed.)
  * - GST invoicing: e-invoices (IRN), e-way bills, GSTR filing, HSN/SAC lookup, Tally sync, UPI/card collection, POS
  *   billing. (The FAQ saying "no" to all of these was removed.)
- * - HRM: what "payroll" in pricing.ts covers beyond salary records (payslips, PF/ESI/PT/TDS, salary runs, payouts).
- *   Headings now say "HRM"; the plan label stays exactly as pricing.ts has it.
+ * - HRM: what "payroll" covers beyond salary records (payslips, PF/ESI/PT/TDS, salary runs, payouts). Headings say
+ *   "HRM". (pricing.ts no longer has a CRM plan label; Zutok CRM is priced per user, owner 2026-10-09.)
  * - Zloya: that no coupon depends on a Google review.
  * - Zloya memberships: whether a membership or wallet balance can be redeemed at every outlet (pages only say the
  *   member is recognised at each outlet).
@@ -54,6 +61,9 @@ const zchatEach = (key: "channels" | "crmLicenses") => {
   const [a, b, c] = ["Starter", "Growth", "Scale"].map((n) => pricedPlan("zchat", n).limits?.[key]);
   return `${a}, ${b} or ${c}`;
 };
+
+/** "₹1,299 per user/month": Zutok CRM for 1 user, billed monthly, short enough for meta descriptions. */
+const crmPerUserMonth = `${inr(pricedPlan("crm", "1 user").monthly)} per user/month`;
 
 const data: Record<SolutionSlug, SolutionEntry> = {
   /* ---------------------------------------------------------------- */
@@ -1517,7 +1527,7 @@ const data: Record<SolutionSlug, SolutionEntry> = {
     kicker: "Zutok CRM · GST invoicing",
     relatedProduct: "crm",
     title: "GST Billing Software with CRM: Quotation to Payment",
-    metaDescription: `Send quotes and estimates, turn accepted ones into GST invoices with CGST and SGST, record payments, chase overdue bills and export PDFs. From ${perMonth("crm", "Starter")}.`,
+    metaDescription: `Send quotes and estimates, turn accepted ones into GST invoices with CGST and SGST, record payments, chase overdue bills and export PDFs. ${crmPerUserMonth}.`,
     keywords: [
       "GST billing software with CRM",
       "GST invoicing software with CRM",
@@ -1529,7 +1539,7 @@ const data: Record<SolutionSlug, SolutionEntry> = {
     ],
     h1: "GST billing software with a built-in CRM, from quote to payment",
     h1Accent: "from quote to payment",
-    answer: `Zutok CRM is GST billing software with the CRM built in. Send a quotation as an estimate, or a proposal, turn it into a GST invoice once it's accepted and record the payment. Invoices are in rupees with CGST and SGST on every line, plus recurring invoices, credit notes and bulk PDF export. It's in every plan, from CRM Starter at ${priceLine("crm", "Starter")}.`,
+    answer: `Zutok CRM is GST billing software with the CRM built in. Send a quotation as an estimate, or a proposal, turn it into a GST invoice once it's accepted and record the payment. Invoices are in rupees with CGST and SGST on every line, plus recurring invoices, credit notes and bulk PDF export. Billing is part of Zutok CRM, at ${crmFrom()}, excl. 18% GST.`,
     summary:
       "How Zutok CRM turns accepted proposals and estimates into GST invoices with CGST and SGST lines, payments, credit notes and bulk PDF export.",
     facts: [
@@ -1568,12 +1578,12 @@ const data: Record<SolutionSlug, SolutionEntry> = {
       },
       {
         heading: "How do recurring invoices and subscriptions work?",
-        lead: "They're two separate tools. Recurring invoices, in every plan from CRM Starter, bill a customer on a schedule, such as a monthly retainer. The Subscriptions module, from CRM Growth, handles recurring billing alongside expense tracking.",
+        lead: "They're two separate tools. Recurring invoices bill a customer on a schedule, such as a monthly retainer. The Subscriptions module handles recurring billing alongside expense tracking.",
         body: ["Either way, payments are recorded against each invoice when they arrive."],
       },
       {
         heading: "Can I track expenses against income?",
-        lead: "Yes, from CRM Growth. The Subscriptions & Expenses module adds expense tracking and an expenses vs income view, next to your invoices and payments.",
+        lead: "Yes. The Subscriptions & Expenses module adds expense tracking and an expenses vs income view, next to your invoices and payments.",
       },
       {
         heading: "What do I send my accountant at month end?",
@@ -1605,17 +1615,8 @@ const data: Record<SolutionSlug, SolutionEntry> = {
       ],
     },
     plan: {
-      heading: "Which Zutok CRM plan includes GST invoicing?",
-      lead: `Proposals, estimates and GST invoices are in every Zutok CRM plan, starting with CRM Starter at ${priceLine("crm", "Starter")} for up to 3 users. CRM Growth at ${perMonth("crm", "Growth")} adds subscriptions, expenses and contracts for up to 10 users.`,
-      includes: [
-        { label: "Proposals, estimates & GST invoices", from: "Starter" },
-        { label: "Subscriptions & expenses", from: "Growth" },
-      ],
-      highlights: {
-        Starter: "Up to 3 users. Leads, pipeline, proposals, estimates and GST invoices.",
-        Growth: "Up to 10 users. Adds HRM, inventory, contracts, expenses and subscriptions.",
-        Enterprise: "Unlimited users, Real Estate suite and custom fields for every module.",
-      },
+      heading: "How much does GST invoicing in Zutok CRM cost?",
+      lead: `Proposals, estimates, GST invoices, subscriptions, expenses and contracts are all part of Zutok CRM, priced per user: one CRM license is one user. ${CRM_PRICES}, excl. 18% GST.`,
     },
     faqs: [
       {
@@ -1623,12 +1624,12 @@ const data: Record<SolutionSlug, SolutionEntry> = {
         a: "Yes. Create the quotation as an estimate or a proposal, and once the customer accepts it, turn it into a GST invoice with tax on every line and record the payment.",
       },
       {
-        q: "Which plan includes recurring invoices and the Subscriptions module?",
-        a: `Recurring invoices and credit notes are in every Zutok CRM plan, from CRM Starter at ${perMonth("crm", "Starter")}. The Subscriptions module starts with CRM Growth at ${perMonth("crm", "Growth")}.`,
+        q: "Are recurring invoices and the Subscriptions module included?",
+        a: `Yes. Recurring invoices, credit notes and the Subscriptions module are all part of Zutok CRM, at ${crmFrom()} (${crmLowest()}), excl. 18% GST.`,
       },
       {
-        q: "Which plan includes expense tracking?",
-        a: `CRM Growth, at ${perMonth("crm", "Growth")}, and CRM Enterprise. Expense tracking isn't in CRM Starter.`,
+        q: "Does Zutok CRM include expense tracking?",
+        a: "Yes. Expense tracking, with an expenses vs income view, is part of Zutok CRM, priced per user.",
       },
       {
         q: "Can I bill a monthly retainer?",
@@ -1651,7 +1652,7 @@ const data: Record<SolutionSlug, SolutionEntry> = {
     kicker: "Zutok CRM · Lead management",
     relatedProduct: "crm",
     title: "Lead Management CRM: IndiaMART & Facebook Leads",
-    metaDescription: `IndiaMART enquiries and Facebook and Instagram lead forms sync into one Zutok CRM pipeline, from Enquiry to Customer, with tasks and reminders. From ${perMonth("crm", "Starter")}.`,
+    metaDescription: `IndiaMART enquiries and Facebook & Instagram lead forms sync into one Zutok CRM pipeline, from Enquiry to Customer, with tasks and reminders. ${crmPerUserMonth}.`,
     keywords: [
       "lead management CRM",
       "lead management software India",
@@ -1663,7 +1664,7 @@ const data: Record<SolutionSlug, SolutionEntry> = {
     ],
     h1: "Lead management for IndiaMART and Facebook Lead Ads enquiries in one CRM pipeline",
     h1Accent: "in one CRM pipeline",
-    answer: `Lead management means capturing every enquiry and following it up until it becomes a customer. Zutok CRM syncs IndiaMART enquiries and Meta Lead Ads (Facebook and Instagram lead forms) into one pipeline, beside website requests and, with ZChat, chat leads. Every lead moves from Enquiry to Follow-up, Hot and Customer, with tasks and reminders. It's in every plan, from CRM Starter at ${priceLine("crm", "Starter")}.`,
+    answer: `Lead management means capturing every enquiry and following it up until it becomes a customer. Zutok CRM syncs IndiaMART enquiries and Meta Lead Ads (Facebook and Instagram lead forms) into one pipeline, beside website requests and, with ZChat, chat leads. Every lead moves from Enquiry to Follow-up, Hot and Customer, with tasks and reminders. It's part of Zutok CRM, at ${crmFrom()}, excl. 18% GST.`,
     summary:
       "How Zutok CRM syncs IndiaMART and Meta Lead Ads leads into one pipeline with chat and website leads, from Enquiry to Customer.",
     facts: [
@@ -1735,17 +1736,8 @@ const data: Record<SolutionSlug, SolutionEntry> = {
       ],
     },
     plan: {
-      heading: "Which plan includes IndiaMART and Meta Lead Ads integration?",
-      lead: `Meta Lead Ads and IndiaMART leads are in every Zutok CRM plan, starting with CRM Starter at ${priceLine("crm", "Starter")} for up to 3 users. Leads from chats need ZChat, from ${perMonth("zchat", "Starter")}.`,
-      includes: [
-        { label: "Meta Lead Ads & IndiaMART leads", from: "Starter" },
-        { label: "Automation & reports", from: "Growth" },
-      ],
-      highlights: {
-        Starter: "Up to 3 users. Leads, customers & pipeline, proposals and GST invoices.",
-        Growth: "Up to 10 users. Adds automation & reports, HRM and inventory.",
-        Enterprise: "Unlimited users and custom fields for every module.",
-      },
+      heading: "How much does IndiaMART and Meta Lead Ads integration cost?",
+      lead: `Meta Lead Ads and IndiaMART leads are part of Zutok CRM, priced per user: one CRM license is one user. ${CRM_PRICES}, excl. 18% GST. Leads from chats need ZChat, from ${perMonth("zchat", "Starter")}.`,
     },
     faqs: [
       {
@@ -1758,11 +1750,11 @@ const data: Record<SolutionSlug, SolutionEntry> = {
       },
       {
         q: "How much does lead management cost?",
-        a: `Lead management is in every Zutok CRM plan, from CRM Starter at ${priceLine("crm", "Starter")}. That is a flat plan price for up to 3 users, not a price per user. Lead reports and goals tracking come with CRM Growth at ${perMonth("crm", "Growth")}.`,
+        a: `Lead management is part of Zutok CRM, priced per user: one CRM license is one user. ${CRM_PRICES}, excl. 18% GST. Lead reports and goals tracking are included.`,
       },
       {
-        q: "Is the IndiaMART integration in every plan?",
-        a: "Yes. IndiaMART and Meta Lead Ads leads are included from CRM Starter, and in every higher CRM plan.",
+        q: "Is the IndiaMART integration included whatever the number of users?",
+        a: "Yes. IndiaMART and Meta Lead Ads leads are part of Zutok CRM, whatever the number of users.",
       },
       {
         q: "Can I import my existing leads from Excel?",
@@ -1793,7 +1785,7 @@ const data: Record<SolutionSlug, SolutionEntry> = {
     relatedProduct: "crm",
     title: "CRM with HRM: Staff Records, Shifts, Attendance & Leave",
     metaDescription:
-      "Zutok CRM Growth adds HRM: staff records with contracts, insurance and salary, a shift planner, attendance and leave requests, beside your leads and invoices.",
+      "Zutok CRM includes HRM: staff records with contracts, insurance and salary, a shift planner, attendance and leave requests, beside your leads and invoices.",
     keywords: [
       "CRM with HRM",
       "HR and CRM in one software",
@@ -1805,11 +1797,14 @@ const data: Record<SolutionSlug, SolutionEntry> = {
     ],
     h1: "A CRM with HRM built in: staff records, shifts, attendance and leave",
     h1Accent: "staff records, shifts, attendance and leave",
-    answer: `Zutok CRM Growth adds HR to the same system as your leads and invoices: staff records with contracts, insurance and salary, alerts before a contract expires, a shift planner for your duty roster, and attendance and leave requests. Roles and permissions keep HR details with the people who need them. HRM starts with CRM Growth at ${priceLine("crm", "Growth")}, for up to 10 users.`,
+    answer: `Zutok CRM puts HR in the same system as your leads and invoices: staff records with contracts, insurance and salary, alerts before a contract expires, a shift planner for your duty roster, and attendance and leave requests. Roles and permissions keep HR details with the people who need them. HRM is part of Zutok CRM, at ${crmFrom()}, excl. 18% GST.`,
     summary:
-      "How Zutok CRM Growth keeps staff records, contracts, salary, shifts, attendance and leave in the same system as your sales.",
+      "How Zutok CRM keeps staff records, contracts, salary, shifts, attendance and leave in the same system as your sales.",
     facts: [
-      { value: "10", label: "users on CRM Growth, where HRM starts" },
+      {
+        value: inr(pricedPlan("crm", "1 user").monthly),
+        label: "per user per month for Zutok CRM, HRM included (excl. 18% GST)",
+      },
       { value: "Alerts", label: "before a staff contract expires" },
       { value: "Roles", label: "so HR, sales and accounts each see their part" },
     ],
@@ -1822,7 +1817,7 @@ const data: Record<SolutionSlug, SolutionEntry> = {
     },
     approach: {
       heading: "How do I track staff attendance and leave without a register or spreadsheet?",
-      lead: "Record them in Zutok CRM. From CRM Growth, attendance is tracked in the CRM with attendance reports, and staff leave requests and approvals happen there too, instead of in a register or spreadsheet.",
+      lead: "Record them in Zutok CRM. Attendance is tracked in the CRM with attendance reports, and staff leave requests and approvals happen there too, instead of in a register or spreadsheet.",
       body: [
         "Each staff member gets a role with its own permissions, so sales, accounts and HR only see what they need.",
       ],
@@ -1831,7 +1826,7 @@ const data: Record<SolutionSlug, SolutionEntry> = {
       {
         heading: "What does a staff record in Zutok hold?",
         lead: "Each person's details, their contract (with an alert before it expires), their insurance records and their salary records.",
-        body: ["If you need fields of your own, custom fields for every module come with CRM Enterprise."],
+        body: ["If you need fields of your own, Zutok CRM has custom fields for every module."],
       },
       {
         heading: "Can I plan staff shifts and build a duty roster in Zutok CRM?",
@@ -1845,7 +1840,10 @@ const data: Record<SolutionSlug, SolutionEntry> = {
       heading: "How do you set up HR in Zutok CRM, step by step?",
       lead: "HR sits next to the rest of the CRM, so setup is mostly adding your people.",
       items: [
-        { title: "Choose CRM Growth", body: "HRM, attendance and leave start with Growth, for up to 10 users." },
+        {
+          title: "Decide who uses the CRM",
+          body: "Zutok CRM is priced per user, and one CRM license is one user. HRM, attendance and leave are included.",
+        },
         { title: "Add your staff", body: "Records with contracts, insurance and salary." },
         { title: "Set roles and permissions", body: "So sales, accounts and HR each see only what they need." },
         { title: "Plan shifts", body: "Build shift tables in the shift planner." },
@@ -1864,21 +1862,12 @@ const data: Record<SolutionSlug, SolutionEntry> = {
         { icon: "timer", title: "Attendance", body: "Attendance tracking with reports." },
         { icon: "moon", title: "Leave requests", body: "Requests and approvals without the spreadsheets." },
         { icon: "users", title: "Roles & permissions", body: "Sales, accounts and HR each see their part." },
-        { icon: "boxes", title: "Inventory in the same plan", body: "CRM Growth also adds inventory and warehouse." },
+        { icon: "boxes", title: "Inventory in the same CRM", body: "Inventory and warehouse are part of Zutok CRM too." },
       ],
     },
     plan: {
-      heading: "Which plan includes HRM, shifts, attendance and leave?",
-      lead: `HRM (staff records with contracts, insurance and salary), the shift planner, attendance and leave come with CRM Growth at ${priceLine("crm", "Growth")}, for up to 10 users, together with inventory, contracts, expenses and subscriptions. They are not in CRM Starter.`,
-      includes: [
-        { label: "HRM, payroll, attendance & leave", from: "Growth" },
-        { label: "Inventory & warehouse", from: "Growth" },
-      ],
-      highlights: {
-        Starter: "Up to 3 users. Leads, invoices, projects and tickets.",
-        Growth: "Up to 10 users. HRM, shifts, attendance & leave, plus inventory.",
-        Enterprise: "Unlimited users, Real Estate suite and custom fields for every module.",
-      },
+      heading: "How much does HRM in Zutok CRM cost?",
+      lead: `HRM (staff records with contracts, insurance and salary), the shift planner, attendance and leave are part of Zutok CRM, together with inventory, contracts, expenses and subscriptions. ${CRM_PRICES}, excl. 18% GST.`,
     },
     faqs: [
       {
@@ -1890,8 +1879,8 @@ const data: Record<SolutionSlug, SolutionEntry> = {
         a: "Yes. Each staff member gets a role with its own permissions, so sales, accounts and HR only see what they need.",
       },
       {
-        q: "Is HRM an add-on, or part of the CRM Growth price?",
-        a: `Part of the price. CRM Growth costs ${perMonth("crm", "Growth")} as a flat plan price for up to 10 users, not a price per user, and HRM, the shift planner, attendance and leave are included. CRM Enterprise at ${perMonth("crm", "Enterprise")} includes them with unlimited users. They aren't in CRM Starter.`,
+        q: "Is HRM an add-on, or part of the Zutok CRM price?",
+        a: `Part of the price. Zutok CRM is priced per user (one CRM license is one user), and HRM, the shift planner, attendance and leave are included. ${CRM_PRICES}, excl. 18% GST.`,
       },
       {
         q: "How do leave requests and approvals work?",
@@ -1902,8 +1891,8 @@ const data: Record<SolutionSlug, SolutionEntry> = {
         a: "Yes. A chain can set each outlet's shifts in the shift planner and record attendance and leave requests in the same Zutok CRM, rather than in a register at each store.",
       },
       {
-        q: "What else comes with CRM Growth?",
-        a: "Inventory and warehouse, contracts, expenses, subscriptions, and automation and reports, on top of everything in Starter.",
+        q: "What else comes with Zutok CRM?",
+        a: "Leads and pipeline, proposals, estimates and GST invoices, projects and timesheets, inventory and warehouse, contracts, expenses, subscriptions, support tickets, and automation and reports, all included in the per-user price.",
       },
     ],
     related: ["gst-invoicing-crm", "indiamart-meta-lead-ads-crm"],
@@ -1927,11 +1916,13 @@ export const solutionsFor = (product: ProductSlug) => solutions.filter((s) => s.
 /**
  * The plan a solution starts on, with its monthly price (billed monthly, excl. GST). ZShop and Zloya pages start on
  * the ZChat plan that includes them free (`bundled: true`), so `label` names the plan with its own product:
- * "Zutok ZChat Starter", "Zutok ZChat Growth", "Zutok CRM Growth".
+ * "Zutok ZChat Starter", "Zutok ZChat Growth". Zutok CRM is priced per user (`perUser: true`) with no starting tier,
+ * so its label is just "Zutok CRM" and `monthly` is the 1-user price per user (₹1,299), never a "from" price.
  */
 export function startingPlan(s: Solution) {
-  const { group, bundled, plan } = solutionStart(s.relatedProduct, s.plan);
-  return { group, bundled, plan: plan.name, label: `${group === "crm" ? "Zutok CRM" : "Zutok ZChat"} ${plan.name}`, monthly: plan.monthly };
+  const { group, bundled, perUser, plan } = solutionStart(s.relatedProduct, s.plan);
+  const label = group === "crm" ? "Zutok CRM" : `Zutok ZChat ${plan.name}`;
+  return { group, bundled, perUser, plan: plan.name, label, monthly: plan.monthly };
 }
 
 export const SOLUTIONS_HUB = {
@@ -1956,11 +1947,7 @@ export const SOLUTIONS_HUB = {
 for (const s of solutions) {
   // Plan names are checked against the group that sells the page's product: ZShop and Zloya pages use ZChat's plans.
   const names = pricing.find((g) => g.id === planGroup(s.relatedProduct))?.plans.map((p) => p.name) ?? [];
-  const bad = [
-    ...(s.plan.includes ?? []).map((i) => i.from).filter((n) => !names.includes(n)),
-    ...Object.keys(s.plan.highlights ?? {}).filter((n) => !names.includes(n)),
-    ...(s.plan.startsOn && !names.includes(s.plan.startsOn) ? [s.plan.startsOn] : []),
-  ];
+  const bad = [...(s.plan.startsOn && !names.includes(s.plan.startsOn) ? [s.plan.startsOn] : [])];
   if (bad.length) throw new Error(`solutions.ts: "${s.slug}" names unknown plans: ${bad.join(", ")}`);
   if (s.h1Accent && !s.h1.endsWith(s.h1Accent)) throw new Error(`solutions.ts: "${s.slug}" h1Accent is not the end of h1`);
   if (s.related.some((r) => r === s.slug || !(r in data))) throw new Error(`solutions.ts: "${s.slug}" has a bad related slug`);

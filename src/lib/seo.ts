@@ -4,10 +4,13 @@ import { productList, type Product, type ProductSlug } from "@/lib/products";
 import {
   BUNDLE_PLANS_SHORT,
   BUNDLED_PRODUCTS,
+  CRM_PRICES,
   ZSHOP_ZLOYA_INCLUDED,
   bundlePlanNames,
   bundlePlans,
   cheapestPlan,
+  crmFrom,
+  crmPriceRange,
   formatINR,
   getGroup,
   isBundled,
@@ -15,7 +18,6 @@ import {
   pricedPlans,
   pricing,
   yearlyTotal,
-  YEARLY_MONTHS_CHARGED,
   zchatFrom,
   type PricedPlan,
   type PricingGroup,
@@ -62,8 +64,9 @@ export const brandedName = (p: Pick<Product, "name">) => (p.name.startsWith("Zut
 export const pricingGroup = (id: PricingGroupId) => getGroup(id);
 
 /**
- * Lowest monthly price (billed monthly, excluding GST) in a pricing group: 2000 for "zchat", 799 for "crm".
- * ZShop and Zloya aren't sold separately; use `productPriceNote` (src/lib/pricing.ts) for them.
+ * Lowest monthly price (billed monthly, excluding GST) in a pricing group: 2000 for "zchat". For "crm" this is ₹999 per
+ * user, which may only be shown with its "5 or more users" condition; Zutok CRM copy uses `crmFrom`, `crmPriceRange`
+ * or `CRM_PRICES` (src/lib/pricing.ts) instead. ZShop and Zloya aren't sold separately; use `productPriceNote` for them.
  */
 export const startingPrice = (id: PricingGroupId) => Math.min(...pricedPlans(pricingGroup(id)).map((p) => p.monthly));
 
@@ -80,26 +83,29 @@ export const BRAND_SUMMARY =
   "Three products plug into it: ZChat, a WhatsApp, Instagram, Messenger and Telegram inbox with an AI sales agent; " +
   "ZShop, which sends WhatsApp order updates, COD confirmations and abandoned-cart reminders for Shopify, WooCommerce and in-house stores; " +
   "and Zloya, which runs loyalty points, VIP tiers, memberships and retention journeys for restaurants, cafés, salons and stores. " +
-  `Zutok CRM plans start at ₹${formatINR(startingPrice("crm"))}/month and ZChat plans at ₹${formatINR(startingPrice("zchat"))}/month ` +
-  `(billed monthly, excluding 18% GST), and ZShop and Zloya come free with ZChat ${bundlePlanNames()}.`;
+  `Zutok CRM costs ${crmPriceRange()} and ZChat plans start at ₹${formatINR(startingPrice("zchat"))}/month, ` +
+  `billed monthly and excluding 18% GST, and ZShop and Zloya come free with ZChat ${bundlePlanNames()}.`;
 
 export const HOME_TITLE = "Zutok: WhatsApp & Instagram Automation and CRM for India";
 export const HOME_DESCRIPTION =
   "Zutok automates WhatsApp and Instagram for Indian businesses: an AI sales agent, broadcasts, comment-to-DM, COD and cart reminders, loyalty and a CRM, in ₹.";
 
-export const PRICING_TITLE = "Zutok Pricing in ₹: ZChat WhatsApp & CRM Plans";
+export const PRICING_TITLE = "Zutok Pricing in ₹: ZChat Plans & Per-User CRM Prices";
 
 const zchatYearlyFrom = yearlyTotal(cheapestPlan("zchat")) ?? 0;
+const crmTop = pricedPlans(getGroup("crm"))[0];
+const crmLow = cheapestPlan("crm");
 
 /** The direct answer to "How much does Zutok cost?", shown under the /pricing/ h1 and as its first FAQ. */
 export const PRICING_SUMMARY =
-  `Zutok ZChat starts at ${zchatFrom()} (₹${formatINR(zchatYearlyFrom)} a year), ` +
-  `and Zutok CRM at ₹${formatINR(startingPrice("crm"))}/month billed monthly. ` +
+  `Zutok ZChat starts at ${zchatFrom()} (₹${formatINR(zchatYearlyFrom)} a year). ` +
+  `${CRM_PRICES}. ` +
   `ZShop and Zloya aren't sold separately: they're ${ZSHOP_ZLOYA_INCLUDED}. ` +
-  `Prices exclude 18% GST, yearly CRM billing charges ${YEARLY_MONTHS_CHARGED} months for 12, and there is no setup fee.`;
+  `Prices exclude 18% GST, and there is no setup fee.`;
+/** "... Zutok CRM ₹1,299 per user/month, ₹999 with 5 or more users. Excl. 18% GST." (the ₹999 keeps its condition) */
 export const PRICING_DESCRIPTION =
-  `Zutok ZChat from ${zchatFrom().replace(", or", " or")}, with ZShop and Zloya free on ${bundlePlanNames()}. ` +
-  `Zutok CRM from ₹${formatINR(startingPrice("crm"))}/month. Excl. 18% GST.`;
+  `Zutok ZChat from ₹${formatINR(startingPrice("zchat"))}/month, with ZShop and Zloya free on ${bundlePlanNames()}. ` +
+  `Zutok CRM ₹${formatINR(crmTop.monthly)} per user/month, ₹${formatINR(crmLow.monthly)} with ${crmLow.name}. Excl. 18% GST.`;
 
 export const productSeo: Record<ProductSlug, { title: string; description: string; keywords: string[] }> = {
   zchat: {
@@ -142,7 +148,7 @@ export const productSeo: Record<ProductSlug, { title: string; description: strin
   },
   crm: {
     title: "CRM Software for Small Business in India | Zutok CRM",
-    description: `Zutok CRM for Indian businesses: leads, proposals, GST invoices, projects, HRM, inventory and support tickets in one CRM, with flat plans from ₹${formatINR(startingPrice("crm"))}/month.`,
+    description: `Zutok CRM for Indian businesses: leads, proposals, GST invoices, projects, HRM, inventory and support tickets in one CRM, at ${crmFrom()}.`,
     keywords: [
       "Zutok CRM",
       "CRM software for small business India",
@@ -350,8 +356,9 @@ const appsFor = (group: PricingGroup, plan: PricedPlan) =>
     : { "@id": softwareAppId(group.id) };
 
 /**
- * One Offer per priced plan, in INR excluding GST: the monthly price, and the yearly price (ZChat's stated yearly
- * total, or the CRM's YEARLY_MONTHS_CHARGED months for 12).
+ * One Offer per priced plan, in INR excluding GST: the monthly price and the owner's stated yearly total. Zutok CRM
+ * prices are per user: each UnitPriceSpecification has a one-user reference quantity, and each Offer an
+ * eligibleQuantity for the user count its price applies to (1 user, 3 users, 5 or more users).
  * Set `features: false` where the page shows each plan's blurb but not its feature list (the /pricing/ table).
  * `plans` limits the offers to some of the group's plans; `linkApps` adds `itemOffered` (ZChat Growth and Scale list
  * ZShop and Zloya too).
@@ -365,30 +372,44 @@ export function planOffersLd(
     linkApps = false,
   }: { features?: boolean; plans?: PricedPlan[]; linkApps?: boolean } = {},
 ): Node[] {
+  const perUser = Boolean(group.perUser);
+  const oneUser = { "@type": "QuantitativeValue", value: 1, unitText: "user" };
   return plans.map((plan) => ({
     "@type": "Offer",
-    name: `${groupName(group)} ${plan.name}`,
+    // "Zutok ZChat Growth", "Zutok CRM, 3 users"
+    name: perUser ? `${groupName(group)}, ${plan.name}` : `${groupName(group)} ${plan.name}`,
     // A ZChat blurb already lists the plan's whole feature list (contacts, channels, CRM licenses, ZShop + Zloya).
     description: features && !plan.limits ? `${plan.blurb} Includes: ${plan.features.join("; ")}.` : plan.blurb,
     price: plan.monthly,
     priceCurrency: "INR",
+    ...(plan.users
+      ? {
+          eligibleQuantity: {
+            "@type": "QuantitativeValue",
+            ...(plan.users.orMore ? { minValue: plan.users.min } : { value: plan.users.min }),
+            unitText: "users",
+          },
+        }
+      : {}),
     priceSpecification: [
       {
         "@type": "UnitPriceSpecification",
-        name: "Billed monthly",
+        name: perUser ? "Billed monthly, per user" : "Billed monthly",
         price: plan.monthly,
         priceCurrency: "INR",
         billingDuration: "P1M",
-        unitText: "month",
+        unitText: perUser ? "per user per month" : "month",
+        ...(perUser ? { referenceQuantity: oneUser } : {}),
         valueAddedTaxIncluded: false,
       },
       {
         "@type": "UnitPriceSpecification",
-        name: plan.yearly ? "Billed yearly" : `Billed yearly (${YEARLY_MONTHS_CHARGED} months for 12)`,
+        name: perUser ? "Billed yearly, per user" : "Billed yearly",
         price: yearlyTotal(plan),
         priceCurrency: "INR",
         billingDuration: "P1Y",
-        unitText: "year",
+        unitText: perUser ? "per user per year" : "year",
+        ...(perUser ? { referenceQuantity: oneUser } : {}),
         valueAddedTaxIncluded: false,
       },
     ],
@@ -399,18 +420,19 @@ export function planOffersLd(
 }
 
 const PRICE_BASE = "Prices are in Indian Rupees and exclude 18% GST.";
-const CRM_YEARLY = `Yearly Zutok CRM billing charges ${YEARLY_MONTHS_CHARGED} months for 12`;
+const CRM_TERMS = `Zutok CRM prices are per user (one CRM license is one user), and its yearly prices are ${getGroup("crm").yearlyOff}% less than monthly`;
 const ZCHAT_YEARLY = "yearly ZChat plans are billed at their stated yearly price";
 
 /** Billing terms for every plan (the /pricing/ catalogue). */
-const PRICE_NOTE = `${PRICE_BASE} ${CRM_YEARLY}; ${ZCHAT_YEARLY}.`;
+const PRICE_NOTE = `${PRICE_BASE} ${CRM_TERMS}; ${ZCHAT_YEARLY}.`;
 
-/** Billing terms for one group's plans, so a ZChat offer never carries the CRM's 10-for-12 rule and vice versa. */
+/** Billing terms for one group's plans, so a ZChat offer never carries the CRM's per-user terms and vice versa. */
 const groupPriceNote = (id: PricingGroupId) =>
-  `${PRICE_BASE} ${id === "crm" ? `${CRM_YEARLY}.` : `${ZCHAT_YEARLY.charAt(0).toUpperCase()}${ZCHAT_YEARLY.slice(1)}.`}`;
+  `${PRICE_BASE} ${id === "crm" ? `${CRM_TERMS}.` : `${ZCHAT_YEARLY.charAt(0).toUpperCase()}${ZCHAT_YEARLY.slice(1)}.`}`;
 
 /**
- * A product page's SoftwareApplication. Zutok CRM and ZChat carry their own plans. ZShop and Zloya aren't sold
+ * A product page's SoftwareApplication. ZChat carries its plans and Zutok CRM its per-user prices (lowPrice ₹999 is
+ * the "5 or more users" price, highPrice ₹1,299 the "1 user" one; both are on the page's cards). ZShop and Zloya aren't sold
  * separately, so theirs carry the ZChat plans that include them free (Growth and Scale), the only plans the page's
  * pricing section shows.
  */
@@ -443,14 +465,14 @@ export function softwareAppLd(product: Product): Node {
       offerCount: offers.length,
       description: bundled
         ? `${brandedName(product)} isn't sold separately: it is ${ZSHOP_ZLOYA_INCLUDED}. Monthly plan prices. ${groupPriceNote(group.id)}`
-        : `Monthly plan prices. ${groupPriceNote(group.id)}`,
+        : `${group.perUser ? "Monthly prices per user." : "Monthly plan prices."} ${groupPriceNote(group.id)}`,
       offers,
     },
   };
 }
 
 /**
- * Every plan on /pricing/ (ZChat and Zutok CRM), grouped the way the pricing tabs are. The tabs render one group's
+ * Every plan and price on /pricing/ (ZChat plans and Zutok CRM's per-user prices), grouped the way the pricing tabs are. The tabs render one group's
  * feature lists at a time, so the offers carry only the blurb that PlanPriceTable shows for every plan. ZChat Growth
  * and Scale list Zutok ZShop and Zutok Zloya among the apps they deliver, since both come free with them.
  */

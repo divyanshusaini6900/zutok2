@@ -18,7 +18,7 @@ import { DemoCTA } from "@/components/sections/DemoCTA";
 import { Button } from "@/components/ui/Button";
 import { Reveal } from "@/components/ui/Reveal";
 import { getIndustry, industries, industriesHub, industryPath, industrySlugs } from "@/lib/industries";
-import { isBundled, pricing, YEARLY_MONTHS_CHARGED, type PricingGroupId } from "@/lib/pricing";
+import { isBundled, pricing, type PricingGroupId } from "@/lib/pricing";
 import { products } from "@/lib/products";
 import { industrySolutions } from "@/lib/crosslinks";
 import { solutionBySlug, solutionPath } from "@/lib/solutions";
@@ -56,20 +56,17 @@ const toc = [
 ];
 
 /**
- * Billing notes for the plans in the table, then each pricing group's own note. Yearly Zutok CRM plans charge
- * YEARLY_MONTHS_CHARGED months for 12; yearly ZChat plans have the fixed yearly prices shown in the table.
+ * Billing notes for the prices in the table, then each pricing group's own note. Yearly ZChat plans have the fixed
+ * yearly prices shown in the table; Zutok CRM's note says it is priced per user and costs 20% less billed yearly. Both
+ * notes name their product, so they are shown without a label prefix.
  */
 function planNotes(groups: PricingGroupId[]) {
   const has = (id: PricingGroupId) => groups.includes(id);
   const billing = [
     "Prices are in Indian rupees and exclude 18% GST.",
-    has("crm") ? `Yearly Zutok CRM billing charges ${YEARLY_MONTHS_CHARGED} months for 12.` : "",
     has("zchat") ? "Yearly ZChat plans are billed at the yearly price shown for each plan." : "",
   ];
-  return [
-    billing.filter(Boolean).join(" "),
-    ...pricing.filter((g) => g.note && has(g.id)).map((g) => `${g.label}: ${g.note}`),
-  ];
+  return [billing.filter(Boolean).join(" "), ...pricing.flatMap((g) => (g.note && has(g.id) ? [g.note] : []))];
 }
 
 export default async function IndustryPage({ params }: Props) {
@@ -143,10 +140,14 @@ export default async function IndustryPage({ params }: Props) {
               <PlanTable picks={ind.plans.picks} notes={planNotes(ind.plans.picks.map((p) => p.group))} />
               <div className="mt-8 flex flex-wrap gap-3">
                 <Button href="/pricing/" variant="ghost">
-                  Compare every Zutok plan
+                  See every Zutok price
                 </Button>
                 <Button href={`/products/${rel.slug}/#pricing`} variant="ghost">
-                  {isBundled(rel.slug) ? `How to get ${brandedName(rel)}` : `${brandedName(rel)} plans in detail`}
+                  {isBundled(rel.slug)
+                    ? `How to get ${brandedName(rel)}`
+                    : rel.slug === "crm"
+                      ? "Zutok CRM pricing in detail"
+                      : `${brandedName(rel)} plans in detail`}
                 </Button>
               </div>
             </GuideSection>

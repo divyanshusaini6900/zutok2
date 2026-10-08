@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/Button";
 import { InlineText } from "@/components/ui/InlineText";
 import { Reveal } from "@/components/ui/Reveal";
 import { SplitText } from "@/components/ui/SplitText";
-import { planGroup, productPriceNote, YEARLY_MONTHS_CHARGED } from "@/lib/pricing";
+import { planGroup, productPriceNote } from "@/lib/pricing";
 import { products } from "@/lib/products";
 import { getSolution, solutionBySlug, solutionPath, solutions } from "@/lib/solutions";
 import { industriesForSolution } from "@/lib/crosslinks";
@@ -193,7 +193,7 @@ export default async function SolutionPage(props: Props) {
                   Explore {productName}
                 </Button>
                 <Button href="/pricing/" variant="ghost" arrow={false}>
-                  Compare all plans
+                  {planGroupId === "crm" ? "See all prices" : "Compare all plans"}
                 </Button>
               </div>
             </div>
@@ -266,10 +266,10 @@ export default async function SolutionPage(props: Props) {
             <p>
               All prices are in Indian Rupees and exclude 18% GST.{" "}
               {planGroupId === "crm"
-                ? `Yearly billing charges ${YEARLY_MONTHS_CHARGED} months for 12.`
+                ? "Yearly per-user prices are shown on each card."
                 : "Yearly ZChat prices are shown on each plan."}{" "}
               <Link href="/pricing/" className="font-bold text-ink underline underline-offset-4">
-                Compare every Zutok plan
+                {planGroupId === "crm" ? "Compare every Zutok price" : "Compare every Zutok plan"}
               </Link>
               .
             </p>

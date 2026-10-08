@@ -5,7 +5,7 @@ import { Breadcrumbs } from "@/components/solutions/Breadcrumbs";
 import { SolutionCard } from "@/components/solutions/SolutionCard";
 import { Reveal } from "@/components/ui/Reveal";
 import { SplitText } from "@/components/ui/SplitText";
-import { formatINR } from "@/lib/pricing";
+import { crmFrom, formatINR } from "@/lib/pricing";
 import { productList } from "@/lib/products";
 import { SOLUTIONS_HUB, solutionPath, solutions, solutionsFor, startingPlan } from "@/lib/solutions";
 import { JsonLd, absoluteUrl, brandedName, breadcrumbLd, pageMetadata, webPageLd } from "@/lib/seo";
@@ -119,12 +119,14 @@ export default function SolutionsPage() {
             <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {solutionsFor(p.slug).map((s, i) => {
                 const start = startingPlan(s);
+                // Zutok CRM is priced per user and has no starting tier: quote the 1-user price, never "From ₹…".
+                const footnote =
+                  start.group === "crm"
+                    ? `Zutok CRM: ${crmFrom()}, excl. GST`
+                    : `${start.bundled ? "Free with" : "From"} ${start.label}: ₹${formatINR(start.monthly)}/month, excl. GST`;
                 return (
                   <Reveal key={s.slug} delay={i * 0.08} className="h-full">
-                    <SolutionCard
-                      solution={s}
-                      footnote={`${start.bundled ? "Free with" : "From"} ${start.label}: ₹${formatINR(start.monthly)}/month, excl. GST`}
-                    />
+                    <SolutionCard solution={s} footnote={footnote} />
                   </Reveal>
                 );
               })}

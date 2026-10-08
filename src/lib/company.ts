@@ -4,13 +4,14 @@
  */
 
 import {
+  CRM_PRICES,
+  crmYearlyPrices,
   formatINR,
   getGroup,
   limitParts,
   listJoin,
   pricedPlans,
   yearlyTotal,
-  YEARLY_MONTHS_CHARGED,
   ZSHOP_ZLOYA_INCLUDED,
 } from "@/lib/pricing";
 import { BRAND_SUMMARY, PRICING_SUMMARY } from "@/lib/seo";
@@ -31,13 +32,16 @@ const orJoin = (items: string[]) => `${items.slice(0, -1).join(", ")} or ${items
 /** "₹19,200 for Starter, ₹47,988 for Growth or ₹95,988 for Scale": ZChat's yearly prices, as set per plan. */
 const zchatYearly = orJoin(zchatPlans.map((p) => `₹${formatINR(yearlyTotal(p) ?? 0)} for ${p.name}`));
 
+/** "20": Zutok CRM's yearly discount, as the owner stated it. */
+const crmYearlyOff = getGroup("crm").yearlyOff;
+
 /*
- * Only Zutok CRM is known not to charge per user. ZChat plans come with a set number of CRM licenses, and how extra
- * users or licenses are priced isn't published, so the answer doesn't say "No" for ZChat.
+ * Zutok CRM is priced per user (owner, 2026-10-09). ZChat plans come with a set number of CRM licenses, and how extra
+ * ZChat users or licenses are priced isn't published, so the answer says nothing about that.
  */
 const PER_USER =
-  "Not on Zutok CRM: its plans have a flat monthly price for up to 3, up to 10 or unlimited users. " +
-  "ZChat plans also have a flat monthly price, and include " +
+  `Yes, for Zutok CRM: it's priced per user, and one CRM license is one user. ${CRM_PRICES}. ` +
+  "ZChat plans have a flat monthly price instead, and include " +
   `${orJoin(zchatPlans.map((p) => (p.limits.contacts === null ? "unlimited" : formatINR(p.limits.contacts))))} contacts, ` +
   `${orJoin(zchatPlans.map((p) => formatINR(p.limits.channels)))} channels and ` +
   `${orJoin(zchatPlans.map((p) => formatINR(p.limits.crmLicenses)))} CRM licenses. Prices exclude 18% GST.`;
@@ -65,7 +69,7 @@ export const homeFaqs: QA[] = [
   },
   {
     q: "Can I buy just one product?",
-    a: `Yes. Zutok CRM and ZChat each have their own plans, and every ZChat plan includes CRM licenses. ZShop and Zloya aren't sold on their own: they're ${ZSHOP_ZLOYA_INCLUDED}, excluding 18% GST.`,
+    a: `Yes. Zutok CRM (priced per user) and ZChat (sold as plans) are sold separately, and every ZChat plan includes CRM licenses. ZShop and Zloya aren't sold on their own: they're ${ZSHOP_ZLOYA_INCLUDED}, excluding 18% GST.`,
   },
   { q: "What's in each ZChat plan?", a: ZCHAT_PLANS },
   { q: "Do I pay per user?", a: PER_USER },
@@ -89,7 +93,7 @@ export const homeFaqs: QA[] = [
     q: "Is there a setup fee or lock-in?",
     a:
       "There is no setup fee. Monthly plans can be cancelled at the end of any month. " +
-      `Yearly Zutok CRM plans give you two months free, and yearly ZChat plans cost ${zchatYearly} a year.`,
+      `Billed yearly, Zutok CRM costs ${crmYearlyOff}% less, and yearly ZChat plans cost ${zchatYearly} a year.`,
   },
 ];
 
@@ -105,11 +109,11 @@ export const pricingFaqs: QA[] = [
   {
     q: "How does yearly billing work?",
     a:
-      `For Zutok CRM you pay for ${YEARLY_MONTHS_CHARGED} months and get 12, which is two months free, and the monthly figure shown is the yearly price divided by 12. ` +
+      `Zutok CRM's yearly prices are ${crmYearlyOff}% less than monthly, per user: ${crmYearlyPrices()}. ` +
       `ZChat's yearly prices are fixed: ${listJoin(
         zchatPlans.map((p, i) => {
           const year = `₹${formatINR(yearlyTotal(p) ?? 0)}`;
-          const shown = `₹${formatINR(p.yearly?.perMonth ?? 0)}/month`;
+          const shown = `₹${formatINR(p.yearly.perMonth)}/month`;
           return i === 0 ? `${p.name} ${year} a year (shown as ${shown})` : `${p.name} ${year} (${shown})`;
         }),
       )}.`,
@@ -132,7 +136,7 @@ export const pricingFaqs: QA[] = [
   },
   { q: "Do I pay per user?", a: PER_USER },
   {
-    q: "Can I switch plans later?",
+    q: "Can I switch ZChat plans later?",
     a: "Yes. You can upgrade at any time and the difference is prorated. You can downgrade at the end of your billing period.",
   },
   {

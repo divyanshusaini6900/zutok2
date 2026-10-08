@@ -4,6 +4,7 @@ import {
   bundlePlans,
   cheapestPlan,
   formatINR,
+  getGroup,
   getPlan,
   isBundled,
   planGroup,
@@ -48,20 +49,13 @@ export type SolutionSection = {
 
 export type SolutionPlan = {
   heading: string;
-  /** Direct answer naming the plan and its price. */
+  /** Direct answer naming the plan (ZChat) or the per-user prices (Zutok CRM). */
   lead: string;
-  /**
-   * Zutok CRM pages only: what this page is about, per CRM plan. The first item's `from` is the plan the page starts on,
-   * and the plan cards tick each item from that plan up. ZChat, ZShop and Zloya pages leave it out: which ZChat plan
-   * has which feature isn't published, so their cards list each plan's own contacts, channels and CRM licenses.
-   */
-  includes?: { label: string; from: string }[];
-  /** Zutok CRM pages only: one line per plan name, saying what matters about that plan for this use case. */
-  highlights?: Record<string, string>;
   /**
    * The plan the page starts on, in the pricing group that sells the page's product (see `planGroup`). Optional:
    * ZChat pages start on the cheapest ZChat plan, ZShop and Zloya pages on the first ZChat plan that includes them
-   * free (Growth), and CRM pages on `includes[0].from`.
+   * free (Growth). Zutok CRM pages have no starting tier: every module comes at every user count, so they leave it out
+   * (the plan cards show all three per-user prices, and `solutionStart` falls back to "1 user", the ₹1,299 short form).
    */
   startsOn?: string;
 };
@@ -105,10 +99,19 @@ export type SolutionEntry = Omit<Solution, "slug">;
 export type GroupId = PricingGroupId;
 
 export { planGroup };
-/** Shared ZChat / ZShop / Zloya copy, re-exported from src/lib/pricing.ts so solution pages need one import. */
+/** Shared ZChat / ZShop / Zloya / Zutok CRM copy, re-exported from src/lib/pricing.ts so solution pages need one import. */
 export {
   bundlePlanNames,
+  CRM_PER_USER,
+  CRM_PRICES,
+  CRM_YEARLY_TOTALS,
+  crmFrom,
+  crmLowest,
+  crmPriceRange,
+  crmPrices,
+  crmYearlyPrices,
   describeLimits,
+  inr,
   zchatFrom,
   ZSHOP_ZLOYA_INCLUDED,
   ZSHOP_ZLOYA_INCLUDED_MONTHLY,
@@ -127,29 +130,34 @@ export function pricedPlan(group: GroupId, name: string): PricedPlan {
 /**
  * The plan a solution page starts on, in the pricing group that sells its product: `startsOn` if set; otherwise the
  * first ZChat plan that includes ZShop and Zloya free (Growth) for those two, the cheapest plan (Starter) for ZChat,
- * and `includes[0].from` (or the cheapest plan) for Zutok CRM.
+ * and "1 user" for Zutok CRM (the ₹1,299 short form; not the cheapest tier, "5 or more users", whose ₹999 needs its
+ * condition). Zutok CRM pages have no starting tier, so the plan cards don't mark one.
  */
-export function solutionStart(product: ProductSlug, plan: Pick<SolutionPlan, "includes" | "startsOn">) {
+export function solutionStart(product: ProductSlug, plan: Pick<SolutionPlan, "startsOn">) {
   const group = planGroup(product);
   const bundled = isBundled(product);
   const fallback = bundled
     ? bundlePlans()[0].name
     : group === "crm"
-      ? (plan.includes?.[0]?.from ?? cheapestPlan(group).name)
+      ? getGroup("crm").plans[0].name
       : cheapestPlan(group).name;
-  return { group, bundled, plan: pricedPlan(group, plan.startsOn ?? fallback) };
+  return { group, bundled, perUser: Boolean(getGroup(group).perUser), plan: pricedPlan(group, plan.startsOn ?? fallback) };
 }
 
-/** "₹2,000/month": the price billed monthly. */
-export const perMonth = (group: GroupId, plan: string) => `₹${formatINR(pricedPlan(group, plan).monthly)}/month`;
+/** "₹2,000/month": the price billed monthly. Zutok CRM: "₹1,299 per user per month" (prefer `crmFrom`/`CRM_PRICES`). */
+export const perMonth = (group: GroupId, plan: string) =>
+  `₹${formatINR(pricedPlan(group, plan).monthly)}${getGroup(group).perUser ? " per user per month" : "/month"}`;
 
 /**
  * Both billing options, excluding GST:
  * ZChat: "₹2,000/month billed monthly (₹19,200/year, or ₹1,599/month billed yearly), excl. 18% GST"
- * CRM:   "₹799/month billed monthly (₹7,990/year), excl. 18% GST"
+ * CRM:   "₹1,299 per user per month billed monthly (₹12,468 per user per year, or ₹1,039 per user per month billed
+ *        yearly), excl. 18% GST". Zutok CRM pages use `CRM_PRICES` / `crmFrom` instead.
  */
 export const priceLine = (group: GroupId, plan: string) => {
   const p = pricedPlan(group, plan);
-  const perMonthYearly = p.yearly ? `, or ₹${formatINR(p.yearly.perMonth)}/month billed yearly` : "";
-  return `₹${formatINR(p.monthly)}/month billed monthly (₹${formatINR(yearlyTotal(p) ?? 0)}/year${perMonthYearly}), excl. 18% GST`;
+  const perUser = Boolean(getGroup(group).perUser);
+  const month = perUser ? " per user per month" : "/month";
+  const year = perUser ? " per user per year" : "/year";
+  return `₹${formatINR(p.monthly)}${month} billed monthly (₹${formatINR(yearlyTotal(p) ?? 0)}${year}, or ₹${formatINR(p.yearly.perMonth)}${month} billed yearly), excl. 18% GST`;
 };

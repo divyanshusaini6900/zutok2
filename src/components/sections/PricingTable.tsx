@@ -5,14 +5,13 @@ import Link from "next/link";
 import { Check, Info } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
+  CRM_PER_USER,
   formatINR,
   isBundled,
   planGroup,
   pricing,
   priceFor,
   yearlyTotal,
-  YEARLY_MONTHS_CHARGED,
-  ZSHOP_ZLOYA_NOTE,
   type PricingGroupId,
 } from "@/lib/pricing";
 import type { ProductSlug } from "@/lib/products";
@@ -21,8 +20,11 @@ import { cx } from "@/lib/cx";
 const onPop = (c: string) => (c === "#6c2bd9" ? "#ffffff" : "#0b0b0b");
 
 /**
- * Tabbed plan cards for ZChat and Zutok CRM. `initial` may be a product slug. ZShop and Zloya aren't sold separately,
+ * Tabbed price cards for ZChat and Zutok CRM. `initial` may be a product slug. ZShop and Zloya aren't sold separately,
  * so their pages show no tabs, only the ZChat plans that include them free (Growth and Scale).
+ *
+ * Zutok CRM is priced per user, so its tab shows one card per user count ("1 user", "3 users", "5 or more users")
+ * with per-user prices, and lists what Zutok CRM includes once below the cards: no module depends on the user count.
  */
 export function PricingTable({ initial = "zchat" }: { initial?: PricingGroupId | ProductSlug }) {
   const bundled = isBundled(initial);
@@ -92,10 +94,10 @@ export function PricingTable({ initial = "zchat" }: { initial?: PricingGroupId |
             />
           </button>
           <span className={yearly ? "text-ink" : "text-ink/50"}>Yearly</span>{" "}
-          {/* Only Zutok CRM's yearly price is 10 months for 12; ZChat's yearly prices are set per plan. */}
-          {group.plans.every((p) => !p.yearly) && (
+          {/* Only Zutok CRM states a flat yearly discount; ZChat's yearly prices are set per plan. */}
+          {group.yearlyOff && (
             <span className="rounded-full border-2 border-ink bg-[#22c55e] px-2.5 py-0.5 text-xs font-extrabold text-ink">
-              {12 - YEARLY_MONTHS_CHARGED} months free
+              {group.yearlyOff}% off
             </span>
           )}
         </div>
@@ -116,7 +118,9 @@ export function PricingTable({ initial = "zchat" }: { initial?: PricingGroupId |
           )}
           <div
             className={cx(
-              "mt-10 grid grid-cols-1 gap-6 lg:items-center",
+              "mt-10 grid grid-cols-1 gap-6",
+              // Centre the cards around a taller highlighted one (ZChat); otherwise stretch them so the buttons line up.
+              plans.some((p) => p.popular) ? "lg:items-center" : "lg:items-stretch",
               plans.length === 2 ? "lg:mx-auto lg:max-w-4xl lg:grid-cols-2" : "lg:grid-cols-3",
             )}
           >
@@ -124,6 +128,10 @@ export function PricingTable({ initial = "zchat" }: { initial?: PricingGroupId |
               const price = priceFor(plan, yearly);
               const year = yearlyTotal(plan);
               const pop = !!plan.popular;
+              // Zutok CRM prices are per user; ZChat prices are per plan.
+              const u = group.perUser ? " per user" : "";
+              // Zutok CRM's modules are the same at every user count, so they are listed once below the cards.
+              const features = group.sharedFeatures ? ["Every Zutok CRM module, listed below"] : plan.features;
               return (
                 <motion.div
                   key={plan.name}
@@ -170,25 +178,29 @@ export function PricingTable({ initial = "zchat" }: { initial?: PricingGroupId |
                         {price === null ? "Custom" : formatINR(price)}
                       </motion.span>
                     </AnimatePresence>
-                    <span className={cx(`mb-2 text-sm font-semibold ${pop ? "text-white/75" : "text-ink/50"}`)}>/month</span>
+                    <span className={cx(`mb-2 text-sm font-semibold ${pop ? "text-white/75" : "text-ink/50"}`)}>
+                      {group.perUser ? "/user/month" : "/month"}
+                    </span>
                   </div>
                   <div className={cx(`relative mt-1 space-y-1 text-xs font-medium ${pop ? "text-white/80" : "text-ink/55"}`)}>
                     <div>
                       {plan.monthly !== null &&
                         year !== null &&
-                        (yearly ? `₹${formatINR(year)} billed yearly + GST` : "Billed monthly + GST")}
+                        (yearly
+                          ? `₹${formatINR(year)}${u} billed yearly${group.yearlyOff ? ` (${group.yearlyOff}% off)` : ""} + GST`
+                          : "Billed monthly + GST")}
                     </div>
                     {/* The other billing option too, so both prices are in the page whichever toggle is active. */}
                     {plan.monthly !== null && year !== null && (
                       <div>
                         {yearly
-                          ? `or ₹${formatINR(plan.monthly)}/month billed monthly`
-                          : `or ₹${formatINR(year)}/year billed yearly${plan.yearly ? ` (₹${formatINR(plan.yearly.perMonth)}/month)` : ""}`}
+                          ? `or ₹${formatINR(plan.monthly)}${u}/month billed monthly`
+                          : `or ₹${formatINR(year)}${u}/year billed yearly (₹${formatINR(plan.yearly.perMonth)}${u}/month)`}
                       </div>
                     )}
                   </div>
                   <ul className={cx(`relative mt-7 flex-1 space-y-3 border-t-2 pt-7 ${pop ? "border-white/20" : "border-ink/10"}`)}>
-                    {plan.features.map((f) => (
+                    {features.map((f) => (
                       <li key={f} className={cx(`flex items-start gap-3 text-sm font-medium ${pop ? "text-white" : "text-ink/80"}`)}>
                         <span
                           className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full"
@@ -212,18 +224,32 @@ export function PricingTable({ initial = "zchat" }: { initial?: PricingGroupId |
               );
             })}
           </div>
+          {group.sharedFeatures && (
+            <div className="mx-auto mt-10 max-w-4xl rounded-[2rem] border-[2.5px] border-ink bg-white p-7 text-ink shadow-[6px_6px_0_#0b0b0b] sm:p-8">
+              <h3 className="text-lg font-extrabold">Part of {group.label}, priced per user</h3>
+              <p className="mt-1 text-sm font-medium text-ink/60">No module depends on the number of users.</p>
+              <ul className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {group.sharedFeatures.map((f) => (
+                  <li key={f} className="flex items-start gap-3 text-sm font-medium text-ink/80">
+                    <span
+                      className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full"
+                      style={{ background: group.pop, color: onPop(group.pop) }}
+                    >
+                      <Check className="size-3" aria-hidden />
+                    </span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </motion.div>
       </AnimatePresence>
       <p className="mt-10 text-center text-xs font-medium text-ink/55">
         All prices in Indian Rupees, exclusive of 18% GST.
-        {/* The ZChat note above the cards already says these two. */}
-        {!group.note && (
-          <>
-            {" "}
-            Meta&apos;s per-message charges for WhatsApp template messages are billed at Meta&apos;s rates. {ZSHOP_ZLOYA_NOTE}
-          </>
-        )}
-        {!bundled && <> Yearly Zutok CRM plans charge {YEARLY_MONTHS_CHARGED} months for 12.</>}
+        {/* Meta's charges and ZShop + Zloya apply to ZChat only, and the ZChat note above its cards already says both. */}
+        {/* The Zutok CRM note above its cards already says this. */}
+        {!bundled && !group.perUser && <> {CRM_PER_USER}</>}
       </p>
     </div>
   );

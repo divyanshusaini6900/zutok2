@@ -9,15 +9,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { SplitText } from "@/components/ui/SplitText";
 import { Wave } from "@/components/ui/Wave";
 import { pricingFaqs as faqs } from "@/lib/company";
-import {
-  formatINR,
-  getGroup,
-  listJoin,
-  pricedPlans,
-  yearlyTotal,
-  YEARLY_MONTHS_CHARGED,
-  type PricingGroup,
-} from "@/lib/pricing";
+import { formatINR, getGroup, listJoin, pricedPlans, yearlyTotal, type PricingGroup } from "@/lib/pricing";
 import { solutionPath } from "@/lib/solutions";
 import { cx } from "@/lib/cx";
 import {
@@ -48,6 +40,7 @@ export const metadata = pageMetadata({
     "ZChat price",
     "ZChat plans",
     "Zutok CRM price",
+    "CRM price per user India",
   ],
 });
 
@@ -56,6 +49,7 @@ type CompareTable = { id: string; title: string; group: PricingGroup; rows: Comp
 
 const zchat = getGroup("zchat");
 const crm = getGroup("crm");
+const crmModules = crm.sharedFeatures ?? [];
 
 /** ZChat plans side by side, built only from what pricing.ts states for each plan. */
 const zchatRows: CompareRow[] = (() => {
@@ -73,21 +67,11 @@ const zchatRows: CompareRow[] = (() => {
   ];
 })();
 
-/** Zutok CRM plans side by side, from the CRM feature lists in pricing.ts. */
-const crmRows: CompareRow[] = [
-  { feature: "Leads, customers & pipeline", cells: [true, true, true] },
-  { feature: "GST invoices, proposals & payments", cells: [true, true, true] },
-  { feature: "Users", cells: ["3", "10", "Unlimited"] },
-  { feature: "HRM, payroll & attendance", cells: [false, true, true] },
-  { feature: "Inventory & warehouse", cells: [false, true, true] },
-  { feature: "Real Estate suite", cells: [false, false, true] },
-  { feature: "Dedicated account manager", cells: [false, false, true] },
-];
-
-const compareTables: CompareTable[] = [
-  { id: "compare-zchat", title: "Zutok ZChat plans", group: zchat, rows: zchatRows },
-  { id: "compare-crm", title: "Zutok CRM plans", group: crm, rows: crmRows },
-];
+/*
+ * Zutok CRM has no plans to compare: it is priced per user, and no module depends on the number of users, so its
+ * modules are listed once under the ZChat table instead.
+ */
+const compareTables: CompareTable[] = [{ id: "compare-zchat", title: "Zutok ZChat plans", group: zchat, rows: zchatRows }];
 
 /** "₹19,200 for Starter, ₹47,988 for Growth and ₹95,988 for Scale": ZChat's yearly prices, as set per plan. */
 const zchatYearly = listJoin(pricedPlans(zchat).map((p) => `₹${formatINR(yearlyTotal(p) ?? 0)} for ${p.name}`));
@@ -155,7 +139,7 @@ export default function PricingPage() {
       <section className="pb-24 pt-6">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <h2 className="mb-8 text-center text-3xl font-extrabold tracking-tight sm:text-4xl">
-            Choose ZChat or Zutok CRM, <span className="font-serif font-normal italic">then a plan</span>
+            Choose ZChat or Zutok CRM, <span className="font-serif font-normal italic">then a plan or team size</span>
           </h2>
           <PricingTable />
         </div>
@@ -169,9 +153,9 @@ export default function PricingPage() {
             </h2>
           </Reveal>
           <p className="mx-auto mt-5 max-w-2xl text-center font-medium text-ink/65">
-            Every ZChat and Zutok CRM plan in one table, billed monthly or yearly. Yearly Zutok CRM plans charge{" "}
-            {YEARLY_MONTHS_CHARGED} months for 12; yearly ZChat plans cost {zchatYearly} a year. All prices are in Indian
-            Rupees and exclude 18% GST.
+            Every ZChat plan and Zutok CRM price in one table, billed monthly or yearly. Zutok CRM is priced per user and
+            costs {crm.yearlyOff}% less billed yearly; yearly ZChat plans cost {zchatYearly} a year. All prices are in
+            Indian Rupees and exclude 18% GST.
           </p>
           <Reveal delay={0.1} className="mt-10">
             <PlanPriceTable linkProducts />
@@ -213,7 +197,7 @@ export default function PricingPage() {
                       <th className="p-5 font-bold">Feature</th>
                       {t.group.plans.map((p) => (
                         <th key={p.name} className="p-5 text-center font-extrabold">
-                          {t.group.id === "crm" ? "CRM" : t.group.label} {p.name}
+                          {t.group.label} {p.name}
                         </th>
                       ))}
                     </tr>
@@ -234,6 +218,35 @@ export default function PricingPage() {
               </Reveal>
             </div>
           ))}
+          <div className="mt-12">
+            <h3 id="compare-crm" className="flex items-center gap-2.5 text-2xl font-extrabold tracking-tight">
+              <span className="size-3 shrink-0 rounded-full ring-1 ring-ink/20" style={{ background: crm.stripe }} />
+              Zutok CRM
+            </h3>
+            <p className="mt-3 max-w-3xl font-medium text-ink/65">
+              Nothing to compare: Zutok CRM isn&apos;t split into plans. It&apos;s priced per user, one CRM license is one
+              user, and every module below is part of Zutok CRM whatever the number of users.
+            </p>
+            <Reveal
+              delay={0.1}
+              className="mt-5 rounded-[2rem] border-[2.5px] border-ink bg-white p-7 shadow-[6px_6px_0_#0b0b0b] sm:p-8"
+            >
+              <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2" aria-labelledby="compare-crm">
+                {crmModules.map((m) => (
+                  <li key={m} className="flex items-start gap-3 text-sm font-semibold text-ink/80">
+                    <span
+                      className="grid size-6 shrink-0 place-items-center rounded-full border-2 border-ink bg-[#22c55e] text-ink"
+                      role="img"
+                      aria-label="Included:"
+                    >
+                      <Check className="size-3.5" aria-hidden />
+                    </span>
+                    <span className="pt-0.5">{m}</span>
+                  </li>
+                ))}
+              </ul>
+            </Reveal>
+          </div>
         </div>
       </section>
 

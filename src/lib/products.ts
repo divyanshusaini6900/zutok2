@@ -1,6 +1,9 @@
 import type { IconName } from "@/components/ui/Icon";
 import {
   bundlePlanNames,
+  CRM_PER_USER,
+  CRM_PRICES,
+  CRM_YEARLY_TOTALS,
   describeLimits,
   formatINR,
   getGroup,
@@ -17,7 +20,8 @@ export type ProductSlug = "zchat" | "zshop" | "zloya" | "crm";
 
 /**
  * "₹2,000": a plan's monthly price, billed monthly, excluding GST. Throws at build time if the plan is renamed.
- * Only "zchat" and "crm" have plans: ZShop and Zloya come free with ZChat Growth and Scale.
+ * Only ZChat is sold as plans; Zutok CRM is priced per user (use the CRM helpers in pricing.ts), and ZShop and Zloya
+ * come free with ZChat Growth and Scale.
  */
 function price(group: PricingGroupId, name: string) {
   return `₹${formatINR(getPlan(group, name).monthly)}`;
@@ -38,7 +42,7 @@ const ZCHAT_COST = [
     zchatPlans.map(
       (p, i) =>
         `${i === 0 ? `ZChat ${p.name} costs` : p.name} ₹${formatINR(yearlyTotal(p) ?? 0)} a year ` +
-        `(shown as ₹${formatINR(p.yearly?.perMonth ?? 0)} a month)`,
+        `(shown as ₹${formatINR(p.yearly.perMonth)} a month)`,
     ),
   )}.`,
   ZSHOP_ZLOYA_NOTE,
@@ -579,11 +583,12 @@ export const products: Record<ProductSlug, Product> = {
       },
       {
         q: "How much does Zutok CRM cost?",
-        a: `CRM Starter is ${price("crm", "Starter")}/month for up to 3 users, Growth ${price("crm", "Growth")}/month for up to 10 users and Enterprise ${price("crm", "Enterprise")}/month with unlimited users, billed monthly and excluding 18% GST. These are flat plan prices, not prices per user.`,
+        // Owner's per-user prices (2026-10-09), all from pricing.ts. No price exists for 2 or 4 users, so none is stated.
+        a: `${CRM_PER_USER} ${CRM_PRICES}. That comes to ${CRM_YEARLY_TOTALS}. Prices exclude 18% GST.`,
       },
       {
-        q: "How many users can I add?",
-        a: "Up to 3 on CRM Starter, up to 10 on Growth and as many as you like on Enterprise.",
+        q: "Are all modules included whatever the number of users?",
+        a: "Yes. Zutok CRM is priced per user, and leads, proposals and GST invoices, projects, HRM, inventory, the Real Estate suite, support tickets, automation, reports and custom fields are all part of it.",
       },
       {
         q: "Can I try Zutok before I buy?",
@@ -595,19 +600,19 @@ export const products: Record<ProductSlug, Product> = {
       },
       {
         q: "Does Zutok CRM include a help desk for support tickets?",
-        a: "Yes. The Support & Knowledge Base module keeps support tickets on each customer's profile, next to their contacts, invoices and projects, from CRM Starter, so follow-up requests stay with the rest of that customer's history. The same module also has a knowledge base and surveys.",
+        a: "Yes. The Support & Knowledge Base module keeps support tickets on each customer's profile, next to their contacts, invoices and projects, so follow-up requests stay with the rest of that customer's history. The same module also has a knowledge base and surveys.",
       },
       {
         q: "What can Zutok CRM automate?",
-        a: "From CRM Growth, an automation manager, scheduled jobs and custom email and SMS templates. Built-in reminders also cover lead follow-ups, contract renewals, staff contracts that are about to expire and overdue invoices.",
+        a: "An automation manager, scheduled jobs and custom email and SMS templates. Built-in reminders also cover lead follow-ups, contract renewals, staff contracts that are about to expire and overdue invoices.",
       },
       {
-        q: "Which plan includes reports and goals?",
-        a: "CRM Growth and Enterprise: reports on sales, orders, quantities, leads and timesheets, plus company goals tracking.",
+        q: "Does Zutok CRM include reports and goals?",
+        a: "Yes: reports on sales, orders, quantities, leads and timesheets, plus company goals tracking.",
       },
       {
         q: "Can I add my own fields?",
-        a: "Yes, on CRM Enterprise, which adds custom fields to every module.",
+        a: "Yes. Zutok CRM has custom fields for every module.",
       },
     ],
   },

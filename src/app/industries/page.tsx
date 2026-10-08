@@ -96,7 +96,7 @@ export default function IndustriesPage() {
               Or start from <span className="font-serif font-normal italic">a product.</span>
             </h2>
             <p className="max-w-md text-lg font-medium text-ink/70">
-              Zutok CRM and ZChat are sold as plans. {ZSHOP_ZLOYA_NOTE} Everything plugs into Zutok CRM, and prices are on the{" "}
+              Zutok CRM is priced per user and ZChat is sold as plans. {ZSHOP_ZLOYA_NOTE} Everything plugs into Zutok CRM, and prices are on the{" "}
               <Link href="/pricing/" className="font-bold text-ink underline decoration-2 underline-offset-4">
                 Zutok pricing page
               </Link>

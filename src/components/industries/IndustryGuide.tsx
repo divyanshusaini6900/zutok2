@@ -7,7 +7,7 @@ import { Icon } from "@/components/ui/Icon";
 import { Reveal } from "@/components/ui/Reveal";
 import { SplitText } from "@/components/ui/SplitText";
 import { findPlan, planLabel, type Industry } from "@/lib/industries";
-import { formatINR, yearlyTotal, ZSHOP_ZLOYA_FEATURE } from "@/lib/pricing";
+import { formatINR, ZSHOP_ZLOYA_FEATURE } from "@/lib/pricing";
 import { products } from "@/lib/products";
 import { brandedName } from "@/lib/seo";
 import { cx } from "@/lib/cx";
@@ -19,18 +19,23 @@ type Theme = Industry["theme"];
 type Group = Industry["plans"]["picks"][number]["group"];
 
 /**
- * "₹2,000" a month billed monthly and "₹19,200" a year billed yearly, both excluding GST. ZChat plans also carry the
- * owner's per-month figure for yearly billing ("₹1,599"), shown as given; Zutok CRM plans have none (10 months for 12).
+ * "₹2,000" a month billed monthly, "₹19,200" a year billed yearly and the owner's per-month figure for yearly billing
+ * ("₹1,599"), all excluding GST and shown as given. Zutok CRM's prices carry the owner's yearly figures too, and every
+ * Zutok CRM figure is per user (`perUser`).
  */
 function prices(group: Group, name: string) {
-  const { plan } = findPlan(group, name);
+  const { group: g, plan } = findPlan(group, name);
   return {
     monthly: `₹${formatINR(plan.monthly)}`,
-    yearly: `₹${formatINR(yearlyTotal(plan) ?? plan.monthly)}`,
-    yearlyPerMonth: plan.yearly ? `₹${formatINR(plan.yearly.perMonth)}` : null,
+    yearly: `₹${formatINR(plan.yearly.total)}`,
+    yearlyPerMonth: `₹${formatINR(plan.yearly.perMonth)}`,
     bundle: Boolean(plan.includesZShopAndZloya),
+    perUser: Boolean(g.perUser),
   };
 }
+
+/** "/user" for Zutok CRM's per-user prices, "" for ZChat: goes before "/month" or "/year". */
+const userUnit = (price: { perUser: boolean }) => (price.perUser ? "/user" : "");
 
 const planHref = (group: Group) => `/products/${group}/#pricing`;
 
@@ -98,12 +103,12 @@ export function IndustryHero({ industry, crumbs }: { industry: Industry; crumbs:
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-ink/50">{planLabel(lead.group, lead.plan)}</p>
                 <p className="mt-1 font-display text-4xl tracking-wide">
                   {price.monthly}
-                  <span className="font-sans text-base font-bold tracking-normal">/month</span>
+                  <span className="font-sans text-base font-bold tracking-normal">{userUnit(price)}/month</span>
                 </p>
                 <p className="mt-1 text-sm font-medium text-ink/65">
-                  {price.yearlyPerMonth
-                    ? `Billed monthly, or ${price.yearlyPerMonth}/month billed yearly (${price.yearly}/year), excl. 18% GST`
-                    : `Billed monthly (${price.yearly}/year if billed yearly), excl. 18% GST`}
+                  {price.perUser
+                    ? `Per user, billed monthly, or ${price.yearlyPerMonth} per user/month billed yearly (${price.yearly} per user/year), excl. 18% GST`
+                    : `Billed monthly, or ${price.yearlyPerMonth}/month billed yearly (${price.yearly}/year), excl. 18% GST`}
                 </p>
                 {price.bundle && <p className="mt-2 text-sm font-extrabold text-ink">{ZSHOP_ZLOYA_FEATURE}</p>}
               </div>
@@ -277,7 +282,8 @@ export function PlanTable({ picks, notes }: { picks: Industry["plans"]["picks"];
           <thead>
             <tr className="bg-ink text-sm text-white">
               <th scope="col" className="p-4 pl-6 font-bold">
-                Plan
+                {/* ZChat rows are plans; Zutok CRM rows are user counts ("1 user", "3 users", "5 or more users"). */}
+                {picks.every((p) => p.group === "crm") ? "Users" : picks.some((p) => p.group === "crm") ? "Plan or users" : "Plan"}
               </th>
               <th scope="col" className="p-4 font-bold">
                 What it covers
@@ -303,13 +309,15 @@ export function PlanTable({ picks, notes }: { picks: Industry["plans"]["picks"];
                   <td className="p-4 align-top text-sm font-medium leading-relaxed text-ink/70">{p.fit}</td>
                   <td className="whitespace-nowrap p-4 text-right align-top font-extrabold text-ink">
                     {price.monthly}
-                    <span className="text-xs font-semibold text-ink/55">/month</span>
+                    <span className="text-xs font-semibold text-ink/55">{userUnit(price)}/month</span>
                   </td>
                   <td className="whitespace-nowrap p-4 pr-6 text-right align-top text-sm font-semibold text-ink/70">
-                    {price.yearly}/year
-                    {price.yearlyPerMonth && (
-                      <span className="block text-xs font-semibold text-ink/55">{price.yearlyPerMonth}/month</span>
-                    )}
+                    {price.yearly}
+                    {userUnit(price)}/year
+                    <span className="block text-xs font-semibold text-ink/55">
+                      {price.yearlyPerMonth}
+                      {userUnit(price)}/month
+                    </span>
                   </td>
                 </tr>
               );
