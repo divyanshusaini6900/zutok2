@@ -7,7 +7,7 @@ import { Icon } from "@/components/ui/Icon";
 import { Reveal } from "@/components/ui/Reveal";
 import { SplitText } from "@/components/ui/SplitText";
 import { findPlan, planLabel, type Industry } from "@/lib/industries";
-import { formatINR, YEARLY_MONTHS_CHARGED } from "@/lib/pricing";
+import { formatINR, yearlyTotal, ZSHOP_ZLOYA_FEATURE } from "@/lib/pricing";
 import { products } from "@/lib/products";
 import { brandedName } from "@/lib/seo";
 import { cx } from "@/lib/cx";
@@ -16,17 +16,23 @@ import { cx } from "@/lib/cx";
 
 type Theme = Industry["theme"];
 
-/** "₹999/month" and "₹9,990/year", both billed as stated and excluding GST. */
-function prices(group: Industry["plans"]["picks"][number]["group"], name: string) {
+type Group = Industry["plans"]["picks"][number]["group"];
+
+/**
+ * "₹2,000" a month billed monthly and "₹19,200" a year billed yearly, both excluding GST. ZChat plans also carry the
+ * owner's per-month figure for yearly billing ("₹1,599"), shown as given; Zutok CRM plans have none (10 months for 12).
+ */
+function prices(group: Group, name: string) {
   const { plan } = findPlan(group, name);
   return {
     monthly: `₹${formatINR(plan.monthly)}`,
-    yearly: `₹${formatINR(plan.monthly * YEARLY_MONTHS_CHARGED)}`,
+    yearly: `₹${formatINR(yearlyTotal(plan) ?? plan.monthly)}`,
+    yearlyPerMonth: plan.yearly ? `₹${formatINR(plan.yearly.perMonth)}` : null,
+    bundle: Boolean(plan.includesZShopAndZloya),
   };
 }
 
-const planHref = (group: Industry["plans"]["picks"][number]["group"]) =>
-  group === "suite" ? "/pricing/" : `/products/${group}/#pricing`;
+const planHref = (group: Group) => `/products/${group}/#pricing`;
 
 export function IndustryHero({ industry, crumbs }: { industry: Industry; crumbs: Crumb[] }) {
   const t = industry.theme;
@@ -95,8 +101,11 @@ export function IndustryHero({ industry, crumbs }: { industry: Industry; crumbs:
                   <span className="font-sans text-base font-bold tracking-normal">/month</span>
                 </p>
                 <p className="mt-1 text-sm font-medium text-ink/65">
-                  Billed monthly ({price.yearly}/year if billed yearly), excl. 18% GST
+                  {price.yearlyPerMonth
+                    ? `Billed monthly, or ${price.yearlyPerMonth}/month billed yearly (${price.yearly}/year), excl. 18% GST`
+                    : `Billed monthly (${price.yearly}/year if billed yearly), excl. 18% GST`}
                 </p>
+                {price.bundle && <p className="mt-2 text-sm font-extrabold text-ink">{ZSHOP_ZLOYA_FEATURE}</p>}
               </div>
             </div>
           </Reveal>
@@ -298,6 +307,9 @@ export function PlanTable({ picks, notes }: { picks: Industry["plans"]["picks"];
                   </td>
                   <td className="whitespace-nowrap p-4 pr-6 text-right align-top text-sm font-semibold text-ink/70">
                     {price.yearly}/year
+                    {price.yearlyPerMonth && (
+                      <span className="block text-xs font-semibold text-ink/55">{price.yearlyPerMonth}/month</span>
+                    )}
                   </td>
                 </tr>
               );

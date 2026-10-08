@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/Button";
 import { InlineText } from "@/components/ui/InlineText";
 import { Reveal } from "@/components/ui/Reveal";
 import { SplitText } from "@/components/ui/SplitText";
-import { formatINR, YEARLY_MONTHS_CHARGED } from "@/lib/pricing";
+import { planGroup, productPriceNote, YEARLY_MONTHS_CHARGED } from "@/lib/pricing";
 import { products } from "@/lib/products";
 import { getSolution, solutionBySlug, solutionPath, solutions } from "@/lib/solutions";
 import { industriesForSolution } from "@/lib/crosslinks";
@@ -27,7 +27,6 @@ import {
   pageMetadata,
   pricingGroup,
   softwareAppId,
-  startingPrice,
   webPageLd,
 } from "@/lib/seo";
 import { cx } from "@/lib/cx";
@@ -66,8 +65,9 @@ export default async function SolutionPage(props: Props) {
   const productPath = `/products/${product.slug}/`;
   const path = solutionPath(s.slug);
   const lead = s.h1Accent ? s.h1.slice(0, -s.h1Accent.length).trim() : s.h1;
-  const suite = s.plan.suite ? pricingGroup("suite").plans.find((p) => p.name === s.plan.suite) : undefined;
-  const note = pricingGroup(s.relatedProduct).note;
+  // ZShop and Zloya pages are priced through ZChat, whose Growth and Scale plans include them free.
+  const planGroupId = planGroup(s.relatedProduct);
+  const note = pricingGroup(planGroupId).note;
   const guides = industriesForSolution(s.slug);
 
   const crumbs = [
@@ -186,7 +186,7 @@ export default async function SolutionPage(props: Props) {
               <div className="mt-2 font-display text-4xl uppercase leading-none tracking-wide text-ink">{productName}</div>
               <p className="mt-3 text-sm font-semibold text-ink/80">{product.kicker}</p>
               <p className="mt-5 text-sm font-bold text-ink">
-                Plans from ₹{formatINR(startingPrice(product.slug))}/month billed monthly, excl. 18% GST.
+                {productPriceNote(product.slug)}
               </p>
               <div className="mt-6 flex flex-col gap-3">
                 <Button href={productPath} variant="white">
@@ -262,15 +262,12 @@ export default async function SolutionPage(props: Props) {
             <PlanCards product={s.relatedProduct} plan={s.plan} pop={pop} />
           </div>
           <div className="mt-10 max-w-3xl space-y-3 text-[15px] font-medium leading-relaxed text-ink/70">
-            {suite?.monthly && (
-              <p>
-                Also part of the Zutok Complete Suite, from {suite.name} at ₹{formatINR(suite.monthly)}/month billed monthly (₹
-                {formatINR(suite.monthly * YEARLY_MONTHS_CHARGED)}/year), excl. 18% GST.
-              </p>
-            )}
             {note && <p>{note}</p>}
             <p>
-              All prices are in Indian Rupees and exclude 18% GST. Yearly billing charges {YEARLY_MONTHS_CHARGED} months for 12.{" "}
+              All prices are in Indian Rupees and exclude 18% GST.{" "}
+              {planGroupId === "crm"
+                ? `Yearly billing charges ${YEARLY_MONTHS_CHARGED} months for 12.`
+                : "Yearly ZChat prices are shown on each plan."}{" "}
               <Link href="/pricing/" className="font-bold text-ink underline underline-offset-4">
                 Compare every Zutok plan
               </Link>

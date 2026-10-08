@@ -9,7 +9,15 @@ import { Reveal } from "@/components/ui/Reveal";
 import { SplitText } from "@/components/ui/SplitText";
 import { Wave } from "@/components/ui/Wave";
 import { pricingFaqs as faqs } from "@/lib/company";
-import { YEARLY_MONTHS_CHARGED } from "@/lib/pricing";
+import {
+  formatINR,
+  getGroup,
+  listJoin,
+  pricedPlans,
+  yearlyTotal,
+  YEARLY_MONTHS_CHARGED,
+  type PricingGroup,
+} from "@/lib/pricing";
 import { solutionPath } from "@/lib/solutions";
 import { cx } from "@/lib/cx";
 import {
@@ -38,25 +46,51 @@ export const metadata = pageMetadata({
     "WhatsApp CRM pricing India",
     "CRM price in INR",
     "ZChat price",
-    "ZShop price",
-    "Zloya price",
-    "Complete Suite price",
+    "ZChat plans",
+    "Zutok CRM price",
   ],
 });
 
-const compare: { feature: string; cells: (boolean | string)[] }[] = [
-  { feature: "Leads, customers & pipeline", cells: [true, true, true, true] },
-  { feature: "GST invoices, proposals & payments", cells: [true, true, true, true] },
-  { feature: "Users", cells: ["3", "10", "Unlimited", "By plan"] },
-  { feature: "HRM, payroll & attendance", cells: [false, true, true, "Growth+"] },
-  { feature: "Inventory & warehouse", cells: [false, true, true, "Growth+"] },
-  { feature: "Real Estate suite", cells: [false, false, true, "Enterprise"] },
-  { feature: "WhatsApp + Instagram inbox (ZChat)", cells: [false, false, false, true] },
-  { feature: "AI sales agent with your catalogue", cells: [false, false, false, "Growth+"] },
-  { feature: "Store automation (ZShop)", cells: [false, false, false, true] },
-  { feature: "Loyalty & memberships (Zloya)", cells: [false, false, false, "Loyalty all, memberships Growth+"] },
-  { feature: "Dedicated account manager", cells: [false, false, true, "Enterprise"] },
+type CompareRow = { feature: string; cells: (boolean | string)[] };
+type CompareTable = { id: string; title: string; group: PricingGroup; rows: CompareRow[] };
+
+const zchat = getGroup("zchat");
+const crm = getGroup("crm");
+
+/** ZChat plans side by side, built only from what pricing.ts states for each plan. */
+const zchatRows: CompareRow[] = (() => {
+  const limits = zchat.plans.map((p) => {
+    if (!p.limits) throw new Error(`pricing/page.tsx: ZChat ${p.name} has no limits`);
+    return p.limits;
+  });
+  const free = zchat.plans.map((p) => (p.includesZShopAndZloya ? "Free" : false));
+  return [
+    { feature: "Contacts", cells: limits.map((l) => (l.contacts === null ? "Unlimited" : formatINR(l.contacts))) },
+    { feature: "Channels", cells: limits.map((l) => formatINR(l.channels)) },
+    { feature: "CRM licenses", cells: limits.map((l) => formatINR(l.crmLicenses)) },
+    { feature: "Zutok ZShop (store automation)", cells: free },
+    { feature: "Zutok Zloya (loyalty & memberships)", cells: free },
+  ];
+})();
+
+/** Zutok CRM plans side by side, from the CRM feature lists in pricing.ts. */
+const crmRows: CompareRow[] = [
+  { feature: "Leads, customers & pipeline", cells: [true, true, true] },
+  { feature: "GST invoices, proposals & payments", cells: [true, true, true] },
+  { feature: "Users", cells: ["3", "10", "Unlimited"] },
+  { feature: "HRM, payroll & attendance", cells: [false, true, true] },
+  { feature: "Inventory & warehouse", cells: [false, true, true] },
+  { feature: "Real Estate suite", cells: [false, false, true] },
+  { feature: "Dedicated account manager", cells: [false, false, true] },
 ];
+
+const compareTables: CompareTable[] = [
+  { id: "compare-zchat", title: "Zutok ZChat plans", group: zchat, rows: zchatRows },
+  { id: "compare-crm", title: "Zutok CRM plans", group: crm, rows: crmRows },
+];
+
+/** "₹19,200 for Starter, ₹47,988 for Growth and ₹95,988 for Scale": ZChat's yearly prices, as set per plan. */
+const zchatYearly = listJoin(pricedPlans(zchat).map((p) => `₹${formatINR(yearlyTotal(p) ?? 0)} for ${p.name}`));
 
 function Cell({ v }: { v: boolean | string }) {
   if (v === true)
@@ -121,7 +155,7 @@ export default function PricingPage() {
       <section className="pb-24 pt-6">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <h2 className="mb-8 text-center text-3xl font-extrabold tracking-tight sm:text-4xl">
-            Choose a product, <span className="font-serif font-normal italic">then a plan</span>
+            Choose ZChat or Zutok CRM, <span className="font-serif font-normal italic">then a plan</span>
           </h2>
           <PricingTable />
         </div>
@@ -135,14 +169,15 @@ export default function PricingPage() {
             </h2>
           </Reveal>
           <p className="mx-auto mt-5 max-w-2xl text-center font-medium text-ink/65">
-            Every Zutok plan in one table: the price when billed monthly, and the yearly price, which charges{" "}
-            {YEARLY_MONTHS_CHARGED} months for 12. All prices are in Indian Rupees and exclude 18% GST.
+            Every ZChat and Zutok CRM plan in one table, billed monthly or yearly. Yearly Zutok CRM plans charge{" "}
+            {YEARLY_MONTHS_CHARGED} months for 12; yearly ZChat plans cost {zchatYearly} a year. All prices are in Indian
+            Rupees and exclude 18% GST.
           </p>
           <Reveal delay={0.1} className="mt-10">
             <PlanPriceTable linkProducts />
           </Reveal>
           <p className="mx-auto mt-8 max-w-2xl text-center text-sm font-medium text-ink/65">
-            ZChat and ZShop plans cover the software. Meta&apos;s per-message charges for WhatsApp template messages are billed
+            ZChat plans cover the Zutok software. Meta&apos;s per-message charges for WhatsApp template messages are billed
             separately at Meta&apos;s published rates.{" "}
             <Link
               href={solutionPath("whatsapp-business-api")}
@@ -162,32 +197,43 @@ export default function PricingPage() {
               Compare what&apos;s <span className="font-serif font-normal italic">included</span>
             </h2>
           </Reveal>
-          <Reveal delay={0.1} className="mt-10 overflow-x-auto rounded-[2rem] border-[2.5px] border-ink bg-white shadow-[6px_6px_0_#0b0b0b]">
-            <table className="w-full min-w-[640px] text-left">
-              <thead>
-                <tr className="bg-ink text-sm text-white">
-                  <th className="p-5 font-bold">Feature</th>
-                  {["CRM Starter", "CRM Growth", "CRM Enterprise", "Complete Suite"].map((h) => (
-                    <th key={h} className="p-5 text-center font-extrabold">
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {compare.map((row) => (
-                  <tr key={row.feature} className="border-b border-ink/5 last:border-0">
-                    <td className="p-5 text-sm font-semibold text-ink/80">{row.feature}</td>
-                    {row.cells.map((c, i) => (
-                      <td key={i} className={cx(`p-5 text-center ${i === 3 ? "bg-[#dcfce7]" : ""}`)}>
-                        <Cell v={c} />
-                      </td>
+          {compareTables.map((t) => (
+            <div key={t.id} className="mt-12">
+              <h3 id={t.id} className="flex items-center gap-2.5 text-2xl font-extrabold tracking-tight">
+                <span className="size-3 shrink-0 rounded-full ring-1 ring-ink/20" style={{ background: t.group.stripe }} />
+                {t.title}
+              </h3>
+              <Reveal
+                delay={0.1}
+                className="mt-5 overflow-x-auto rounded-[2rem] border-[2.5px] border-ink bg-white shadow-[6px_6px_0_#0b0b0b]"
+              >
+                <table className="w-full min-w-[640px] text-left" aria-labelledby={t.id}>
+                  <thead>
+                    <tr className="bg-ink text-sm text-white">
+                      <th className="p-5 font-bold">Feature</th>
+                      {t.group.plans.map((p) => (
+                        <th key={p.name} className="p-5 text-center font-extrabold">
+                          {t.group.id === "crm" ? "CRM" : t.group.label} {p.name}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {t.rows.map((row) => (
+                      <tr key={row.feature} className="border-b border-ink/5 last:border-0">
+                        <td className="p-5 text-sm font-semibold text-ink/80">{row.feature}</td>
+                        {row.cells.map((c, i) => (
+                          <td key={i} className={cx(`p-5 text-center ${t.group.plans[i]?.popular ? "bg-[#dcfce7]" : ""}`)}>
+                            <Cell v={c} />
+                          </td>
+                        ))}
+                      </tr>
                     ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </Reveal>
+                  </tbody>
+                </table>
+              </Reveal>
+            </div>
+          ))}
         </div>
       </section>
 

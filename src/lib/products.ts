@@ -1,14 +1,51 @@
 import type { IconName } from "@/components/ui/Icon";
-import { formatINR, pricing } from "@/lib/pricing";
+import {
+  bundlePlanNames,
+  describeLimits,
+  formatINR,
+  getGroup,
+  getPlan,
+  listJoin,
+  pricedPlans,
+  yearlyTotal,
+  ZSHOP_ZLOYA_INCLUDED,
+  ZSHOP_ZLOYA_NOTE,
+  type PricingGroupId,
+} from "@/lib/pricing";
 
 export type ProductSlug = "zchat" | "zshop" | "zloya" | "crm";
 
-/** "₹1,299": a plan's monthly price, billed monthly, excluding GST. Throws at build time if the plan is renamed. */
-function price(group: ProductSlug, name: string) {
-  const monthly = pricing.find((g) => g.id === group)?.plans.find((p) => p.name === name)?.monthly;
-  if (monthly == null) throw new Error(`products.ts: no priced plan "${name}" in "${group}"`);
-  return `₹${formatINR(monthly)}`;
+/**
+ * "₹2,000": a plan's monthly price, billed monthly, excluding GST. Throws at build time if the plan is renamed.
+ * Only "zchat" and "crm" have plans: ZShop and Zloya come free with ZChat Growth and Scale.
+ */
+function price(group: PricingGroupId, name: string) {
+  return `₹${formatINR(getPlan(group, name).monthly)}`;
 }
+
+/*
+ * "ZChat Starter costs ₹2,000/month for 500 contacts, 1 channel and 1 CRM license; Growth ...", then the yearly prices,
+ * all from pricing.ts. Which ZChat features sit on which plan isn't published, so this names only the allowances.
+ */
+const zchatPlans = pricedPlans(getGroup("zchat"));
+const zchatCosts = zchatPlans.map(
+  (p, i) => `${i === 0 ? `ZChat ${p.name} costs` : p.name} ${price("zchat", p.name)}/month for ${describeLimits("zchat", p.name)}`,
+);
+const ZCHAT_COST = [
+  `${zchatCosts.slice(0, -1).join("; ")}; and ${zchatCosts[zchatCosts.length - 1]}.`,
+  "Prices are billed monthly and exclude 18% GST.",
+  `Billed yearly, ${listJoin(
+    zchatPlans.map(
+      (p, i) =>
+        `${i === 0 ? `ZChat ${p.name} costs` : p.name} ₹${formatINR(yearlyTotal(p) ?? 0)} a year ` +
+        `(shown as ₹${formatINR(p.yearly?.perMonth ?? 0)} a month)`,
+    ),
+  )}.`,
+  ZSHOP_ZLOYA_NOTE,
+].join(" ");
+
+/** "Zutok ZShop isn't sold on its own: it's included free with ZChat Growth (...) and Scale (...), excluding 18% GST." */
+const bundledCost = (name: string) => `Zutok ${name} isn't sold on its own: it's ${ZSHOP_ZLOYA_INCLUDED}, excluding 18% GST.`;
 
 export type Theme = {
   color: string;
@@ -136,7 +173,8 @@ export const products: Record<ProductSlug, Product> = {
       { title: "Sell on autopilot", body: "The AI asks, quotes and sends the order link, and hands over to your team when needed." },
     ],
     stats: [
-      { value: 4, label: "channels in one inbox" },
+      // The four messaging apps, not the plans' 1, 2 or 4 "channels": which apps count as a channel isn't published.
+      { value: 4, label: "messaging apps in one inbox" },
       { value: 24, suffix: "/7", label: "AI replies, day or night" },
       { value: 5, label: "template formats: text, image, PDF, video, buttons" },
     ],
@@ -147,7 +185,7 @@ export const products: Record<ProductSlug, Product> = {
       },
       {
         q: "Are Meta's WhatsApp charges included?",
-        a: "No. Meta's per-message charges for template messages are billed separately at its published rates. Your ZChat plan covers the software, seats and AI agent.",
+        a: "No. Meta's per-message charges for template messages are billed separately at its published rates. Your ZChat plan covers the Zutok software.",
       },
       {
         q: "How does the AI know my prices?",
@@ -166,8 +204,8 @@ export const products: Record<ProductSlug, Product> = {
         a: "Yes. The same AI agent that answers WhatsApp, Instagram and Messenger also replies on Telegram: it asks each choice as a numbered list, quotes only from the catalogue row that matches, answers other questions only from your business facts and hands the chat to your team when needed. Telegram chats sit in the same shared inbox, and every new chat becomes a CRM lead with its source.",
       },
       {
-        q: "Which ZChat plan includes Telegram and Messenger?",
-        a: `ZChat Growth (${price("zchat", "Growth")}/month) and Scale (${price("zchat", "Scale")}/month), billed monthly and excluding 18% GST. ZChat Starter (${price("zchat", "Starter")}/month) covers WhatsApp and Instagram.`,
+        q: "How much does ZChat cost?",
+        a: ZCHAT_COST,
       },
     ],
   },
@@ -277,15 +315,11 @@ export const products: Record<ProductSlug, Product> = {
       },
       {
         q: "Which number do the messages come from, and where do replies go?",
-        a: "Your ZChat number, on the official WhatsApp Business Platform. Buyer replies land in the same ZChat inbox, which is why ZShop needs ZChat for WhatsApp delivery.",
+        a: `Your ZChat number, on the official WhatsApp Business Platform. Buyer replies land in the same ZChat inbox. That's why ZShop comes with ZChat: it's included free with ZChat ${bundlePlanNames()}.`,
       },
       {
         q: "What does ZShop cost?",
-        a: `ZShop Starter is ${price("zshop", "Starter")}/month for 1 store and up to 500 orders a month, Growth is ${price("zshop", "Growth")}/month and Scale is ${price("zshop", "Scale")}/month, billed monthly and excluding 18% GST. You also need a ZChat plan for WhatsApp delivery, Meta's charges are billed separately, and there is no setup fee.`,
-      },
-      {
-        q: "Can I connect more than one store?",
-        a: "Yes. ZShop Starter covers 1 store, Growth up to 3 stores and Scale unlimited stores, with a multi-store dashboard on Scale.",
+        a: `${bundledCost("ZShop")} Meta's charges are billed separately, and there is no setup fee.`,
       },
       {
         q: "Is this the same as a WhatsApp chat button?",
@@ -389,11 +423,11 @@ export const products: Record<ProductSlug, Product> = {
     faqs: [
       {
         q: "Does Zloya work without a POS integration?",
-        a: "Yes. The POS quick counter runs in any browser next to your current billing, so the cashier enters the bill amount and Zloya handles the rest. If you want your POS connected, API / POS integration comes with Zloya Chain.",
+        a: "Yes. The POS quick counter runs in any browser next to your current billing, so the cashier enters the bill amount and Zloya handles the rest. If you want your POS connected, ask about API / POS integration during your demo.",
       },
       {
         q: "How do Zloya loyalty points work?",
-        a: "The cashier enters the bill amount at the POS quick counter, and points are added at the guest's tier multiplier, from 1× on Bronze to 2× on Platinum. The balance sits on the guest's record. Points can expire, and the points-expiry journey on Zloya Growth reminds guests to use them first.",
+        a: "The cashier enters the bill amount at the POS quick counter, and points are added at the guest's tier multiplier, from 1× on Bronze to 2× on Platinum. The balance sits on the guest's record. Points can expire, and the points-expiry journey reminds guests to use them first.",
       },
       {
         q: "Do I have to replace my billing software?",
@@ -413,11 +447,11 @@ export const products: Record<ProductSlug, Product> = {
       },
       {
         q: "Can I run it across multiple outlets?",
-        a: "Yes. Growth covers up to three outlets and Chain has no limit, with the same guest profile shared across every outlet.",
+        a: "Yes. Zloya shares the same guest profile across every outlet, so a regular is recognised at each branch.",
       },
       {
         q: "What does Zloya cost?",
-        a: `Zloya Single Outlet is ${price("zloya", "Single Outlet")}/month, Growth ${price("zloya", "Growth")}/month and Chain ${price("zloya", "Chain")}/month, billed monthly and excluding 18% GST.`,
+        a: `${bundledCost("Zloya")} There is no setup fee.`,
       },
     ],
   },

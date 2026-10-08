@@ -123,7 +123,7 @@ export default function SolutionsPage() {
                   <Reveal key={s.slug} delay={i * 0.08} className="h-full">
                     <SolutionCard
                       solution={s}
-                      footnote={`From ${brandedName(p)} ${start.plan}: ₹${formatINR(start.monthly)}/month, excl. GST`}
+                      footnote={`${start.bundled ? "Free with" : "From"} ${start.label}: ₹${formatINR(start.monthly)}/month, excl. GST`}
                     />
                   </Reveal>
                 );

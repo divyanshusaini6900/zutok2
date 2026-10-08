@@ -22,8 +22,8 @@ type Route = {
 /**
  * The day each page's content last really changed, by path. Footer or navigation edits alone don't count.
  * 2026-10-09: six new solution pages, and rewritten copy, sections and FAQs on every other solution page, the
- * product pages, the industry guides, home, /pricing/ and /solutions/. (/about/ and /industries/ only picked up
- * renamed product taglines, so they keep no date.)
+ * product pages, the industry guides, home, /pricing/ and /solutions/. The same day's new pricing (ZChat and Zutok CRM
+ * plans only; ZShop and Zloya free with ZChat Growth and Scale) also rewrote the price copy on /about/ and /industries/.
  */
 const RELEASE_2026_10_09 = "2026-10-09";
 const contentDates: Record<string, string> = Object.fromEntries(
@@ -31,6 +31,8 @@ const contentDates: Record<string, string> = Object.fromEntries(
     "/",
     "/pricing/",
     "/solutions/",
+    "/about/",
+    industriesHub.path,
     ...productList.map((p) => `/products/${p.slug}/`),
     ...solutionSlugs.map(solutionPath),
     ...industrySlugs.map(industryPath),

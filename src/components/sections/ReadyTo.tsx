@@ -8,6 +8,7 @@ import { InstagramIcon, MessengerIcon, ShopifyIcon, WhatsAppIcon } from "@/compo
 import { ChatScreen, PhoneShell, type ChatMsg } from "@/components/mock/Phone";
 import { PassScreen } from "@/components/mock/PassScreen";
 import { InlineText } from "@/components/ui/InlineText";
+import { BUNDLE_PLANS_SHORT, cheapestPlan, inr } from "@/lib/pricing";
 import { products, type ProductSlug } from "@/lib/products";
 import { scrollToY } from "@/lib/scroll";
 import { cx } from "@/lib/cx";
@@ -24,6 +25,10 @@ type Item = {
   stickers: { Icon: ComponentType<{ className?: string }>; bg: string; pos: string }[];
 };
 
+// ZChat's starting price, billed monthly; ZShop and Zloya aren't sold separately and come free with ZChat Growth and Scale.
+const ZCHAT_FROM = `From ${inr(cheapestPlan("zchat").monthly)}/mo`;
+const BUNDLED = `Free with ZChat ${BUNDLE_PLANS_SHORT}`;
+
 const items: Item[] = [
   {
     slug: "zchat",
@@ -35,7 +40,7 @@ const items: Item[] = [
       "[WhatsApp broadcasts](/solutions/whatsapp-broadcast-campaigns/) and [Instagram comment → DM](/solutions/instagram-comment-to-dm/)",
     ],
     more: { label: "Everything Zutok automates on WhatsApp", href: "/solutions/whatsapp-automation/" },
-    price: "From ₹799/mo",
+    price: ZCHAT_FROM,
     stickers: [
       { Icon: WhatsAppIcon, bg: "#25d366", pos: "left-[-18%] top-[8%]" },
       { Icon: InstagramIcon, bg: "linear-gradient(135deg,#f58529,#dd2a7b 55%,#8134af)", pos: "right-[-20%] top-[22%]" },
@@ -52,7 +57,7 @@ const items: Item[] = [
       "[COD confirmation](/solutions/whatsapp-cod-confirmation/) before you ship",
       "3-step [abandoned-cart recovery](/solutions/abandoned-cart-recovery-whatsapp/)",
     ],
-    price: "From ₹1,299/mo",
+    price: BUNDLED,
     stickers: [
       { Icon: ShoppingCart, bg: "#ff6b1a", pos: "left-[-18%] top-[10%]" },
       { Icon: ShopifyIcon, bg: "#95bf47", pos: "right-[-20%] top-[20%]" },
@@ -69,7 +74,7 @@ const items: Item[] = [
       "[Birthday, win-back and expiry journeys](/solutions/automated-winback-birthday-campaigns/)",
       "[Smart QR](/solutions/restaurant-qr-code-customer-data/) and a Google review booster",
     ],
-    price: "From ₹999/mo",
+    price: BUNDLED,
     stickers: [
       { Icon: Crown, bg: "#ff4d8d", pos: "left-[-18%] top-[8%]" },
       { Icon: Gift, bg: "#6c2bd9", pos: "right-[-20%] top-[22%]" },

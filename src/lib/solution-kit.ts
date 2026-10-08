@@ -1,6 +1,16 @@
 import type { IconName } from "@/components/ui/Icon";
 import type { ProductSlug } from "@/lib/products";
-import { formatINR, pricing, YEARLY_MONTHS_CHARGED, type PricingGroup } from "@/lib/pricing";
+import {
+  bundlePlans,
+  cheapestPlan,
+  formatINR,
+  getPlan,
+  isBundled,
+  planGroup,
+  yearlyTotal,
+  type PricedPlan,
+  type PricingGroupId,
+} from "@/lib/pricing";
 
 /**
  * Types and price helpers shared by src/lib/solutions.ts and the per-page files in src/lib/solution-pages/.
@@ -40,12 +50,20 @@ export type SolutionPlan = {
   heading: string;
   /** Direct answer naming the plan and its price. */
   lead: string;
-  /** What this page is about, per plan. The first item's `from` is the plan the solution starts on. */
-  includes: { label: string; from: string }[];
-  /** One line per plan name, saying what matters about that plan for this use case. */
-  highlights: Record<string, string>;
-  /** Complete Suite plan that already contains the first item. */
-  suite?: string;
+  /**
+   * Zutok CRM pages only: what this page is about, per CRM plan. The first item's `from` is the plan the page starts on,
+   * and the plan cards tick each item from that plan up. ZChat, ZShop and Zloya pages leave it out: which ZChat plan
+   * has which feature isn't published, so their cards list each plan's own contacts, channels and CRM licenses.
+   */
+  includes?: { label: string; from: string }[];
+  /** Zutok CRM pages only: one line per plan name, saying what matters about that plan for this use case. */
+  highlights?: Record<string, string>;
+  /**
+   * The plan the page starts on, in the pricing group that sells the page's product (see `planGroup`). Optional:
+   * ZChat pages start on the cheapest ZChat plan, ZShop and Zloya pages on the first ZChat plan that includes them
+   * free (Growth), and CRM pages on `includes[0].from`.
+   */
+  startsOn?: string;
 };
 
 export type Solution = {
@@ -83,19 +101,55 @@ export type Solution = {
 /** One page's data, keyed by its slug in solutions.ts. */
 export type SolutionEntry = Omit<Solution, "slug">;
 
-export type GroupId = PricingGroup["id"];
+/** "zchat" or "crm". ZShop and Zloya have no plans of their own: they come free with ZChat Growth and Scale. */
+export type GroupId = PricingGroupId;
 
-export function pricedPlan(group: GroupId, name: string) {
-  const plan = pricing.find((g) => g.id === group)?.plans.find((p) => p.name === name);
-  if (!plan || plan.monthly === null) throw new Error(`solution-kit.ts: no priced plan "${name}" in "${group}"`);
-  return { ...plan, monthly: plan.monthly };
+export { planGroup };
+/** Shared ZChat / ZShop / Zloya copy, re-exported from src/lib/pricing.ts so solution pages need one import. */
+export {
+  bundlePlanNames,
+  describeLimits,
+  zchatFrom,
+  ZSHOP_ZLOYA_INCLUDED,
+  ZSHOP_ZLOYA_INCLUDED_MONTHLY,
+  ZSHOP_ZLOYA_NOTE,
+} from "@/lib/pricing";
+
+/** A priced plan by group and name. Throws at build time if the plan is renamed or removed. */
+export function pricedPlan(group: GroupId, name: string): PricedPlan {
+  try {
+    return getPlan(group, name);
+  } catch {
+    throw new Error(`solution-kit.ts: no priced plan "${name}" in "${group}"`);
+  }
 }
 
-/** "₹1,999/month" */
+/**
+ * The plan a solution page starts on, in the pricing group that sells its product: `startsOn` if set; otherwise the
+ * first ZChat plan that includes ZShop and Zloya free (Growth) for those two, the cheapest plan (Starter) for ZChat,
+ * and `includes[0].from` (or the cheapest plan) for Zutok CRM.
+ */
+export function solutionStart(product: ProductSlug, plan: Pick<SolutionPlan, "includes" | "startsOn">) {
+  const group = planGroup(product);
+  const bundled = isBundled(product);
+  const fallback = bundled
+    ? bundlePlans()[0].name
+    : group === "crm"
+      ? (plan.includes?.[0]?.from ?? cheapestPlan(group).name)
+      : cheapestPlan(group).name;
+  return { group, bundled, plan: pricedPlan(group, plan.startsOn ?? fallback) };
+}
+
+/** "₹2,000/month": the price billed monthly. */
 export const perMonth = (group: GroupId, plan: string) => `₹${formatINR(pricedPlan(group, plan).monthly)}/month`;
 
-/** "₹1,999/month billed monthly (₹19,990/year), excl. 18% GST" */
+/**
+ * Both billing options, excluding GST:
+ * ZChat: "₹2,000/month billed monthly (₹19,200/year, or ₹1,599/month billed yearly), excl. 18% GST"
+ * CRM:   "₹799/month billed monthly (₹7,990/year), excl. 18% GST"
+ */
 export const priceLine = (group: GroupId, plan: string) => {
-  const m = pricedPlan(group, plan).monthly;
-  return `₹${formatINR(m)}/month billed monthly (₹${formatINR(m * YEARLY_MONTHS_CHARGED)}/year), excl. 18% GST`;
+  const p = pricedPlan(group, plan);
+  const perMonthYearly = p.yearly ? `, or ₹${formatINR(p.yearly.perMonth)}/month billed yearly` : "";
+  return `₹${formatINR(p.monthly)}/month billed monthly (₹${formatINR(yearlyTotal(p) ?? 0)}/year${perMonthYearly}), excl. 18% GST`;
 };

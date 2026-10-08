@@ -7,6 +7,8 @@ import { perMonth, priceLine, type SolutionEntry } from "@/lib/solution-kit";
  * Sending campaigns stays on /solutions/whatsapp-broadcast-campaigns/, which this page links to.
  * Guardrails: no approval timelines or guarantees, no rejection lists, no editing rules, no size or button limits, no
  * carousels or template libraries, no OTP-sending product, no Meta rate figures.
+ * The template studio and broadcasts are "part of Zutok ZChat, with plans from …": which ZChat plan includes them is not
+ * published (owner's pricing, 2026-10-09), so no plan is named.
  * Meta's charges follow Meta's own pricing page (developers.facebook.com/docs/whatsapp/pricing/, checked 2026-10-09):
  * per template message by category, and utility templates sent inside an open customer service window are free.
  */
@@ -29,7 +31,7 @@ export const page: SolutionEntry = {
   ],
   h1: "WhatsApp template messages, from approval to the 24-hour rule",
   h1Accent: "from approval to the 24-hour rule",
-  answer: `A WhatsApp template message is written in advance and approved by Meta, and you need one whenever you message a customer more than 24 hours after their last message. In Zutok ZChat's template studio, Indian businesses create or sync Text, Image, PDF, Video and Button templates, choose Marketing, Utility or Authentication, and track approval. It comes with ZChat Growth at ${priceLine("zchat", "Growth")}.`,
+  answer: `A WhatsApp template message is written in advance and approved by Meta, and you need one whenever you message a customer more than 24 hours after their last message. In Zutok ZChat's template studio, Indian businesses create or sync Text, Image, PDF, Video and Button templates, choose Marketing, Utility or Authentication, and track approval. ZChat plans start at ${priceLine("zchat", "Starter")}.`,
   summary:
     "What a WhatsApp template message is, when the 24-hour rule means you need one, and how to create, categorise and get templates approved in Zutok ZChat.",
   facts: [
@@ -53,7 +55,7 @@ export const page: SolutionEntry = {
     lead: "In ZChat's template studio. Create the template there, or sync one you've already made in Meta, pick its category and follow its approval status until Meta approves it. Zutok guides you through the approval.",
     body: [
       "The studio has five formats (Text, Image, PDF, Video and Button) and three categories (Marketing, Utility and Authentication), and every template shows where it is in Meta's approval. If you've already built templates in Meta, they come into ZChat in one click, so you don't rebuild them by hand.",
-      "Approval is Meta's call, so nobody can promise you a result or a date. What Zutok does is guide you through getting your templates approved, and template approval help is listed by name on Suite Growth (“Guided setup and template approval help”) and ZShop Scale (“Template approval support”).",
+      "Approval is Meta's call, so nobody can promise you a result or a date. What Zutok does is guide you through getting your templates approved.",
     ],
   },
   extra: [
@@ -124,7 +126,7 @@ export const page: SolutionEntry = {
       },
       { icon: "receipt", title: "COD confirmation (ZShop)", body: "Website COD buyers get an approved template that ZShop fills in." },
       { icon: "package", title: "Order updates (ZShop)", body: "Placed, packed, shipped and delivered, each mapped to a template once." },
-      { icon: "cart", title: "Cart reminders (ZShop Growth)", body: "Each of the three reminders can go out as its own approved template." },
+      { icon: "cart", title: "Cart reminders (ZShop)", body: "Each of the three reminders can go out as its own approved template." },
       { icon: "workflow", title: "Numbered blanks filled in", body: "ZShop shows which order or cart fields fill each numbered blank." },
       { icon: "swap", title: "One-click Meta sync", body: "Templates you've already made in Meta come straight into ZChat." },
       { icon: "layers", title: "Approval status", body: "See where each template is in Meta's approval." },
@@ -132,15 +134,8 @@ export const page: SolutionEntry = {
     ],
   },
   plan: {
-    heading: "Which plan includes WhatsApp templates, and what do they cost to send?",
-    lead: `The template studio and broadcasts come with ZChat Growth at ${priceLine("zchat", "Growth")}. Meta may also charge for each template message you send, billed separately at Meta's published rates for India and at cost; its [pricing page](https://developers.facebook.com/docs/whatsapp/pricing/) has the current rates. Template approval help is listed on Suite Growth and ZShop Scale.`,
-    includes: [{ label: "Broadcasts & Meta templates", from: "Growth" }],
-    highlights: {
-      Starter: "Shared WhatsApp + Instagram inbox for 2 seats, with labels and quick replies.",
-      Growth: "Template studio, broadcasts, the AI sales agent and all 4 channels for 5 seats.",
-      Scale: "Everything in Growth, with 15 seats, multiple AI agents and priority support.",
-    },
-    suite: "Suite Growth",
+    heading: "What do WhatsApp templates cost with Zutok?",
+    lead: `The template studio and broadcasts are part of Zutok ZChat, with plans from ${priceLine("zchat", "Starter")}. Meta may also charge for each template message you send, billed separately at Meta's published rates for India and at cost; its [pricing page](https://developers.facebook.com/docs/whatsapp/pricing/) has the current rates.`,
   },
   faqs: [
     {
@@ -165,7 +160,7 @@ export const page: SolutionEntry = {
     },
     {
       q: "Is it free to send WhatsApp template messages?",
-      a: `Not always. Meta charges per template message by category (Marketing, Utility or Authentication) at its published rates for India, billed separately from your Zutok plan and at cost. Meta's [pricing page](https://developers.facebook.com/docs/whatsapp/pricing/) also says utility templates sent while the customer service window is open, the 24 hours after the customer's last message, are free. The template studio itself comes with ZChat Growth at ${perMonth("zchat", "Growth")}.`,
+      a: `Not always. Meta charges per template message by category (Marketing, Utility or Authentication) at its published rates for India, billed separately from your Zutok plan and at cost. Meta's [pricing page](https://developers.facebook.com/docs/whatsapp/pricing/) also says utility templates sent while the customer service window is open, the 24 hours after the customer's last message, are free. The template studio itself is part of Zutok ZChat, from ${perMonth("zchat", "Starter")}.`,
     },
   ],
   related: [

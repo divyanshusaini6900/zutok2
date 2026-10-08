@@ -1,16 +1,33 @@
-import { perMonth, priceLine, type SolutionEntry } from "@/lib/solution-kit";
+import {
+  bundlePlanNames,
+  describeLimits,
+  perMonth,
+  priceLine,
+  pricedPlan,
+  type SolutionEntry,
+} from "@/lib/solution-kit";
+
+/** Each ZChat plan's limits, cheapest first (Starter, Growth, Scale), read from pricing.ts. */
+const limits = ["Starter", "Growth", "Scale"].map((n) => pricedPlan("zchat", n).limits);
+const [starterChannels, growthChannels, scaleChannels] = limits.map((l) => l?.channels);
+const contacts = limits.map((l) => (l?.contacts == null ? "unlimited" : l.contacts.toLocaleString("en-IN")));
+/** "500, 1,500 or unlimited" */
+const contactRange = `${contacts[0]}, ${contacts[1]} or ${contacts[2]}`;
 
 /**
  * /solutions/omnichannel-team-inbox/
  * Owns "how a human team works WhatsApp (plus Instagram, Messenger and Telegram) together": where chats come from,
  * Unassigned / Mine / All, Open / Pending / Resolved, labels and quick replies, auto-assign, AI handoff, team reports,
- * and the channels × seats × price split by plan. The lead record and pipeline belong to /solutions/whatsapp-crm/,
- * number setup and Meta's charges to /solutions/whatsapp-business-api/.
+ * and the contacts × channels × CRM licenses × price split by plan. Which ZChat plan has which feature is not published
+ * (owner's pricing, 2026-10-09), so no feature is tied to a plan. The lead record and pipeline belong to
+ * /solutions/whatsapp-crm/, number setup and Meta's charges to /solutions/whatsapp-business-api/.
  * Not in the sources, so never claimed: internal notes, @mentions, collision detection, SLA timers, search, unread
- * counts, a mobile app, round-robin or skill routing, email / SMS / website chat, multiple numbers, extra-seat pricing.
- * Owner-confirmed (2026-10-09): every team seat replies from the same business WhatsApp number.
+ * counts, a mobile app, round-robin or skill routing, email / SMS / website chat, multiple numbers, team-seat counts or
+ * extra-seat pricing, which channels count towards a plan's 1, 2 or 4. So the four platforms are "messaging apps" here,
+ * and "channels" means only a plan's allowance.
+ * Owner-confirmed (2026-10-09): every team member replies from the same business WhatsApp number.
  * Owner to confirm before saying more: how a chat is claimed or reassigned by hand. Until then the page only says what
- * the All / Mine / Unassigned views show, and auto-assign (Scale).
+ * the All / Mine / Unassigned views show, and auto-assign.
  */
 export const page: SolutionEntry = {
   name: "Omnichannel team inbox",
@@ -18,7 +35,7 @@ export const page: SolutionEntry = {
   relatedProduct: "zchat",
   title: "WhatsApp Team Inbox: Instagram, Messenger, Telegram",
   metaDescription:
-    "Let 2, 5 or 15 people reply from one WhatsApp number, plus Instagram, Messenger and Telegram, in one Zutok ZChat inbox with views, statuses and labels.",
+    "Let your whole team reply from one WhatsApp number, plus Instagram, Messenger and Telegram, in one Zutok ZChat inbox with views, statuses and labels.",
   keywords: [
     "WhatsApp shared team inbox",
     "multiple users on one WhatsApp number",
@@ -32,13 +49,16 @@ export const page: SolutionEntry = {
   ],
   h1: "An omnichannel team inbox for WhatsApp, Instagram, Messenger and Telegram",
   h1Accent: "for WhatsApp, Instagram, Messenger and Telegram",
-  answer: `An omnichannel team inbox puts every chat channel in one shared inbox, so sales and support staff answer business chats together from one WhatsApp number instead of passing one phone around. In Zutok ZChat, WhatsApp, Instagram, Messenger and Telegram land in one inbox, split by All, Mine and Unassigned views and Open, Pending and Resolved status. It starts with ZChat Starter at ${priceLine("zchat", "Starter")}, for 2 seats on WhatsApp and Instagram.`,
+  answer: `An omnichannel team inbox puts every chat channel in one shared inbox, so sales and support staff answer chats together from one WhatsApp number instead of sharing one phone. In Zutok ZChat, WhatsApp, Instagram, Messenger and Telegram land in one inbox, split by All, Mine and Unassigned views and Open, Pending and Resolved status. ZChat plans start at ${priceLine("zchat", "Starter")}.`,
   summary:
-    "How a team of 2, 5 or 15 answers WhatsApp, Instagram, Messenger and Telegram from one Zutok ZChat inbox, with views, statuses, labels, auto-assign and team reports.",
+    "How a team answers WhatsApp, Instagram, Messenger and Telegram from one Zutok ZChat inbox, with views, statuses, labels, auto-assign and team reports.",
   facts: [
-    { value: "4", label: "channels in one inbox: WhatsApp, Instagram, Messenger and Telegram" },
+    { value: "4", label: "messaging apps in one inbox: WhatsApp, Instagram, Messenger and Telegram" },
     { value: "3 + 3", label: "views (All, Mine, Unassigned) and statuses (Open, Pending, Resolved)" },
-    { value: "15", label: "team seats on ZChat Scale, with 2 on Starter and 5 on Growth" },
+    {
+      value: String(scaleChannels),
+      label: `channels on ZChat Scale, with ${starterChannels} on Starter and ${growthChannels} on Growth`,
+    },
   ],
   problem: {
     heading: "What is a shared team inbox for WhatsApp, and when do you need one?",
@@ -59,33 +79,33 @@ export const page: SolutionEntry = {
     ],
     body: [
       "Chats don't only start with a customer's first message. Replies to your WhatsApp broadcasts, conversations started by comment-to-DM on Instagram and Facebook posts and reels, and buyers' replies to ZShop order updates and COD confirmations all land in the same inbox, so one team handles them together.",
-      "Labels and quick replies are there from ZChat Starter, and every new chat also creates a lead in Zutok CRM with its source, so a sales conversation never lives only in the inbox.",
+      "Labels and quick replies are built in, and every new chat also creates a lead in Zutok CRM with its source, so a sales conversation never lives only in the inbox.",
     ],
   },
   extra: [
     {
       heading: "Can I manage WhatsApp, Instagram DMs, Messenger and Telegram in one unified inbox?",
-      lead: "Yes, on ZChat Growth and Scale, which bring all four channels into one omnichannel inbox. ZChat Starter covers WhatsApp and Instagram.",
+      lead: "Yes. ZChat brings WhatsApp, Instagram, Messenger and Telegram into one omnichannel inbox, and each plan includes a set number of channels.",
       body: [
-        "Each plan includes a set number of team seats, so choose by how many people answer chats and which apps your customers write on. Prices are billed monthly and exclude 18% GST. Yearly billing charges 10 months for 12, and Meta's per-message charges for WhatsApp template messages are billed separately.",
+        "Choose by how many contacts and channels you need. Prices are billed monthly and exclude 18% GST, and Meta's per-message charges for WhatsApp template messages are billed separately.",
       ],
       bullets: [
-        `ZChat Starter, ${perMonth("zchat", "Starter")}: WhatsApp and Instagram, 2 team seats, labels and quick replies, and contacts synced to CRM leads.`,
-        `ZChat Growth, ${perMonth("zchat", "Growth")}: WhatsApp, Instagram, Messenger and Telegram, 5 team seats, team reports and the AI sales agent with handoff.`,
-        `ZChat Scale, ${perMonth("zchat", "Scale")}: everything in Growth with 15 team seats, auto-assign, export / import and multiple AI agents.`,
+        `ZChat Starter, ${perMonth("zchat", "Starter")}: ${describeLimits("zchat", "Starter")}.`,
+        `ZChat Growth, ${perMonth("zchat", "Growth")}: ${describeLimits("zchat", "Growth")}, with ZShop and Zloya free.`,
+        `ZChat Scale, ${perMonth("zchat", "Scale")}: ${describeLimits("zchat", "Scale")}, with ZShop and Zloya free.`,
       ],
     },
     {
       heading: "Can WhatsApp chats be assigned automatically?",
-      lead: "Yes, on ZChat Scale: auto-assign spreads new and waiting chats across the team, so nothing sits unanswered. On every plan, the Unassigned view shows chats nobody has taken yet, and Mine shows each person's own chats.",
+      lead: "Yes. Auto-assign spreads new and waiting chats across the team, so nothing sits unanswered. The Unassigned view shows chats nobody has taken yet, and Mine shows each person's own chats.",
       body: [
         "A simple routine for a small team: one person keeps an eye on Unassigned during busy hours, so new chats get a first answer, and All is there when a manager wants the full picture.",
-        "When the AI sales agent is on (ZChat Growth and Scale), it answers first, on WhatsApp, Instagram, Messenger and Telegram alike. With handoff on, it passes a chat to a person whenever the customer asks for one or the question falls outside its instructions. The whole history stays in the same inbox, so whoever answers next can read what was already said.",
+        "When the AI sales agent is on, it answers first, on WhatsApp, Instagram, Messenger and Telegram alike. With handoff on, it passes a chat to a person whenever the customer asks for one or the question falls outside its instructions. The whole history stays in the same inbox, so whoever answers next can read what was already said.",
       ],
     },
     {
       heading: "How do I track chats that are still waiting, and how the team is doing?",
-      lead: "Status shows what is waiting right now, and team reports show the pattern. From ZChat Growth, team reports cover conversations, resolution rate, average resolution time, and the load on each channel and each agent.",
+      lead: "Status shows what is waiting right now, and team reports show the pattern. Team reports cover conversations, resolution rate, average resolution time, and the load on each channel and each agent.",
       body: [
         "One way to use the statuses: Open for a chat that needs your team, Pending for one that is waiting on something, like the customer's reply or a price check, and Resolved once the question is answered.",
         "The reports answer the questions a manager usually asks: how many conversations came in, how many were resolved and how quickly, which channel is busiest, and whether one person is carrying more chats than the rest.",
@@ -97,67 +117,55 @@ export const page: SolutionEntry = {
     lead: "Zutok configures your channels and team with you on a call during onboarding. After that, the routine is yours.",
     items: [
       {
-        title: "Pick your seats and channels",
-        body: "Starter for 2 seats on WhatsApp and Instagram, Growth for 5 seats on all four channels, Scale for 15 seats.",
+        title: "Pick your plan",
+        body: `ZChat Starter includes ${describeLimits("zchat", "Starter")}; Growth has ${growthChannels} channels and Scale ${scaleChannels}, with more contacts.`,
       },
       {
         title: "Connect your WhatsApp number",
         body: "ZChat runs on the official WhatsApp Business Platform. Zutok helps you set up and verify the number during onboarding.",
       },
-      {
-        title: "Link the other channels",
-        body: "Instagram on every plan, plus Messenger and Telegram from ZChat Growth, each in a few clicks.",
-      },
-      { title: "Give each person a seat", body: "Your team joins the shared inbox, and Mine shows each person their own chats." },
+      { title: "Link your other apps", body: "Instagram, Messenger or Telegram, each in a few clicks." },
+      { title: "Add your team", body: "Everyone joins the shared inbox, and Mine shows each person their own chats." },
       {
         title: "Save labels and quick replies",
         body: "Tags for the kinds of chats you get, and saved answers for timings, directions and other everyday questions.",
       },
       {
         title: "Turn on handoff or auto-assign",
-        body: "On Growth, let the AI agent answer first and hand chats over. On Scale, auto-assign spreads new and waiting chats across the team.",
+        body: "Let the AI agent answer first and hand chats over, or let auto-assign spread new and waiting chats across the team.",
       },
     ],
   },
   features: {
     heading: "What's in ZChat's shared team inbox?",
-    lead: "Everything below works in the same inbox. Where a feature starts on a higher plan, it says so.",
+    lead: "Everything below works in the same inbox.",
     items: [
-      { icon: "inbox", title: "Four channels, one inbox", body: "WhatsApp and Instagram from Starter; Messenger and Telegram from Growth." },
-      { icon: "users", title: "2, 5 or 15 seats", body: "Team seats on ZChat Starter, Growth and Scale." },
+      {
+        icon: "inbox",
+        title: "Four apps, one inbox",
+        body: "WhatsApp, Instagram, Messenger and Telegram, all in one shared inbox.",
+      },
+      { icon: "users", title: `${contactRange} contacts`, body: "Contacts on ZChat Starter, Growth and Scale." },
       { icon: "layers", title: "All, Mine, Unassigned", body: "Each person sees their own chats, and nobody misses unclaimed ones." },
       { icon: "timer", title: "Open, Pending, Resolved", body: "A status on every chat, so no customer waits unnoticed." },
       { icon: "tags", title: "Labels & quick replies", body: "Tag chats and answer everyday questions with saved replies." },
-      { icon: "zap", title: "Auto-assign (Scale)", body: "New and waiting chats are spread across the team automatically." },
-      { icon: "chart", title: "Team reports (Growth)", body: "Resolution rate, resolution time, and load per channel and per agent." },
-      { icon: "bot", title: "AI agent with handoff (Growth)", body: "Answers first, then passes the chat to a person with its history." },
+      { icon: "zap", title: "Auto-assign", body: "New and waiting chats are spread across the team automatically." },
+      { icon: "chart", title: "Team reports", body: "Resolution rate, resolution time, and load per channel and per agent." },
+      { icon: "bot", title: "AI agent with handoff", body: "Answers first, then passes the chat to a person with its history." },
     ],
   },
   plan: {
     heading: "How much does a WhatsApp team inbox cost in India?",
-    lead: `ZChat Starter costs ${priceLine("zchat", "Starter")}, for 2 seats on WhatsApp and Instagram. ZChat Growth, at ${perMonth("zchat", "Growth")}, gives 5 seats on all four channels with team reports and the AI agent, and ZChat Scale, at ${perMonth("zchat", "Scale")}, gives 15 seats with auto-assign. There is no setup fee, and Meta's WhatsApp charges are billed separately.`,
-    includes: [
-      { label: "Team seats", from: "Starter" },
-      { label: "Messenger & Telegram in the inbox", from: "Growth" },
-      { label: "Team reports", from: "Growth" },
-      { label: "AI agent with handoff", from: "Growth" },
-      { label: "Auto-assign", from: "Scale" },
-    ],
-    highlights: {
-      Starter: "2 seats on WhatsApp + Instagram, with labels, quick replies and contacts synced to CRM leads.",
-      Growth: "5 seats on all 4 channels, team reports, and the AI agent that hands chats to your team.",
-      Scale: "Everything in Growth with 15 seats, auto-assign, export / import and multiple AI agents.",
-    },
-    suite: "Suite Starter",
+    lead: `ZChat Starter costs ${priceLine("zchat", "Starter")}, for ${describeLimits("zchat", "Starter")}. ZChat Growth, at ${perMonth("zchat", "Growth")}, gives ${describeLimits("zchat", "Growth")}, and ZChat Scale, at ${perMonth("zchat", "Scale")}, ${describeLimits("zchat", "Scale")}; both include ZShop and Zloya free. There is no setup fee, and Meta's WhatsApp charges are billed separately.`,
   },
   faqs: [
     {
       q: "Can my whole team reply from one WhatsApp number?",
-      a: "Yes. Every team member replies from your one business WhatsApp number, in the shared ZChat inbox, so customers keep chatting with the same number whoever answers. ZChat comes with 2 seats on Starter, 5 on Growth and 15 on Scale.",
+      a: "Yes. Every team member replies from your one business WhatsApp number, in the shared ZChat inbox, so customers keep chatting with the same number whoever answers.",
     },
     {
       q: "How does a team share business WhatsApp chats in ZChat?",
-      a: "Connect your number to ZChat (Zutok helps you set it up and verify it during onboarding) and give each person a team seat: 2 on Starter, 5 on Growth or 15 on Scale. Chats land in one shared inbox, where Unassigned shows chats nobody has taken yet and Mine shows each person their own.",
+      a: "Connect your number to ZChat (Zutok helps you set it up and verify it during onboarding) and add your team. Chats land in one shared inbox, where Unassigned shows chats nobody has taken yet and Mine shows each person their own.",
     },
     {
       q: "Do I need the WhatsApp Business API for a shared team inbox?",
@@ -169,15 +177,15 @@ export const page: SolutionEntry = {
     },
     {
       q: "Can the AI agent hand a chat to a person in the same inbox?",
-      a: "Yes, from ZChat Growth. With handoff on, the agent passes the chat to your team when the customer asks for a person or the question falls outside its instructions, and the whole history stays with the chat.",
+      a: "Yes. With handoff on, the agent passes the chat to your team when the customer asks for a person or the question falls outside its instructions, and the whole history stays with the chat.",
     },
     {
       q: "Where do replies to broadcasts, comment-to-DM and order updates go?",
-      a: "Into the same shared inbox. Broadcasts and comment-to-DM come with ZChat Growth, and ZShop sends order updates and COD confirmations from your ZChat number, so buyers' replies arrive there too.",
+      a: `Into the same shared inbox. Broadcasts and comment-to-DM are part of ZChat, and ZShop, free with ZChat ${bundlePlanNames()}, sends order updates and COD confirmations from your ZChat number, so buyers' replies arrive there too.`,
     },
     {
       q: "Is every new chat saved as a lead?",
-      a: "Yes. Every new chat creates a lead in Zutok CRM with its source, so sales can follow it up from one place. ZChat Starter lists it as contacts sync to CRM leads.",
+      a: "Yes. Every new chat creates a lead in Zutok CRM with its source, so sales can follow it up from one place.",
     },
   ],
   related: [

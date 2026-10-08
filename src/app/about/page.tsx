@@ -9,7 +9,7 @@ import { SplitText } from "@/components/ui/SplitText";
 import { homeFaqs, onboardingSteps, pricingFaqs } from "@/lib/company";
 import { cx } from "@/lib/cx";
 import { industriesHub, industryList, industryPath } from "@/lib/industries";
-import { formatINR, pricing, YEARLY_MONTHS_CHARGED } from "@/lib/pricing";
+import { BUNDLED_PRODUCTS, bundlePlanNames, formatINR, pricing, productPriceNote } from "@/lib/pricing";
 import { products } from "@/lib/products";
 import { site } from "@/lib/site";
 import {
@@ -58,6 +58,8 @@ const jsonLd = [
 
 // The CRM first: the other three plug into it.
 const family = [products.crm, products.zchat, products.zshop, products.zloya];
+// ZShop and Zloya: not sold separately, they come free with ZChat Growth and Scale.
+const bundled = BUNDLED_PRODUCTS.map((slug) => products[slug]);
 
 const loginHost = new URL(site.loginUrl).host;
 const siteHost = new URL(site.url).host;
@@ -66,7 +68,12 @@ const facts: { label: string; value: string; href?: string }[] = [
   { label: "Company", value: `${site.company}, also called ${site.name}` },
   { label: "Products", value: family.map(brandedName).join(", ") },
   { label: "Built for", value: "Businesses in India that sell on WhatsApp, Instagram and at the counter" },
-  { label: "Prices", value: `In Indian Rupees, excluding 18% GST, from ₹${formatINR(startingPrice("crm"))}/month` },
+  {
+    label: "Prices",
+    value:
+      `In Indian Rupees, excluding 18% GST: Zutok CRM from ₹${formatINR(startingPrice("crm"))}/month, ` +
+      `ZChat from ₹${formatINR(startingPrice("zchat"))}/month`,
+  },
   { label: "Email", value: site.email, href: `mailto:${site.email}` },
   { label: "Customer login", value: loginHost, href: site.loginUrl },
   { label: "Website", value: siteHost, href: "/" },
@@ -142,8 +149,8 @@ export default function AboutPage() {
           <div className="max-w-3xl">
             <h2 className="text-4xl font-extrabold leading-[1] tracking-tight text-ink sm:text-5xl">What does Zutok Softwares make?</h2>
             <p className="mt-5 text-lg font-medium leading-relaxed text-ink/70">
-              One CRM and three products that plug into it. Each product is sold on its own and includes the CRM features it
-              needs, and the Complete Suite bundles all four.
+              One CRM and three products that plug into it. Zutok CRM and ZChat are sold as plans, every ZChat plan includes
+              CRM licenses, and ZShop and Zloya come free with ZChat {bundlePlanNames()}.
             </p>
           </div>
           <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2">
@@ -164,9 +171,7 @@ export default function AboutPage() {
                     </span>
                   </div>
                   <p className="mt-5 text-[15px] font-medium leading-relaxed text-ink/75">{p.summary}</p>
-                  <p className="mt-auto pt-6 text-sm font-bold text-ink/80">
-                    From ₹{formatINR(startingPrice(p.slug))}/month billed monthly, excl. 18% GST
-                  </p>
+                  <p className="mt-auto pt-6 text-sm font-bold text-ink/80">{productPriceNote(p.slug)}</p>
                 </Link>
               </Reveal>
             ))}
@@ -239,8 +244,8 @@ export default function AboutPage() {
           <div>
             <h2 className="text-4xl font-extrabold leading-[1] tracking-tight text-ink sm:text-5xl">How is Zutok priced?</h2>
             <p className="mt-5 text-lg font-medium leading-relaxed text-ink/70">
-              In Indian Rupees, excluding 18% GST, billed monthly or yearly. Yearly billing charges {YEARLY_MONTHS_CHARGED}{" "}
-              months for 12. <InlineText text={answer(homeFaqs, "Is there a setup fee or lock-in?")} />
+              In Indian Rupees, excluding 18% GST, billed monthly or yearly.{" "}
+              <InlineText text={answer(homeFaqs, "Is there a setup fee or lock-in?")} />
             </p>
             <ul className="mt-10 overflow-hidden rounded-[1.75rem] border-[2.5px] border-ink bg-white shadow-[5px_5px_0_#0b0b0b]">
               {pricing.map((g) => (
@@ -254,6 +259,18 @@ export default function AboutPage() {
                   </span>
                 </li>
               ))}
+              {/* ZShop and Zloya have no plans of their own: they come with ZChat Growth and Scale. */}
+              <li className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-6 py-4">
+                <span className="flex items-center gap-3 font-extrabold text-ink">
+                  <span className="flex shrink-0 -space-x-1">
+                    {bundled.map((p) => (
+                      <span key={p.slug} className="size-3 rounded-full ring-1 ring-ink/20" style={{ background: p.theme.pop }} />
+                    ))}
+                  </span>
+                  {bundled.map(brandedName).join(" and ")}
+                </span>
+                <span className="text-sm font-bold text-ink/80">free with ZChat {bundlePlanNames()}</span>
+              </li>
             </ul>
             <div className="mt-6 space-y-3 text-[15px] font-medium leading-relaxed text-ink/70">
               <p>

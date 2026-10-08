@@ -3,22 +3,58 @@
  * Page files can't export extra values, so copy that more than one route needs lives here.
  */
 
-import { formatINR, pricing } from "@/lib/pricing";
+import {
+  formatINR,
+  getGroup,
+  limitParts,
+  listJoin,
+  pricedPlans,
+  yearlyTotal,
+  YEARLY_MONTHS_CHARGED,
+  ZSHOP_ZLOYA_INCLUDED,
+} from "@/lib/pricing";
 import { BRAND_SUMMARY, PRICING_SUMMARY } from "@/lib/seo";
 
 export type QA = { q: string; a: string };
 
 export { onboardingSteps } from "@/lib/onboarding";
 
-/** "₹2,299": a Complete Suite plan's monthly price. Throws at build time if the plan is renamed. */
-function suitePrice(name: string) {
-  const monthly = pricing.find((g) => g.id === "suite")?.plans.find((p) => p.name === name)?.monthly;
-  if (monthly == null) throw new Error(`company.ts: no priced suite plan "${name}"`);
-  return `₹${formatINR(monthly)}`;
-}
+/* ZChat copy is built from pricing.ts, so the answers can't drift from the plans. */
+const zchatPlans = pricedPlans(getGroup("zchat")).map((p) => {
+  if (!p.limits) throw new Error(`company.ts: ZChat ${p.name} has no limits`);
+  return { ...p, limits: p.limits };
+});
 
+/** "a, b or c" */
+const orJoin = (items: string[]) => `${items.slice(0, -1).join(", ")} or ${items[items.length - 1]}`;
+
+/** "₹19,200 for Starter, ₹47,988 for Growth or ₹95,988 for Scale": ZChat's yearly prices, as set per plan. */
+const zchatYearly = orJoin(zchatPlans.map((p) => `₹${formatINR(yearlyTotal(p) ?? 0)} for ${p.name}`));
+
+/*
+ * Only Zutok CRM is known not to charge per user. ZChat plans come with a set number of CRM licenses, and how extra
+ * users or licenses are priced isn't published, so the answer doesn't say "No" for ZChat.
+ */
 const PER_USER =
-  "No. Plans have a flat monthly price with user and seat limits: Zutok CRM covers up to 3, up to 10 or unlimited users, and ZChat comes with 2, 5 or 15 team seats. Prices exclude 18% GST.";
+  "Not on Zutok CRM: its plans have a flat monthly price for up to 3, up to 10 or unlimited users. " +
+  "ZChat plans also have a flat monthly price, and include " +
+  `${orJoin(zchatPlans.map((p) => (p.limits.contacts === null ? "unlimited" : formatINR(p.limits.contacts))))} contacts, ` +
+  `${orJoin(zchatPlans.map((p) => formatINR(p.limits.channels)))} channels and ` +
+  `${orJoin(zchatPlans.map((p) => formatINR(p.limits.crmLicenses)))} CRM licenses. Prices exclude 18% GST.`;
+
+/** "ZChat Starter (₹2,000/month, or ₹19,200/year) includes 500 contacts, 1 channel and 1 CRM license. ..." */
+const ZCHAT_PLANS =
+  zchatPlans
+    .map((p) => {
+      const free = p.includesZShopAndZloya ? ", with ZShop and Zloya free" : "";
+      return `ZChat ${p.name} (₹${formatINR(p.monthly)}/month, or ₹${formatINR(yearlyTotal(p) ?? 0)}/year) includes ${listJoin(limitParts(p.limits))}${free}.`;
+    })
+    .join(" ") + " Prices exclude 18% GST.";
+
+const BUNDLE_QA: QA = {
+  q: "Can I buy ZShop or Zloya on their own?",
+  a: `No. Zutok ZShop and Zutok Zloya aren't sold separately: they're ${ZSHOP_ZLOYA_INCLUDED}, excluding 18% GST.`,
+};
 
 /** Home page FAQ. */
 export const homeFaqs: QA[] = [
@@ -29,16 +65,9 @@ export const homeFaqs: QA[] = [
   },
   {
     q: "Can I buy just one product?",
-    a: "Yes. ZChat, ZShop and Zloya are each sold on their own, and each includes the CRM features it needs. The Complete Suite bundles all of them for less.",
+    a: `Yes. Zutok CRM and ZChat each have their own plans, and every ZChat plan includes CRM licenses. ZShop and Zloya aren't sold on their own: they're ${ZSHOP_ZLOYA_INCLUDED}, excluding 18% GST.`,
   },
-  {
-    q: "What's in each Complete Suite plan?",
-    a:
-      `Suite Starter (${suitePrice("Suite Starter")}/month) has CRM Starter for 3 users, ZChat Starter for WhatsApp and Instagram, ZShop Starter for 1 store and 500 orders a month, Zloya for 1 outlet and an onboarding call. ` +
-      `Suite Growth (${suitePrice("Suite Growth")}/month) has CRM Growth for 10 users with HRM and inventory, ZChat Growth with all 4 channels and the AI sales agent, ZShop Growth for 3 stores with abandoned carts, Zloya Growth for 3 outlets with memberships, and guided setup with template approval help. ` +
-      `Suite Enterprise (${suitePrice("Suite Enterprise")}/month) has CRM Enterprise with unlimited users, ZChat Scale, ZShop Scale, Zloya Chain and a dedicated success manager. ` +
-      "Each costs about 40% less than buying the four products separately, excluding 18% GST.",
-  },
+  { q: "What's in each ZChat plan?", a: ZCHAT_PLANS },
   { q: "Do I pay per user?", a: PER_USER },
   {
     q: "How does the ZChat AI know my prices?",
@@ -58,20 +87,32 @@ export const homeFaqs: QA[] = [
   },
   {
     q: "Is there a setup fee or lock-in?",
-    a: "There is no setup fee. Monthly plans can be cancelled at the end of any month, and yearly plans give you two months free.",
+    a:
+      "There is no setup fee. Monthly plans can be cancelled at the end of any month. " +
+      `Yearly Zutok CRM plans give you two months free, and yearly ZChat plans cost ${zchatYearly} a year.`,
   },
 ];
 
 /** Billing questions on /pricing/. */
 export const pricingFaqs: QA[] = [
   { q: "How much does Zutok cost?", a: PRICING_SUMMARY },
+  { q: "What's in each ZChat plan?", a: ZCHAT_PLANS },
+  BUNDLE_QA,
   {
     q: "Are prices inclusive of GST?",
     a: "No. All prices are in Indian Rupees and exclude 18% GST, which is added to your invoice.",
   },
   {
     q: "How does yearly billing work?",
-    a: "You pay for 10 months and get 12, which is two months free. The monthly figure shown is the yearly price divided by 12.",
+    a:
+      `For Zutok CRM you pay for ${YEARLY_MONTHS_CHARGED} months and get 12, which is two months free, and the monthly figure shown is the yearly price divided by 12. ` +
+      `ZChat's yearly prices are fixed: ${listJoin(
+        zchatPlans.map((p, i) => {
+          const year = `₹${formatINR(yearlyTotal(p) ?? 0)}`;
+          const shown = `₹${formatINR(p.yearly?.perMonth ?? 0)}/month`;
+          return i === 0 ? `${p.name} ${year} a year (shown as ${shown})` : `${p.name} ${year} (${shown})`;
+        }),
+      )}.`,
   },
   {
     q: "What does WhatsApp messaging cost on top?",

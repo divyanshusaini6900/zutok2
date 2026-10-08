@@ -18,7 +18,8 @@ import { Marquee } from "@/components/ui/Marquee";
 import { Reveal } from "@/components/ui/Reveal";
 import { SplitText } from "@/components/ui/SplitText";
 import { industriesHub, industryList, industryPath } from "@/lib/industries";
-import { productList, products, type ProductSlug } from "@/lib/products";
+import { productList, products, type Product, type ProductSlug } from "@/lib/products";
+import { isBundled, ZSHOP_ZLOYA_INCLUDED } from "@/lib/pricing";
 import { solutionBySlug, solutionPath, solutionsFor } from "@/lib/solutions";
 import { productExtraSolutions } from "@/lib/crosslinks";
 import { cx } from "@/lib/cx";
@@ -53,6 +54,22 @@ export async function generateMetadata(props: PageProps<"/products/[slug]">): Pr
     image: ogImage(p.slug),
     imageAlt: `${brandedName(p)}: ${p.kicker}`,
   });
+}
+
+/** The line under the pricing heading. ZShop and Zloya have no plans of their own, so their pages explain the bundle. */
+function PricingNote({ p }: { p: Product }) {
+  if (isBundled(p.slug)) {
+    return (
+      <>
+        {brandedName(p)} isn&apos;t sold separately: it&apos;s {ZSHOP_ZLOYA_INCLUDED}, excluding 18% GST.{" "}
+        <Link href="/pricing/" className="font-bold text-ink underline decoration-2 underline-offset-4">
+          Compare every plan
+        </Link>
+      </>
+    );
+  }
+  if (p.slug === "zchat") return <>Pick a plan by how many contacts and channels you need. Every plan includes CRM licenses.</>;
+  return <>Flat plan prices, not per user. Billed monthly, or yearly with two months free.</>;
 }
 
 function Signature({ slug }: { slug: ProductSlug }) {
@@ -193,10 +210,12 @@ export default async function ProductPage(props: PageProps<"/products/[slug]">) 
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="mb-14 text-center">
             <h2 className="text-5xl font-extrabold leading-[0.95] tracking-tight text-ink sm:text-7xl">
-              <SplitText text={`${p.name} pricing`} className="block" />
+              <SplitText text={isBundled(p.slug) ? `How to get ${p.name}` : `${p.name} pricing`} className="block" />
             </h2>
             <Reveal delay={0.1}>
-              <p className="mt-4 font-medium text-ink/65">Or save about 40% with the Complete Suite.</p>
+              <p className="mx-auto mt-4 max-w-2xl font-medium text-ink/65">
+                <PricingNote p={p} />
+              </p>
             </Reveal>
           </div>
           <PricingTable initial={p.slug} />

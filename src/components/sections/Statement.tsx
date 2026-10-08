@@ -71,7 +71,7 @@ export function Statement() {
 }
 
 const stats = [
-  { value: 4, label: "messaging channels, one inbox", color: "#22c55e" },
+  { value: 4, label: "messaging apps, one inbox", color: "#22c55e" },
   { value: 30, suffix: "+", label: "CRM modules, leads to payroll", color: "#a78bfa" },
   { value: 32, label: "Shopify webhook topics synced", color: "#ff6b1a" },
   { value: 24, suffix: "/7", label: "AI agent replying to buyers", color: "#ff4d8d" },

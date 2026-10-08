@@ -7,6 +7,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { SplitText } from "@/components/ui/SplitText";
 import { Wave } from "@/components/ui/Wave";
 import { industriesHub, industryList, industryPath } from "@/lib/industries";
+import { ZSHOP_ZLOYA_NOTE } from "@/lib/pricing";
 import { productList } from "@/lib/products";
 import { JsonLd, absoluteUrl, brandedName, breadcrumbLd, pageMetadata, webPageLd } from "@/lib/seo";
 
@@ -95,7 +96,7 @@ export default function IndustriesPage() {
               Or start from <span className="font-serif font-normal italic">a product.</span>
             </h2>
             <p className="max-w-md text-lg font-medium text-ink/70">
-              Every product is sold on its own and plugs into Zutok CRM (ZShop sends WhatsApp messages through ZChat). Prices are on the{" "}
+              Zutok CRM and ZChat are sold as plans. {ZSHOP_ZLOYA_NOTE} Everything plugs into Zutok CRM, and prices are on the{" "}
               <Link href="/pricing/" className="font-bold text-ink underline decoration-2 underline-offset-4">
                 Zutok pricing page
               </Link>

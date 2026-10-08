@@ -18,7 +18,7 @@ import { DemoCTA } from "@/components/sections/DemoCTA";
 import { Button } from "@/components/ui/Button";
 import { Reveal } from "@/components/ui/Reveal";
 import { getIndustry, industries, industriesHub, industryPath, industrySlugs } from "@/lib/industries";
-import { pricing, YEARLY_MONTHS_CHARGED } from "@/lib/pricing";
+import { isBundled, pricing, YEARLY_MONTHS_CHARGED, type PricingGroupId } from "@/lib/pricing";
 import { products } from "@/lib/products";
 import { industrySolutions } from "@/lib/crosslinks";
 import { solutionBySlug, solutionPath } from "@/lib/solutions";
@@ -55,12 +55,20 @@ const toc = [
   { id: "faq", label: "FAQ" },
 ];
 
-/** Billing notes for the plans in the table, taken from each pricing group's own note. */
-function planNotes(groups: string[]) {
-  const named: Record<string, string> = { suite: "Complete Suite", zchat: "ZChat", zshop: "ZShop" };
+/**
+ * Billing notes for the plans in the table, then each pricing group's own note. Yearly Zutok CRM plans charge
+ * YEARLY_MONTHS_CHARGED months for 12; yearly ZChat plans have the fixed yearly prices shown in the table.
+ */
+function planNotes(groups: PricingGroupId[]) {
+  const has = (id: PricingGroupId) => groups.includes(id);
+  const billing = [
+    "Prices are in Indian rupees and exclude 18% GST.",
+    has("crm") ? `Yearly Zutok CRM billing charges ${YEARLY_MONTHS_CHARGED} months for 12.` : "",
+    has("zchat") ? "Yearly ZChat plans are billed at the yearly price shown for each plan." : "",
+  ];
   return [
-    `Prices are in Indian rupees and exclude 18% GST. Yearly billing charges ${YEARLY_MONTHS_CHARGED} months for 12.`,
-    ...pricing.filter((g) => g.note && groups.includes(g.id)).map((g) => `${named[g.id] ?? g.label}: ${g.note}`),
+    billing.filter(Boolean).join(" "),
+    ...pricing.filter((g) => g.note && has(g.id)).map((g) => `${g.label}: ${g.note}`),
   ];
 }
 
@@ -138,7 +146,7 @@ export default async function IndustryPage({ params }: Props) {
                   Compare every Zutok plan
                 </Button>
                 <Button href={`/products/${rel.slug}/#pricing`} variant="ghost">
-                  {`${brandedName(rel)} plans in detail`}
+                  {isBundled(rel.slug) ? `How to get ${brandedName(rel)}` : `${brandedName(rel)} plans in detail`}
                 </Button>
               </div>
             </GuideSection>

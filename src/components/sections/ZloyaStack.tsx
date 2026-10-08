@@ -8,6 +8,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { SplitText } from "@/components/ui/SplitText";
 import { Wave } from "@/components/ui/Wave";
 import { POSMock, QRStandee, ReviewMock, tiers } from "@/components/mock/LoyaltyMocks";
+import { BUNDLE_PLANS_SHORT } from "@/lib/pricing";
 
 const extras = [
   ["480", "Welcome bonus on the first bill"],
@@ -127,7 +128,7 @@ export function ZloyaStack({ from = "#ffffff" }: { from?: string }) {
                 Explore Zloya
               </Button>
               <Button href="/products/zloya/#pricing" variant="outline">
-                From ₹999/mo
+                Free with ZChat {BUNDLE_PLANS_SHORT}
               </Button>
             </Reveal>
           </div>

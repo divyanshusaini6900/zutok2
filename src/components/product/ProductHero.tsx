@@ -14,6 +14,7 @@ import { ChatScreen, PhoneShell } from "@/components/mock/Phone";
 import { PassScreen } from "@/components/mock/PassScreen";
 import { TierCard, tiers } from "@/components/mock/LoyaltyMocks";
 import { ScaledFrame } from "@/components/mock/ScaledFrame";
+import { isBundled } from "@/lib/pricing";
 import { products, type ProductSlug } from "@/lib/products";
 import { cx } from "@/lib/cx";
 
@@ -196,7 +197,7 @@ export function ProductHero({ slug, crumbs }: { slug: ProductSlug; crumbs: Crumb
               Book a free demo
             </Button>
             <Button href="#pricing" variant={dark ? "outline" : "ghost"} arrow={false}>
-              See {p.name} pricing
+              {isBundled(slug) ? `How to get ${p.name}` : `See ${p.name} pricing`}
             </Button>
           </motion.div>
         </div>

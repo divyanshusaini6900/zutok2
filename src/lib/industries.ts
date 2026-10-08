@@ -1,6 +1,18 @@
 import type { IconName } from "@/components/ui/Icon";
 import type { ProductSlug } from "@/lib/products";
-import { formatINR, pricing, YEARLY_MONTHS_CHARGED, type Plan, type PricingGroup } from "@/lib/pricing";
+import {
+  bundlePlanNames,
+  describeLimits,
+  formatINR,
+  getGroup,
+  getPlan,
+  limitParts,
+  YEARLY_MONTHS_CHARGED,
+  ZSHOP_ZLOYA_INCLUDED,
+  type PricedPlan,
+  type PricingGroup,
+  type PricingGroupId,
+} from "@/lib/pricing";
 
 /*
  * Industry guides at /industries/<slug>/. One page per card in the home page Industries section.
@@ -16,8 +28,7 @@ export type IndustrySlug =
   | "clinics-labs-salons"
   | "retail-franchises";
 
-type GroupId = PricingGroup["id"];
-type PricedPlan = Plan & { monthly: number };
+type GroupId = PricingGroupId;
 
 export type IndustryPlanPick = {
   group: GroupId;
@@ -66,21 +77,36 @@ export type Industry = {
 
 /** A priced plan by group and name. Throws at build time if the plan is renamed or removed. */
 export function findPlan(group: GroupId, name: string): { group: PricingGroup; plan: PricedPlan } {
-  const g = pricing.find((x) => x.id === group);
-  const plan = g?.plans.find((p) => p.name === name);
-  if (!g || !plan || plan.monthly === null) throw new Error(`Unknown plan: ${group} / ${name}`);
-  return { group: g, plan: plan as PricedPlan };
+  return { group: getGroup(group), plan: getPlan(group, name) };
 }
 
-/** "Zutok Zloya Single Outlet", "Zutok CRM Growth", "Zutok Suite Starter". */
+/** "Zutok ZChat Growth", "Zutok CRM Enterprise". */
 export function planLabel(group: GroupId, name: string): string {
   const g = findPlan(group, name).group;
-  if (g.id === "suite") return `Zutok ${name}`;
   return `${g.label.startsWith("Zutok") ? g.label : `Zutok ${g.label}`} ${name}`;
 }
 
-/** Monthly price, billed monthly, excluding GST: "₹999". */
+/** Monthly price, billed monthly, excluding GST: "₹2,000". */
 const inr = (group: GroupId, name: string) => `₹${formatINR(findPlan(group, name).plan.monthly)}`;
+
+const capitalise = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+/**
+ * A ZChat pick whose "what it covers" line is built from the plan's own data in src/lib/pricing.ts, so it can't drift:
+ * "500 contacts, 1 channel, 1 CRM license" for Starter, and for Growth and Scale the same allowances plus ZShop and Zloya
+ * free. `lead` names the free product the guide is about, so the line opens with it. Per-plan ZChat features (AI agent,
+ * broadcasts, which channels) aren't in the owner's plan data, so they are never listed here.
+ */
+function zchatPick(name: string, lead?: "zshop" | "zloya"): IndustryPlanPick {
+  const plan = getPlan("zchat", name);
+  if (!plan.limits) throw new Error(`industries.ts: ZChat ${name} has no limits`);
+  const limits = limitParts(plan.limits).join(", ");
+  if (!plan.includesZShopAndZloya) return { group: "zchat", plan: name, fit: capitalise(limits) };
+  const fit = lead
+    ? `${lead === "zshop" ? "ZShop and Zloya" : "Zloya and ZShop"} included free; ${limits}`
+    : `${capitalise(limits)}, ZShop and Zloya included free`;
+  return { group: "zchat", plan: name, fit };
+}
 
 /* ------------------------------------------------------------------ */
 /* Pages                                                              */
@@ -107,7 +133,7 @@ const restaurants: Industry = {
   h1: ["A CRM for Indian", "restaurants and cafés"],
   answer:
     "Zutok helps restaurants and cafés in India bring guests back. Zutok Zloya awards loyalty points at the billing counter from any browser, collects guests' phone numbers through QR codes on tables and Swiggy or Zomato boxes, and runs birthday and win-back journeys. Zutok ZChat brings WhatsApp and Instagram enquiries into one inbox. " +
-    `Zloya starts at ${inr("zloya", "Single Outlet")}/month for one outlet, billed monthly, excluding 18% GST.`,
+    `Zloya comes free with ZChat Growth (${inr("zchat", "Growth")}/month) and Scale (${inr("zchat", "Scale")}/month), billed monthly, excluding 18% GST.`,
   uses: ["zloya", "zchat"],
   relatedProduct: "zloya",
   problem: {
@@ -137,9 +163,9 @@ const restaurants: Industry = {
         slug: "zchat",
         role: "WhatsApp and Instagram enquiries in one shared inbox.",
         points: [
-          "WhatsApp and Instagram in one inbox (Messenger and Telegram from ZChat Growth), with All, Mine and Unassigned views",
+          "WhatsApp and Instagram in one inbox, with All, Mine and Unassigned views",
           "Labels and quick replies for the questions you get every day",
-          "An AI agent (ZChat Growth) that answers timings, address and delivery areas only from the facts you give it",
+          "An AI agent that answers timings, address and delivery areas only from the facts you give it",
           "Every new chat becomes a lead in Zutok CRM",
         ],
         linkText: "Zutok ZChat WhatsApp inbox",
@@ -153,7 +179,7 @@ const restaurants: Industry = {
       {
         label: "Before opening",
         title: "Enquiries get answered",
-        body: "Messages about timings, your address or whether you deliver to an area land in the ZChat inbox. With the AI agent on (ZChat Growth), it replies from the business facts you've added and hands anything else to your staff.",
+        body: "Messages about timings, your address or whether you deliver to an area land in the ZChat inbox. With the AI agent on, it replies from the business facts you've added and hands anything else to your staff.",
       },
       {
         label: "At the table",
@@ -238,17 +264,9 @@ const restaurants: Industry = {
   plans: {
     heading: "Which Zutok plan suits a restaurant or café?",
     answer:
-      `A single café can start on Zloya Single Outlet at ${inr("zloya", "Single Outlet")}/month, which includes the POS quick counter, points with four VIP tiers, five smart QR codes and guest feedback. ` +
-      `Memberships, prepaid wallets and the birthday, win-back and expiry journeys start on Zloya Growth (${inr("zloya", "Growth")}/month), which also covers up to three outlets. ` +
-      `For WhatsApp and Instagram enquiries, add ZChat Starter at ${inr("zchat", "Starter")}/month, or ZChat Growth (${inr("zchat", "Growth")}/month) for all four channels and the AI agent.`,
-    picks: [
-      { group: "zloya", plan: "Single Outlet", fit: "One outlet: POS quick counter, points and 4 VIP tiers, 5 smart QR codes, feedback" },
-      { group: "zloya", plan: "Growth", fit: "Up to 3 outlets, memberships and prepaid wallets, birthday, win-back and expiry journeys" },
-      { group: "zloya", plan: "Chain", fit: "Unlimited outlets, Customers 360° across outlets, API / POS integration" },
-      { group: "zchat", plan: "Starter", fit: "Shared WhatsApp + Instagram inbox, 2 seats, labels and quick replies" },
-      { group: "zchat", plan: "Growth", fit: "All 4 channels, 5 seats, the AI agent and broadcasts" },
-      { group: "suite", plan: "Suite Starter", fit: "CRM Starter, ZChat Starter, ZShop Starter and Zloya for 1 outlet, with an onboarding call" },
-    ],
+      `Zloya isn't sold on its own. It comes free with ZChat Growth at ${inr("zchat", "Growth")}/month, which also gives you ${describeLimits("zchat", "Growth")}, and with ZChat Scale at ${inr("zchat", "Scale")}/month, which has ${describeLimits("zchat", "Scale")}. ` +
+      `ZChat Starter, at ${inr("zchat", "Starter")}/month for ${describeLimits("zchat", "Starter")}, covers enquiries but doesn't include Zloya. Prices are billed monthly and exclude 18% GST.`,
+    picks: [zchatPick("Growth", "zloya"), zchatPick("Scale", "zloya"), zchatPick("Starter")],
   },
   faqHeading: "Restaurant and café questions",
   faqs: [
@@ -262,7 +280,7 @@ const restaurants: Industry = {
     },
     {
       q: "Do I need a POS integration to run loyalty in my restaurant?",
-      a: "No. The POS quick counter runs in any browser, so the cashier enters the bill amount and Zloya handles the rest. If you run a chain and want your POS connected, API / POS integration is part of the Zloya Chain plan.",
+      a: "No. The POS quick counter runs in any browser, so the cashier enters the bill amount and Zloya handles the rest. If you run a chain and want your POS connected, ask about API / POS integration during your demo.",
     },
     {
       q: "How can my café collect customers' phone numbers?",
@@ -274,11 +292,11 @@ const restaurants: Industry = {
     },
     {
       q: "How do I get more repeat customers at my restaurant?",
-      a: "Notice who is drifting and give them a reason to return. Zloya moves guests into a Slipping segment after 30 days without a visit and a Lost segment after 60. The 30-day win-back journey sends them a coupon locked to their phone number, birthdays get a greeting with a gift and double points, and points-expiry reminders give regulars another reason to come in. These journeys are included from Zloya Growth.",
+      a: `Notice who is drifting and give them a reason to return. Zloya moves guests into a Slipping segment after 30 days without a visit and a Lost segment after 60. The 30-day win-back journey sends them a coupon locked to their phone number, birthdays get a greeting with a gift and double points, and points-expiry reminders give regulars another reason to come in. These journeys are part of Zloya, which comes free with ZChat ${bundlePlanNames()}.`,
     },
     {
       q: "Can I run one loyalty program across several outlets?",
-      a: "Yes. Zloya Growth covers up to three outlets and Zloya Chain has no limit. The same guest profile is shared across every outlet, so a regular is recognised at each branch.",
+      a: "Yes. The same guest profile is shared across every outlet, so a regular is recognised at each branch.",
     },
   ],
   related: ["clinics-labs-salons", "retail-franchises", "d2c-fashion-brands"],
@@ -306,7 +324,7 @@ const d2c: Industry = {
   h1: ["WhatsApp automation for", "D2C and fashion brands"],
   answer:
     "Zutok gives Indian D2C and fashion brands one system for the whole sale. Zutok ZChat answers price and availability questions on WhatsApp and Instagram with an AI agent that quotes from your catalogue, and Zutok ZShop confirms COD orders, recovers abandoned carts and sends order updates for Shopify, WooCommerce or in-house stores. " +
-    `ZShop starts at ${inr("zshop", "Starter")}/month billed monthly, excluding 18% GST.`,
+    `ZShop comes free with ZChat Growth (${inr("zchat", "Growth")}/month) and Scale (${inr("zchat", "Scale")}/month), billed monthly, excluding 18% GST.`,
   uses: ["zshop", "zchat"],
   relatedProduct: "zshop",
   problem: {
@@ -437,16 +455,9 @@ const d2c: Industry = {
   plans: {
     heading: "What does Zutok cost for a D2C brand?",
     answer:
-      `ZShop needs ZChat to send WhatsApp messages, so most brands use the two together. ZShop Starter (${inr("zshop", "Starter")}/month) covers one store, up to 500 orders a month, order updates and COD confirmation. ` +
-      `Cart recovery and courier tracking start on ZShop Growth (${inr("zshop", "Growth")}/month). The AI sales agent, comment → DM and broadcasts are in ZChat Growth (${inr("zchat", "Growth")}/month). ` +
-      `ZShop Scale (${inr("zshop", "Scale")}/month) is built for high-volume D2C brands.`,
-    picks: [
-      { group: "zshop", plan: "Starter", fit: "1 store, up to 500 orders/month, WhatsApp order updates, COD confirmation" },
-      { group: "zshop", plan: "Growth", fit: "Up to 3 stores and 3,000 orders/month, 3-step cart recovery, courier tracking" },
-      { group: "zshop", plan: "Scale", fit: "Unlimited stores, multi-store dashboard, template approval support" },
-      { group: "zchat", plan: "Growth", fit: "All 4 channels, AI sales agent with your catalogue, broadcasts, comment → DM" },
-      { group: "suite", plan: "Suite Growth", fit: "ZChat Growth, ZShop Growth, CRM Growth and Zloya Growth together" },
-    ],
+      `ZShop sends its WhatsApp messages through ZChat, and it isn't sold on its own: it comes free with ZChat Growth at ${inr("zchat", "Growth")}/month (${describeLimits("zchat", "Growth")}) ` +
+      `and ZChat Scale at ${inr("zchat", "Scale")}/month (${describeLimits("zchat", "Scale")}). So one plan covers both the chats and the store automation. Prices are billed monthly and exclude 18% GST.`,
+    picks: [zchatPick("Growth", "zshop"), zchatPick("Scale", "zshop")],
   },
   faqHeading: "D2C brand questions",
   faqs: [
@@ -480,7 +491,7 @@ const d2c: Industry = {
     },
     {
       q: "Which plan suits a high-volume D2C brand?",
-      a: `ZShop Scale, at ${inr("zshop", "Scale")}/month excluding GST. It has unlimited stores, unlimited orders under fair use, a multi-store dashboard, template approval support and a dedicated manager. Pair it with ZChat for WhatsApp delivery.`,
+      a: `ZChat Scale, at ${inr("zchat", "Scale")}/month excluding GST. It has ${describeLimits("zchat", "Scale")}, with ZShop and Zloya included free.`,
     },
   ],
   related: ["retail-franchises", "restaurants-cafes", "agencies-services"],
@@ -639,12 +650,11 @@ const realEstate: Industry = {
     heading: "How much does Zutok cost for a real estate business?",
     answer:
       `The Real Estate suite is in Zutok CRM Enterprise at ${inr("crm", "Enterprise")}/month billed monthly, excluding 18% GST. Enterprise also gives unlimited users, custom fields for every module, a dedicated account manager and priority support. ` +
-      `For WhatsApp and Instagram, add ZChat Starter (${inr("zchat", "Starter")}/month) for the shared inbox, or ZChat Growth (${inr("zchat", "Growth")}/month) for the AI agent that sends brochures.`,
+      `For WhatsApp and Instagram enquiries, add a ZChat plan sized by the contacts and channels you need: Starter (${inr("zchat", "Starter")}/month) includes ${describeLimits("zchat", "Starter")}, and Growth (${inr("zchat", "Growth")}/month) ${describeLimits("zchat", "Growth")}.`,
     picks: [
       { group: "crm", plan: "Enterprise", fit: "Real Estate suite, unlimited users, custom fields for every module" },
-      { group: "zchat", plan: "Starter", fit: "WhatsApp + Instagram inbox, 2 seats, contacts sync to CRM leads" },
-      { group: "zchat", plan: "Growth", fit: "All 4 channels, 5 seats, AI agent with your catalogue, broadcasts" },
-      { group: "suite", plan: "Suite Enterprise", fit: "CRM Enterprise, ZChat Scale, ZShop Scale and Zloya Chain, with a dedicated success manager" },
+      zchatPick("Starter"),
+      zchatPick("Growth"),
     ],
   },
   faqHeading: "Real estate CRM questions",
@@ -675,11 +685,11 @@ const realEstate: Industry = {
     },
     {
       q: "Can the WhatsApp AI send a property brochure to an enquirer?",
-      a: "Yes. In ZChat, add a file column to your catalogue and attach the brochure, price list, PDF or video to the right row. When the AI quotes from that row, the customer gets the real file. The AI agent is part of ZChat Growth and above.",
+      a: `Yes. In ZChat, add a file column to your catalogue and attach the brochure, price list, PDF or video to the right row. When the AI quotes from that row, the customer gets the real file. The AI agent is part of Zutok ZChat, with plans from ${inr("zchat", "Starter")}/month.`,
     },
     {
       q: "How much does a real estate CRM cost with Zutok?",
-      a: `The Real Estate suite is in Zutok CRM Enterprise, at ${inr("crm", "Enterprise")}/month billed monthly as a flat price with unlimited users, excluding 18% GST. Yearly billing charges ${YEARLY_MONTHS_CHARGED} months for 12. ZChat is optional for WhatsApp and Instagram enquiries, and Meta's WhatsApp charges are billed separately. Suite Enterprise includes CRM Enterprise too.`,
+      a: `The Real Estate suite is in Zutok CRM Enterprise, at ${inr("crm", "Enterprise")}/month billed monthly as a flat price with unlimited users, excluding 18% GST. Yearly CRM billing charges ${YEARLY_MONTHS_CHARGED} months for 12. ZChat is optional for WhatsApp and Instagram enquiries, and Meta's WhatsApp charges are billed separately.`,
     },
   ],
   related: ["agencies-services", "retail-franchises", "clinics-labs-salons"],
@@ -828,7 +838,7 @@ const agencies: Industry = {
       {
         icon: "inbox",
         title: "Shared client inbox",
-        body: "Client chats from WhatsApp and Instagram in one inbox, with labels and statuses, and team reports on ZChat Growth.",
+        body: "Client chats from WhatsApp and Instagram in one inbox, with labels, statuses and team reports.",
         product: "zchat",
       },
     ],
@@ -843,8 +853,8 @@ const agencies: Industry = {
       { group: "crm", plan: "Starter", fit: "Up to 3 users: leads, proposals, GST invoices, projects, tasks and tickets" },
       { group: "crm", plan: "Growth", fit: "Up to 10 users: contracts, expenses, subscriptions, HRM, automation and reports" },
       { group: "crm", plan: "Enterprise", fit: "Unlimited users, custom fields for every module, dedicated account manager" },
-      { group: "zchat", plan: "Starter", fit: "WhatsApp + Instagram shared inbox, 2 seats, labels and quick replies" },
-      { group: "zchat", plan: "Growth", fit: "All 4 channels, 5 seats, broadcasts and team reports" },
+      zchatPick("Starter"),
+      zchatPick("Growth"),
     ],
   },
   faqHeading: "Agency CRM questions",
@@ -906,7 +916,7 @@ const clinics: Industry = {
   h1: ["WhatsApp automation for", "clinics, labs and salons"],
   answer:
     "Zutok helps clinics, diagnostic labs and salons in India handle WhatsApp enquiries. Zutok ZChat puts appointment and price chats in one shared inbox, and its AI agent quotes test or service prices only from the price list you add. Salons can add Zutok Zloya for memberships, prepaid wallets and repeat-visit reminders. " +
-    `ZChat starts at ${inr("zchat", "Starter")}/month; the AI agent comes with ZChat Growth at ${inr("zchat", "Growth")}/month, billed monthly, excluding 18% GST.`,
+    `ZChat starts at ${inr("zchat", "Starter")}/month, and Zloya comes free with ZChat Growth (${inr("zchat", "Growth")}/month) and Scale (${inr("zchat", "Scale")}/month), billed monthly, excluding 18% GST.`,
   uses: ["zchat", "zloya"],
   relatedProduct: "zchat",
   problem: {
@@ -1037,15 +1047,9 @@ const clinics: Industry = {
   plans: {
     heading: "What does Zutok cost for a clinic, lab or salon?",
     answer:
-      `For a shared WhatsApp and Instagram inbox, ZChat Starter costs ${inr("zchat", "Starter")}/month. The AI agent that quotes your price list is in ZChat Growth at ${inr("zchat", "Growth")}/month, with all four channels and five seats. ` +
-      `Salons that want memberships, prepaid wallets and win-back journeys add Zloya Growth (${inr("zloya", "Growth")}/month), or take Suite Growth (${inr("suite", "Suite Growth")}/month), which includes both.`,
-    picks: [
-      { group: "zchat", plan: "Starter", fit: "WhatsApp + Instagram shared inbox, 2 seats, labels and quick replies" },
-      { group: "zchat", plan: "Growth", fit: "AI agent with your price list, all 4 channels, 5 seats, broadcasts, team reports" },
-      { group: "zloya", plan: "Single Outlet", fit: "1 outlet: POS quick counter, points and 4 VIP tiers, feedback" },
-      { group: "zloya", plan: "Growth", fit: "Memberships, prepaid wallets, birthday, win-back and expiry journeys" },
-      { group: "suite", plan: "Suite Growth", fit: "ZChat Growth and Zloya Growth, plus CRM Growth and ZShop Growth" },
-    ],
+      `The shared inbox and the AI agent that quotes your price list are part of Zutok ZChat. ZChat Starter costs ${inr("zchat", "Starter")}/month for ${describeLimits("zchat", "Starter")}. ` +
+      `Salons that want Zloya's memberships, prepaid wallets and win-back journeys can choose ZChat Growth (${inr("zchat", "Growth")}/month) or Scale (${inr("zchat", "Scale")}/month), which include Zloya free. Prices are billed monthly and exclude 18% GST.`,
+    picks: [zchatPick("Starter"), zchatPick("Growth", "zloya"), zchatPick("Scale", "zloya")],
   },
   faqHeading: "Clinic, lab and salon questions",
   faqs: [
@@ -1059,7 +1063,7 @@ const clinics: Industry = {
     },
     {
       q: "Can a salon sell memberships and prepaid packages?",
-      a: "Yes, with Zutok Zloya. Sell yearly perk bundles or prepaid wallets at the counter, like pay ₹5,000 and get ₹6,000 in credit, and track staff sales on a leaderboard. Memberships and wallets come with Zloya Growth.",
+      a: `Yes, with Zutok Zloya. Sell yearly perk bundles or prepaid wallets at the counter, like pay ₹5,000 and get ₹6,000 in credit, and track staff sales on a leaderboard. Zloya comes free with ZChat ${bundlePlanNames()}.`,
     },
     {
       q: "Is the WhatsApp Business app enough for a clinic's front desk?",
@@ -1071,7 +1075,7 @@ const clinics: Industry = {
     },
     {
       q: "How do I win back salon clients who stopped coming?",
-      a: "Zloya flags clients who haven't visited for 30 days as Slipping, and the 30-day win-back journey sends them a coupon locked to their phone number. Birthday messages add another reason to return. Win-back and birthday journeys come with Zloya Growth.",
+      a: `Zloya flags clients who haven't visited for 30 days as Slipping, and the 30-day win-back journey sends them a coupon locked to their phone number. Birthday messages add another reason to return. Zloya comes free with ZChat ${bundlePlanNames()}.`,
     },
     {
       q: "How can a salon track prepaid credits and membership revenue?",
@@ -1134,7 +1138,7 @@ const retail: Industry = {
           "POS quick counter at every outlet, in any browser",
           "Points and four VIP tiers, with OTP-protected redemptions",
           "The same guest profile shared across every outlet",
-          "Customers 360° across outlets and custom journeys on the Chain plan",
+          "Win-back, birthday and points-expiry journeys with coupons locked to the customer's phone number",
         ],
         linkText: "Zutok Zloya multi-outlet loyalty",
       },
@@ -1215,15 +1219,15 @@ const retail: Industry = {
         product: "zloya",
       },
       {
-        icon: "users",
-        title: "Customers 360°",
-        body: "Zloya Chain shows each customer across all your outlets, with custom journeys and segments.",
+        icon: "pie",
+        title: "Smart segments",
+        body: "New, Regulars, Potential VIPs, Slipping (30 days), Lost (60+ days) and upcoming birthdays, updated automatically.",
         product: "zloya",
       },
       {
         icon: "plug",
-        title: "API / POS integration",
-        body: "Included in Zloya Chain. Smaller setups use the browser-based POS quick counter with no integration at all.",
+        title: "No POS integration needed",
+        body: "The POS quick counter runs in any browser next to your billing. If you want your POS connected, ask about API / POS integration during your demo.",
         product: "zloya",
       },
       {
@@ -1244,21 +1248,19 @@ const retail: Industry = {
     heading: "Which Zutok plans suit a retail chain or franchise?",
     answer:
       `Inventory, HRM, payroll, attendance and leave start on Zutok CRM Growth at ${inr("crm", "Growth")}/month for up to 10 users; CRM Enterprise (${inr("crm", "Enterprise")}/month) removes the user limit. ` +
-      `For loyalty, Zloya Growth (${inr("zloya", "Growth")}/month) covers up to three outlets and Zloya Chain (${inr("zloya", "Chain")}/month) has no outlet limit. Chains with 10 or more outlets can ask for special pricing during the demo.`,
+      `For loyalty and counter-order updates, Zloya and ZShop come free with ZChat Growth (${inr("zchat", "Growth")}/month) and Scale (${inr("zchat", "Scale")}/month). Chains with 10 or more outlets can ask for special pricing during the demo.`,
     picks: [
       { group: "crm", plan: "Growth", fit: "Up to 10 users: inventory and warehouse, HRM, payroll, attendance and leave" },
       { group: "crm", plan: "Enterprise", fit: "Unlimited users, custom fields for every module, dedicated account manager" },
-      { group: "zloya", plan: "Growth", fit: "Up to 3 outlets, memberships, journeys, unlimited smart QR codes" },
-      { group: "zloya", plan: "Chain", fit: "Unlimited outlets, Customers 360°, custom journeys and segments, API / POS integration" },
-      { group: "zshop", plan: "Starter", fit: "1 store (Shopify, WooCommerce or in-house), up to 500 orders/month, order updates" },
-      { group: "suite", plan: "Suite Enterprise", fit: "CRM Enterprise, Zloya Chain, ZShop Scale and ZChat Scale together" },
+      zchatPick("Growth", "zloya"),
+      zchatPick("Scale", "zloya"),
     ],
   },
   faqHeading: "Retail and franchise questions",
   faqs: [
     {
       q: "How can a retail chain run one loyalty program across all its outlets?",
-      a: "Use Zutok Zloya: the Growth plan covers up to three outlets and the Chain plan any number. Every outlet uses the POS quick counter, and the same customer profile is shared across all of them, so a customer is recognised at every store.",
+      a: `Use Zutok Zloya, which comes free with ZChat ${bundlePlanNames()}. Every outlet uses the POS quick counter, and the same customer profile is shared across all of them, so a customer is recognised at every store.`,
     },
     {
       q: "Can I manage stock across warehouses and staff attendance in the same CRM?",
@@ -1274,19 +1276,19 @@ const retail: Industry = {
     },
     {
       q: "I only sell at the counter. Can I still send WhatsApp order updates?",
-      a: "Yes. Choose ZShop's in-house shop, keep your items in the CRM and take orders at the counter. Every automation still works. ZShop needs ZChat to deliver the WhatsApp messages.",
+      a: `Yes. Choose ZShop's in-house shop, keep your items in the CRM and take orders at the counter. Every automation still works. ZShop sends the WhatsApp messages through ZChat and comes free with ZChat ${bundlePlanNames()}.`,
     },
     {
       q: "What does it cost to send WhatsApp updates for counter orders?",
-      a: `ZShop Starter costs ${inr("zshop", "Starter")}/month for 1 store and up to 500 orders a month, plus a ZChat plan from ${inr("zchat", "Starter")}/month for WhatsApp delivery. Meta's charges are billed separately, and prices exclude 18% GST.`,
+      a: `ZShop isn't sold on its own: it's ${ZSHOP_ZLOYA_INCLUDED}. Meta's charges are billed separately, and prices exclude 18% GST.`,
     },
     {
       q: "Is there special pricing for franchises with many outlets?",
-      a: "Yes. Zutok has special pricing for chains with 10 or more outlets; ask about it during your demo. The Complete Suite also bundles all four products for about 40% less than buying them separately.",
+      a: "Yes. Zutok has special pricing for chains with 10 or more outlets; ask about it during your demo.",
     },
     {
       q: "Does Zutok replace my billing or POS software?",
-      a: "No. Zloya's POS quick counter runs in any browser next to your current billing, so you don't need an integration to start. If you want your POS connected, API / POS integration is included in the Zloya Chain plan.",
+      a: "No. Zloya's POS quick counter runs in any browser next to your current billing, so you don't need an integration to start. If you want your POS connected, ask about API / POS integration during your demo.",
     },
   ],
   related: ["restaurants-cafes", "d2c-fashion-brands", "real-estate"],
