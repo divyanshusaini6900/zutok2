@@ -1,20 +1,20 @@
 # Zutok Softwares
 
-> Zutok Softwares makes Zutok CRM, an all-in-one CRM built for Indian businesses and priced in rupees. Three products plug into it: ZChat, a WhatsApp, Instagram, Messenger and Telegram inbox with an AI sales agent; ZShop, which sends WhatsApp order updates, COD confirmations and abandoned-cart reminders for Shopify, WooCommerce and in-house stores; and Zloya, which runs loyalty points, VIP tiers, memberships and retention journeys for restaurants, cafés, salons and stores. Plans start at ₹799/month (billed monthly, excluding 18% GST), and the Complete Suite of all four starts at ₹2,299/month.
+> Zutok Softwares makes Zutok CRM, an all-in-one CRM built for Indian businesses and priced in rupees. Three products plug into it: ZChat, a WhatsApp, Instagram, Messenger and Telegram inbox with an AI sales agent; ZShop, which sends WhatsApp order updates, COD confirmations and abandoned-cart reminders for Shopify, WooCommerce and in-house stores; and Zloya, which runs loyalty points, VIP tiers, memberships and retention journeys for restaurants, cafés, salons and stores. Zutok CRM plans start at ₹799/month and ZChat plans at ₹2,000/month (billed monthly, excluding 18% GST), and ZShop and Zloya come free with ZChat Growth and Scale.
 
 - Website: https://www.zutok.in/
 - Company: Zutok Softwares, also called Zutok. Its products are always named with the brand: Zutok CRM, Zutok ZChat, Zutok ZShop, Zutok Zloya.
 - Market: businesses in India that sell on WhatsApp, Instagram and at the counter.
-- Prices: in Indian Rupees (INR), excluding 18% GST. Billed monthly, or yearly at 10 months for 12. No setup fee.
+- Prices: in Indian Rupees (INR), excluding 18% GST. The plans are Zutok ZChat and Zutok CRM, billed monthly or yearly. ZShop and Zloya are included free with ZChat Growth and Scale. They aren't sold separately. Zutok CRM yearly billing charges 10 months for 12; ZChat yearly prices are ₹19,200 for Starter, ₹47,988 for Growth and ₹95,988 for Scale. No setup fee.
 - WhatsApp: ZChat connects to the official WhatsApp Business Platform. Meta's per-message charges for WhatsApp template messages are billed separately at Meta's published rates.
 - Contact: admin@zutok.in. Book a demo at https://www.zutok.in/#demo. Customers log in at https://crm.zutok.in/.
 
 ## Products
 
 - [Zutok CRM](https://www.zutok.in/products/crm/): CRM software for small businesses. CRM software for small businesses in India: leads, customers, proposals, GST invoices, projects, HRM, payroll and inventory in one CRM. Chats from ZChat, orders from ZShop and guests from Zloya land in the same place. Plans from ₹799/month billed monthly, excl. 18% GST.
-- [Zutok ZChat](https://www.zutok.in/products/zchat/): Omnichannel inbox + AI agent. WhatsApp, Instagram, Messenger and Telegram land in one shared inbox. An AI agent answers in seconds, your team takes over when it matters, and every chat becomes a lead in your CRM. Plans from ₹799/month billed monthly, excl. 18% GST.
-- [Zutok ZShop](https://www.zutok.in/products/zshop/): Shopify & WooCommerce WhatsApp integration. Connect Shopify, WooCommerce or your in-house counter. ZShop brings every order into the CRM, confirms cash-on-delivery on WhatsApp, recovers abandoned carts and keeps buyers updated until the parcel arrives. Plans from ₹1,299/month billed monthly, excl. 18% GST.
-- [Zutok Zloya](https://www.zutok.in/products/zloya/): Loyalty program software. Loyalty program software for restaurants, cafés, salons and stores. Award points at the counter, sell memberships, run automated win-back journeys and collect guest feedback and Google reviews. Plans from ₹999/month billed monthly, excl. 18% GST.
+- [Zutok ZChat](https://www.zutok.in/products/zchat/): Omnichannel inbox + AI agent. WhatsApp, Instagram, Messenger and Telegram land in one shared inbox. An AI agent answers in seconds, your team takes over when it matters, and every chat becomes a lead in your CRM. Plans from ₹2,000/month billed monthly, excl. 18% GST.
+- [Zutok ZShop](https://www.zutok.in/products/zshop/): Shopify & WooCommerce WhatsApp integration. Connect Shopify, WooCommerce or your in-house counter. ZShop brings every order into the CRM, confirms cash-on-delivery on WhatsApp, recovers abandoned carts and keeps buyers updated until the parcel arrives. Included free with ZChat Growth (₹5,000/month) and Scale (₹10,000/month), excl. 18% GST.
+- [Zutok Zloya](https://www.zutok.in/products/zloya/): Loyalty program software. Loyalty program software for restaurants, cafés, salons and stores. Award points at the counter, sell memberships, run automated win-back journeys and collect guest feedback and Google reviews. Included free with ZChat Growth (₹5,000/month) and Scale (₹10,000/month), excl. 18% GST.
 
 ## Solutions
 
@@ -24,7 +24,7 @@
 - [WhatsApp AI sales agent](https://www.zutok.in/solutions/whatsapp-ai-sales-agent/): How Zutok ZChat's AI agent asks each choice on WhatsApp and quotes the price, order link and files from your own catalogue rows, with human handoff.
 - [WhatsApp broadcasting](https://www.zutok.in/solutions/whatsapp-broadcast-campaigns/): How Zutok ZChat sends bulk WhatsApp campaigns with Meta-approved templates and shows sent, delivered and read numbers as they come in.
 - [WhatsApp message templates](https://www.zutok.in/solutions/whatsapp-message-templates/): What a WhatsApp template message is, when the 24-hour rule means you need one, and how to create, categorise and get templates approved in Zutok ZChat.
-- [Omnichannel team inbox](https://www.zutok.in/solutions/omnichannel-team-inbox/): How a team of 2, 5 or 15 answers WhatsApp, Instagram, Messenger and Telegram from one Zutok ZChat inbox, with views, statuses, labels, auto-assign and team reports.
+- [Omnichannel team inbox](https://www.zutok.in/solutions/omnichannel-team-inbox/): How a team answers WhatsApp, Instagram, Messenger and Telegram from one Zutok ZChat inbox, with views, statuses, labels, auto-assign and team reports.
 - [WhatsApp CRM](https://www.zutok.in/solutions/whatsapp-crm/): How Zutok turns every WhatsApp, Instagram, Messenger and Telegram chat into a CRM lead with its source, then follows it from Enquiry to Customer and invoice.
 - [Instagram automation](https://www.zutok.in/solutions/instagram-comment-to-dm/): How Zutok ZChat automates Instagram: a public reply and a private DM for every comment on posts and reels, and an AI agent that answers DMs from your catalogue.
 - [Facebook Messenger automation](https://www.zutok.in/solutions/facebook-messenger-automation/): How Zutok ZChat automates a Facebook Page: AI answers in Messenger, a public reply and private DM for post and reel comments, and every chat saved as a CRM lead.
@@ -50,12 +50,10 @@
 
 ## Pricing
 
-- [Zutok plans and prices](https://www.zutok.in/pricing/): Zutok CRM from ₹799/month, ZChat from ₹799, Zloya from ₹999, ZShop from ₹1,299, Complete Suite from ₹2,299. Excl. GST; yearly plans give 2 months free.
-- [Zutok Complete Suite](https://www.zutok.in/pricing/#all-plans): from ₹2,299/month billed monthly, excl. 18% GST. Zutok CRM + ZChat + ZShop + Zloya together, about 40% less than buying them separately.
+- [Zutok plans and prices](https://www.zutok.in/pricing/): Zutok ZChat from ₹2,000/month or ₹1,599/month billed yearly, with ZShop and Zloya free on Growth and Scale. Zutok CRM from ₹799/month. Excl. 18% GST.
+- [Zutok ZChat](https://www.zutok.in/products/zchat/#pricing): from ₹2,000/month billed monthly, excl. 18% GST. ZShop and Zloya are included free with ZChat Growth and Scale. Meta's per-message charges for WhatsApp template messages are billed separately at Meta's published rates.
 - [Zutok CRM](https://www.zutok.in/products/crm/#pricing): from ₹799/month billed monthly, excl. 18% GST.
-- [Zutok ZChat](https://www.zutok.in/products/zchat/#pricing): from ₹799/month billed monthly, excl. 18% GST. Meta's per-message charges for WhatsApp template messages are billed separately at Meta's published rates.
-- [Zutok ZShop](https://www.zutok.in/products/zshop/#pricing): from ₹1,299/month billed monthly, excl. 18% GST. Needs ZChat for WhatsApp delivery. Meta's per-message charges for template messages are billed separately.
-- [Zutok Zloya](https://www.zutok.in/products/zloya/#pricing): from ₹999/month billed monthly, excl. 18% GST.
+- [Zutok ZShop and Zutok Zloya](https://www.zutok.in/pricing/): not sold separately. They're included free with ZChat Growth (₹5,000/month, or ₹3,999/month billed yearly) and Scale (₹10,000/month, or ₹7,499/month billed yearly), excl. 18% GST.
 
 ## About
 
