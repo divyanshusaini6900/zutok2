@@ -109,6 +109,12 @@ export function ZloyaStack({ from = "#ffffff" }: { from?: string }) {
                 four VIP tiers and get personal messages that bring them back.
               </p>
             </Reveal>
+            <Reveal delay={0.25}>
+              <p className="mt-4 max-w-md text-sm leading-relaxed text-paper/55">
+                The four tiers run Bronze, Silver, Gold and Platinum at 1× to 2× points. The spend and visit thresholds,
+                perks and in-between multipliers on the cards are example values.
+              </p>
+            </Reveal>
             <Reveal delay={0.3} className="mt-7 flex flex-wrap gap-2">
               {segments.map((s) => (
                 <span key={s} className="rounded-full border border-paper/25 bg-white/5 px-3.5 py-1.5 text-sm font-semibold">
@@ -120,7 +126,7 @@ export function ZloyaStack({ from = "#ffffff" }: { from?: string }) {
               <Button href="/products/zloya" variant="light">
                 Explore Zloya
               </Button>
-              <Button href="/pricing#zloya" variant="outline">
+              <Button href="/products/zloya/#pricing" variant="outline">
                 From ₹999/mo
               </Button>
             </Reveal>
@@ -155,7 +161,7 @@ export function ZloyaStack({ from = "#ffffff" }: { from?: string }) {
             </Reveal>
             <Reveal delay={0.2}>
               <ReviewMock />
-              <p className="mt-5 text-center text-sm font-semibold text-ink/65">Happy guests go to Google, unhappy ones alert you</p>
+              <p className="mt-5 text-center text-sm font-semibold text-ink/65">Every guest rates the visit; low ratings alert you</p>
             </Reveal>
           </div>
           <div className="mt-20 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">

@@ -136,6 +136,16 @@ export function Hero({ delay = 0 }: { delay?: number }) {
             </Line>
           </h1>
 
+          {/* Phones and short screens get a shorter version of the entity sentence below, so the H1 is never left without it. */}
+          <motion.p
+            className="mx-auto mt-5 max-w-sm text-[15px] font-medium leading-snug text-ink/70 sm:mt-3 sm:max-w-3xl sm:text-base sm:[@media(min-height:821px)]:hidden"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: delay + 0.55, duration: 0.8 }}
+          >
+            Zutok is the all-in-one CRM for Indian businesses.
+          </motion.p>
+
           <motion.p
             className="mx-auto mt-7 hidden max-w-2xl text-lg font-medium leading-relaxed text-ink/70 sm:block [@media(max-height:820px)]:hidden"
             initial={{ opacity: 0, y: 20 }}

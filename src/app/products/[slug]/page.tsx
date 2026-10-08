@@ -19,7 +19,8 @@ import { Reveal } from "@/components/ui/Reveal";
 import { SplitText } from "@/components/ui/SplitText";
 import { industriesHub, industryList, industryPath } from "@/lib/industries";
 import { productList, products, type ProductSlug } from "@/lib/products";
-import { solutionPath, solutionsFor } from "@/lib/solutions";
+import { solutionBySlug, solutionPath, solutionsFor } from "@/lib/solutions";
+import { productExtraSolutions } from "@/lib/crosslinks";
 import { cx } from "@/lib/cx";
 import {
   JsonLd,
@@ -74,7 +75,8 @@ export default async function ProductPage(props: PageProps<"/products/[slug]">) 
   if (!p) notFound();
   const t = p.theme;
   const others = productList.filter((o) => o.slug !== p.slug);
-  const useCases = solutionsFor(p.slug);
+  // This product's own solution pages, then the ones filed under another product that it runs on.
+  const useCases = [...solutionsFor(p.slug), ...productExtraSolutions[p.slug].map((sl) => solutionBySlug[sl])];
   const usedBy = industryList.filter((i) => i.uses.includes(p.slug));
   const path = `/products/${p.slug}/`;
   const crumbs = [
@@ -226,7 +228,10 @@ export default async function ProductPage(props: PageProps<"/products/[slug]">) 
                     className="group flex items-center justify-between gap-4 rounded-2xl border-[2.5px] border-ink bg-white px-5 py-4 text-ink shadow-[4px_4px_0_#0b0b0b] transition duration-300 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_#0b0b0b]"
                   >
                     <span className="flex items-center gap-3 font-extrabold">
-                      <span className="size-3 shrink-0 rounded-full border-2 border-ink" style={{ background: t.pop }} />
+                      <span
+                        className="size-3 shrink-0 rounded-full border-2 border-ink"
+                        style={{ background: products[s.relatedProduct].theme.pop }}
+                      />
                       {s.name}
                     </span>
                     <ArrowUpRight className="size-5 shrink-0 transition duration-300 group-hover:rotate-45" aria-hidden />

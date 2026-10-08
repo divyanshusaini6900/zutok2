@@ -129,7 +129,7 @@ export const pricing: PricingGroup[] = [
     color2: "#2e2e2e",
     pop: "#22c55e",
     stripe: "#22c55e",
-    note: "Meta's WhatsApp conversation charges are billed separately at Meta's published rates.",
+    note: "Meta's per-message charges for WhatsApp template messages are billed separately at Meta's published rates.",
     plans: [
       {
         name: "Starter",
@@ -177,7 +177,7 @@ export const pricing: PricingGroup[] = [
     color2: "#2e2e2e",
     pop: "#ff6b1a",
     stripe: "#ff6b1a",
-    note: "Needs ZChat for WhatsApp delivery. Meta conversation charges are billed separately.",
+    note: "Needs ZChat for WhatsApp delivery. Meta's per-message charges for template messages are billed separately.",
     plans: [
       {
         name: "Starter",

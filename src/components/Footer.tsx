@@ -16,9 +16,9 @@ const cols = [
   {
     title: "Platform",
     links: [
-      solutionLink("indiamart-meta-lead-ads-crm", "IndiaMART & Meta leads"),
+      solutionLink("indiamart-meta-lead-ads-crm", "Lead management"),
       solutionLink("gst-invoicing-crm", "GST invoicing"),
-      solutionLink("crm-with-hrm-payroll", "HRM & payroll"),
+      solutionLink("crm-with-hrm-payroll", "HRM & attendance"),
       { label: "Real estate CRM", href: industryPath("real-estate") },
       { label: "All CRM modules", href: "/products/crm/#modules" },
     ],
@@ -26,11 +26,16 @@ const cols = [
   {
     title: "Solutions",
     links: [
-      solutionLink("whatsapp-ai-sales-agent"),
+      solutionLink("whatsapp-automation"),
+      solutionLink("whatsapp-crm", "WhatsApp CRM"),
+      solutionLink("whatsapp-business-api", "WhatsApp Business API"),
+      solutionLink("whatsapp-ai-sales-agent", "WhatsApp AI chatbot"),
+      solutionLink("whatsapp-broadcast-campaigns", "Bulk WhatsApp broadcasting"),
+      solutionLink("instagram-comment-to-dm", "Instagram automation"),
+      solutionLink("omnichannel-team-inbox", "Omnichannel team inbox"),
       solutionLink("whatsapp-cod-confirmation"),
       solutionLink("abandoned-cart-recovery-whatsapp", "Abandoned cart recovery"),
       solutionLink("restaurant-membership-prepaid-wallet"),
-      solutionLink("automated-winback-birthday-campaigns"),
       { label: "All solutions", href: "/solutions/" },
     ],
   },

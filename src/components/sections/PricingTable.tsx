@@ -187,7 +187,8 @@ export function PricingTable({ initial = "suite" }: { initial?: PricingGroup["id
         </motion.div>
       </AnimatePresence>
       <p className="mt-10 text-center text-xs font-medium text-ink/55">
-        All prices in Indian Rupees, exclusive of 18% GST. Meta WhatsApp conversation charges are billed at Meta&apos;s rates.
+        All prices in Indian Rupees, exclusive of 18% GST. Meta&apos;s per-message charges for WhatsApp template messages are billed
+        at Meta&apos;s rates.
       </p>
     </div>
   );

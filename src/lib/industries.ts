@@ -1,6 +1,6 @@
 import type { IconName } from "@/components/ui/Icon";
 import type { ProductSlug } from "@/lib/products";
-import { formatINR, pricing, type Plan, type PricingGroup } from "@/lib/pricing";
+import { formatINR, pricing, YEARLY_MONTHS_CHARGED, type Plan, type PricingGroup } from "@/lib/pricing";
 
 /*
  * Industry guides at /industries/<slug>/. One page per card in the home page Industries section.
@@ -92,20 +92,21 @@ const restaurants: Industry = {
   tagline: "Points at the counter, QR on every table and delivery box, birthday journeys and guest feedback.",
   icon: "food",
   theme: { bg: "#ff6b1a", fg: "#0b0b0b", pop: "#ff6b1a" },
-  title: "Restaurant & Café CRM: Loyalty, Smart QR and WhatsApp",
+  title: "Restaurant CRM & Loyalty Program for Cafés in India",
   metaDescription:
-    "Points at the counter, smart QR on tables and delivery boxes, birthday journeys, guest feedback and a WhatsApp inbox: Zutok for restaurants and cafés.",
+    "Restaurant CRM and loyalty for Indian cafés: points at the billing counter, VIP tiers, QR sign-ups, guest feedback, win-back journeys and a WhatsApp inbox.",
   keywords: [
     "restaurant CRM India",
+    "restaurant loyalty program software",
+    "restaurant loyalty software",
     "CRM for cafés",
-    "restaurant loyalty and WhatsApp",
-    "restaurant customer data",
-    "restaurant guest feedback",
+    "café loyalty program",
+    "restaurant feedback system",
     "multi-outlet restaurant loyalty",
   ],
   h1: ["A CRM for Indian", "restaurants and cafés"],
   answer:
-    "Zutok helps restaurants and cafés in India bring guests back. Zutok Zloya awards loyalty points at the billing counter from any browser, collects guests' phone numbers through QR codes on tables and Swiggy or Zomato boxes, and runs birthday and win-back journeys. Zutok ZChat answers WhatsApp and Instagram enquiries in one inbox. " +
+    "Zutok helps restaurants and cafés in India bring guests back. Zutok Zloya awards loyalty points at the billing counter from any browser, collects guests' phone numbers through QR codes on tables and Swiggy or Zomato boxes, and runs birthday and win-back journeys. Zutok ZChat brings WhatsApp and Instagram enquiries into one inbox. " +
     `Zloya starts at ${inr("zloya", "Single Outlet")}/month for one outlet, billed monthly, excluding 18% GST.`,
   uses: ["zloya", "zchat"],
   relatedProduct: "zloya",
@@ -136,9 +137,9 @@ const restaurants: Industry = {
         slug: "zchat",
         role: "WhatsApp and Instagram enquiries in one shared inbox.",
         points: [
-          "WhatsApp, Instagram, Messenger and Telegram in one inbox, with All, Mine and Unassigned views",
+          "WhatsApp and Instagram in one inbox (Messenger and Telegram from ZChat Growth), with All, Mine and Unassigned views",
           "Labels and quick replies for the questions you get every day",
-          "An AI agent that answers timings, address and delivery areas only from the facts you give it",
+          "An AI agent (ZChat Growth) that answers timings, address and delivery areas only from the facts you give it",
           "Every new chat becomes a lead in Zutok CRM",
         ],
         linkText: "Zutok ZChat WhatsApp inbox",
@@ -152,7 +153,7 @@ const restaurants: Industry = {
       {
         label: "Before opening",
         title: "Enquiries get answered",
-        body: "Messages about timings, your address or whether you deliver to an area land in the ZChat inbox. With the AI agent on, it replies from the business facts you've added and hands anything else to your staff.",
+        body: "Messages about timings, your address or whether you deliver to an area land in the ZChat inbox. With the AI agent on (ZChat Growth), it replies from the business facts you've added and hands anything else to your staff.",
       },
       {
         label: "At the table",
@@ -239,17 +240,22 @@ const restaurants: Industry = {
     answer:
       `A single café can start on Zloya Single Outlet at ${inr("zloya", "Single Outlet")}/month, which includes the POS quick counter, points with four VIP tiers, five smart QR codes and guest feedback. ` +
       `Memberships, prepaid wallets and the birthday, win-back and expiry journeys start on Zloya Growth (${inr("zloya", "Growth")}/month), which also covers up to three outlets. ` +
-      `For WhatsApp and Instagram enquiries, add ZChat Starter at ${inr("zchat", "Starter")}/month.`,
+      `For WhatsApp and Instagram enquiries, add ZChat Starter at ${inr("zchat", "Starter")}/month, or ZChat Growth (${inr("zchat", "Growth")}/month) for all four channels and the AI agent.`,
     picks: [
       { group: "zloya", plan: "Single Outlet", fit: "One outlet: POS quick counter, points and 4 VIP tiers, 5 smart QR codes, feedback" },
       { group: "zloya", plan: "Growth", fit: "Up to 3 outlets, memberships and prepaid wallets, birthday, win-back and expiry journeys" },
       { group: "zloya", plan: "Chain", fit: "Unlimited outlets, Customers 360° across outlets, API / POS integration" },
       { group: "zchat", plan: "Starter", fit: "Shared WhatsApp + Instagram inbox, 2 seats, labels and quick replies" },
+      { group: "zchat", plan: "Growth", fit: "All 4 channels, 5 seats, the AI agent and broadcasts" },
       { group: "suite", plan: "Suite Starter", fit: "CRM Starter, ZChat Starter, ZShop Starter and Zloya for 1 outlet, with an onboarding call" },
     ],
   },
   faqHeading: "Restaurant and café questions",
   faqs: [
+    {
+      q: "What is a restaurant CRM, and how is it different from a loyalty program?",
+      a: "A restaurant CRM is the record of your guests: who they are, how often they visit and what they've earned. A loyalty program is one way to use it. In Zutok, Zloya is the loyalty layer, and guests from Zloya and chats from ZChat both land in Zutok CRM. Each guest record holds a phone number, visits and a points balance, and the same profile is shared across your outlets.",
+    },
     {
       q: "How does a restaurant loyalty program work at the billing counter?",
       a: "The cashier opens Zloya's POS quick counter in a browser, looks the guest up by mobile number and enters the bill amount. Points are added automatically, at a higher rate for higher tiers. When a guest redeems, a one-time password sent to their phone confirms it.",
@@ -263,8 +269,12 @@ const restaurants: Industry = {
       a: "Put Zloya smart QR codes on table standees, delivery boxes and partner stores. Guests scan, share their number and get a perk. Each code shows its scans, sign-ups and opt-in rate, so you can see which placement works best.",
     },
     {
-      q: "How can a restaurant bring back guests who stopped visiting?",
-      a: "Zloya moves guests into a Slipping segment after 30 days without a visit and a Lost segment after 60. The 30-day win-back journey sends them a message with a coupon locked to their phone number, and points-expiry reminders give regulars another reason to return. Win-back and expiry journeys are included from Zloya Growth.",
+      q: "How does guest feedback work after a visit?",
+      a: "The post-visit feedback journey sends guests a short rating link that takes about 30 seconds. They rate food, service, ambience and cleanliness, and low ratings alert a manager, who can follow up with that guest.",
+    },
+    {
+      q: "How do I get more repeat customers at my restaurant?",
+      a: "Notice who is drifting and give them a reason to return. Zloya moves guests into a Slipping segment after 30 days without a visit and a Lost segment after 60. The 30-day win-back journey sends them a coupon locked to their phone number, birthdays get a greeting with a gift and double points, and points-expiry reminders give regulars another reason to come in. These journeys are included from Zloya Growth.",
     },
     {
       q: "Can I run one loyalty program across several outlets?",
@@ -282,10 +292,12 @@ const d2c: Industry = {
   theme: { bg: "#ff4d8d", fg: "#0b0b0b", pop: "#ff4d8d" },
   title: "WhatsApp & Instagram Automation for D2C Fashion Brands",
   metaDescription:
-    "For D2C and fashion brands: WhatsApp order updates, COD confirmation, abandoned-cart recovery and an AI agent that answers stock and price questions.",
+    "For D2C and fashion brands: WhatsApp order updates, COD confirmation, cart recovery, an AI agent for stock and price questions, and buyers saved to your CRM.",
   keywords: [
     "WhatsApp automation for D2C brands",
     "D2C CRM India",
+    "ecommerce CRM India",
+    "Shopify CRM India",
     "fashion brand WhatsApp order updates",
     "Instagram DM selling for fashion brands",
     "COD confirmation for D2C",
@@ -293,7 +305,7 @@ const d2c: Industry = {
   ],
   h1: ["WhatsApp automation for", "D2C and fashion brands"],
   answer:
-    "Zutok gives Indian D2C and fashion brands one system for the whole sale. Zutok ZChat answers price and availability questions on WhatsApp with an AI agent that quotes from your catalogue, with Instagram DMs in the same inbox, and Zutok ZShop confirms COD orders, recovers abandoned carts and sends order updates for Shopify, WooCommerce or in-house stores. " +
+    "Zutok gives Indian D2C and fashion brands one system for the whole sale. Zutok ZChat answers price and availability questions on WhatsApp and Instagram with an AI agent that quotes from your catalogue, and Zutok ZShop confirms COD orders, recovers abandoned carts and sends order updates for Shopify, WooCommerce or in-house stores. " +
     `ZShop starts at ${inr("zshop", "Starter")}/month billed monthly, excluding 18% GST.`,
   uses: ["zshop", "zchat"],
   relatedProduct: "zshop",
@@ -345,7 +357,7 @@ const d2c: Industry = {
       {
         label: "Chat",
         title: "The AI answers the questions",
-        body: "The buyer asks whether the maroon Banarasi silk is available. The AI offers the colours as a numbered list, then replies with the price and order link from the matching catalogue row. If the buyer asks for a person, the chat moves to your team with the whole history.",
+        body: "The buyer asks whether the maroon Banarasi silk is available. The AI offers the colours as a numbered list, then replies with the price and order link from the matching catalogue row. With handoff on, a buyer who asks for a person moves to your team with the whole history.",
       },
       {
         label: "Order",
@@ -443,16 +455,28 @@ const d2c: Industry = {
       a: "Connect your store to Zutok ZShop and map your Meta templates once. ZShop then sends placed, packed, shipped and delivered updates from your ZChat number, asks COD buyers to confirm, reminds them automatically and tags confirmed orders.",
     },
     {
-      q: "Can an AI agent answer “is it in stock?” and price questions on WhatsApp?",
-      a: "Yes, from the catalogue you give it. ZChat's AI only offers options that exist in your rows and quotes the price and order link from the row that matches. Add availability as an information column and it answers that too. Nothing is guessed.",
+      q: "Can an AI agent answer “is it in stock?” and price questions on WhatsApp and Instagram?",
+      a: "Yes, from the catalogue you give it, on WhatsApp, Instagram, Messenger and Telegram. ZChat's AI only offers options that exist in your rows and quotes the price and order link from the row that matches. Add availability as an information column and it answers that too. Nothing is guessed.",
     },
     {
       q: "How do fashion brands turn Instagram comments into sales chats?",
       a: "With ZChat's comment → DM automation. Set a rule on keywords like “price” or on any comment, and ZChat replies publicly and sends a private DM with the details. The conversation then continues in the shared inbox.",
     },
     {
+      q: "What happens if an item sells out?",
+      a: "Update the catalogue. ZChat's AI answers only from the rows and information columns you fill in, so change the availability column or the row, or re-import the sheet, and it answers from that. It doesn't sync live stock from your store.",
+    },
+    {
       q: "Does it work with both Shopify and WooCommerce stores?",
       a: "Yes. Shopify connects through a custom app with 32 webhook topics synced, WooCommerce or any platform with an API connects too, and an in-house shop works with items kept in the CRM. Every feature works the same on all three.",
+    },
+    {
+      q: "Where do my Shopify and WooCommerce orders and buyers end up?",
+      a: "In Zutok CRM. ZShop brings every order in, and every buyer becomes a CRM lead, matched on phone number only, and is saved to the CRM on delivery. Chats from ZChat become leads too, with their source, and you can import customers and leads from Excel or CSV and export them to CSV.",
+    },
+    {
+      q: "How does Zutok avoid duplicate or mixed-up customers?",
+      a: "ZShop matches every buyer to a CRM lead on phone number only, never on name, so two shoppers with the same name are never mixed up.",
     },
     {
       q: "Which plan suits a high-volume D2C brand?",
@@ -468,16 +492,17 @@ const realEstate: Industry = {
   tagline: "Properties, owners, brokers, buy and rent requests, and site-visit leads from Meta ads.",
   icon: "home",
   theme: { bg: "#22c55e", fg: "#0b0b0b", pop: "#22c55e" },
-  title: "Real Estate CRM: Properties, Brokers, Tenants & Leads",
+  title: "Real Estate CRM for Brokers, Agents & Rentals in India",
   metaDescription:
-    "Manage properties, owners, agents, brokers, buy and rent requests and tenants in Zutok CRM, with site-visit leads from Meta ads and WhatsApp in one place.",
+    "Real estate CRM for brokers and property managers: properties, owners, buy and rent requests, tenants with renewal reminders, and Meta ad and WhatsApp leads.",
   keywords: [
     "real estate CRM India",
     "property CRM for brokers",
+    "property dealer software India",
+    "real estate lead management",
     "rental and tenant management CRM",
+    "buyer and renter requirement tracking",
     "real estate WhatsApp leads",
-    "Meta ads site visit leads",
-    "property buy and rent requests",
   ],
   h1: ["Real estate CRM for Indian", "brokers and property managers"],
   answer:
@@ -495,7 +520,7 @@ const realEstate: Industry = {
   approach: {
     heading: "How does Zutok handle listings, enquiries and tenants?",
     intro:
-      "The Real Estate suite in Zutok CRM holds the property side of the business, and ZChat brings the conversations in. Both sit in the same Zutok account, and every new chat becomes a CRM lead with its source.",
+      "The Real Estate suite in Zutok CRM holds the property side of the business, and ZChat brings the conversations in. Both sit in the same Zutok account, and every new chat becomes a CRM lead with its source. It's made for brokers, agents, property dealers and property managers, not for builders managing unit inventory, bookings and payment plans.",
     products: [
       {
         slug: "crm",
@@ -625,24 +650,36 @@ const realEstate: Industry = {
   faqHeading: "Real estate CRM questions",
   faqs: [
     {
-      q: "What should a real estate CRM in India manage?",
-      a: "Properties and their owners, buyers' and renters' requirements, agents and the brokers you work with, tenants after a deal, and the leads that come in from ads and chats. Zutok CRM's Real Estate suite covers the records and its pipeline covers the leads.",
+      q: "What is a real estate CRM, and how is it different from a generic CRM?",
+      a: "A real estate CRM adds the records property work needs on top of an ordinary lead pipeline. Zutok CRM's Real Estate suite adds properties and approvals, owners, agents, brokers, buy and rent requests, tenants and real estate reports, while leads still move from Enquiry to Follow-up, Hot and Customer.",
     },
     {
       q: "Can property enquiries from Meta ads and WhatsApp go into one CRM?",
       a: "Yes. Meta Lead Ads leads sync into Zutok CRM, and with ZChat every new WhatsApp or Instagram chat creates a lead with its source. Both enter the same Enquiry → Follow-up → Hot → Customer pipeline.",
     },
     {
-      q: "Can I manage tenants and rent requests in the same system?",
-      a: "Yes. The Real Estate suite keeps rent requests, buy requests and tenants next to your properties and owners, with reports. It is part of Zutok CRM Enterprise.",
+      q: "How do brokers track what buyers and renters are looking for?",
+      a: "Save each requirement as a buy or rent request in the Real Estate suite, next to the properties, owners and brokers you work with. CRM Enterprise also lets you add custom fields for the details your requests need.",
+    },
+    {
+      q: "Can Zutok remind me before a rental agreement is due for renewal?",
+      a: "Yes. When a rental closes, add the tenant in the Real Estate suite and keep their contract on file, and the contract reminds you before it's due for renewal. That helps with the 11-month agreements common in Indian rentals.",
+    },
+    {
+      q: "Is it a tenant or PG management app?",
+      a: "No. Zutok keeps tenants and their contracts as records next to your leads and properties, but it isn't built for rent collection, tenant KYC, maintenance requests or a tenant portal.",
+    },
+    {
+      q: "Which lead sources does it support?",
+      a: "Meta Lead Ads, IndiaMART, website estimate requests, chats from ZChat and imports from Excel or CSV. It has no 99acres, MagicBricks or Housing.com integration.",
     },
     {
       q: "Can the WhatsApp AI send a property brochure to an enquirer?",
       a: "Yes. In ZChat, add a file column to your catalogue and attach the brochure, price list, PDF or video to the right row. When the AI quotes from that row, the customer gets the real file. The AI agent is part of ZChat Growth and above.",
     },
     {
-      q: "Which Zutok plan includes the Real Estate suite?",
-      a: `Zutok CRM Enterprise, at ${inr("crm", "Enterprise")}/month billed monthly, excluding 18% GST. It also unlocks unlimited users and custom fields for every module. The Suite Enterprise plan includes CRM Enterprise too.`,
+      q: "How much does a real estate CRM cost with Zutok?",
+      a: `The Real Estate suite is in Zutok CRM Enterprise, at ${inr("crm", "Enterprise")}/month billed monthly as a flat price with unlimited users, excluding 18% GST. Yearly billing charges ${YEARLY_MONTHS_CHARGED} months for 12. ZChat is optional for WhatsApp and Instagram enquiries, and Meta's WhatsApp charges are billed separately. Suite Enterprise includes CRM Enterprise too.`,
     },
   ],
   related: ["agencies-services", "retail-franchises", "clinics-labs-salons"],
@@ -654,15 +691,16 @@ const agencies: Industry = {
   tagline: "Proposals, GST invoices, projects, timesheets and a shared inbox for every client.",
   icon: "briefcase",
   theme: { bg: "#6c2bd9", fg: "#ffffff", pop: "#a78bfa" },
-  title: "CRM for Agencies & Service Firms: Proposals to Payments",
+  title: "CRM for Agencies: Projects, Timesheets & GST Invoices",
   metaDescription:
     "For agencies and service businesses: proposals, GST invoices, projects, timesheets, meeting notes and a shared WhatsApp inbox for every client in one CRM.",
   keywords: [
     "CRM for agencies India",
-    "agency CRM with GST invoicing",
+    "CRM with project management",
     "project and timesheet software",
+    "client project tracking software",
+    "agency CRM with GST invoicing",
     "client proposal software",
-    "service business CRM India",
     "client WhatsApp inbox",
   ],
   h1: ["CRM for agencies and", "service businesses in India"],
@@ -790,7 +828,7 @@ const agencies: Industry = {
       {
         icon: "inbox",
         title: "Shared client inbox",
-        body: "Client chats from WhatsApp and Instagram in one inbox, with labels, statuses and team reports.",
+        body: "Client chats from WhatsApp and Instagram in one inbox, with labels and statuses, and team reports on ZChat Growth.",
         product: "zchat",
       },
     ],
@@ -824,6 +862,18 @@ const agencies: Industry = {
       a: "Yes. Projects hold milestones, tasks, timesheets and meeting notes, and each project is linked to the customer it belongs to. Reports, including timesheet reports, come with CRM Growth and above.",
     },
     {
+      q: "Is a CRM project module different from a separate project tool?",
+      a: "Yes, mostly in where it lives. In Zutok CRM, projects sit on the same customer profile as proposals, GST invoices, payments, tickets and contracts, with milestones, tasks, timesheets and meeting notes, so there's no second tool to keep in sync. It covers those essentials rather than everything a specialist project tool does.",
+    },
+    {
+      q: "Are project timesheets the same as staff attendance?",
+      a: "No. Project timesheets log hours against client projects, and timesheet reports show where the time went. Attendance and leave are separate HR modules that come with CRM Growth.",
+    },
+    {
+      q: "What happens after a project launches?",
+      a: "Follow-up requests come in as support tickets on the client's profile, and the client's contract reminds you before it's due for renewal. Contracts come with CRM Growth.",
+    },
+    {
       q: "Can each client's WhatsApp chats sit next to their projects and invoices?",
       a: "They live in the same Zutok account. ZChat keeps client chats in a shared inbox and creates a CRM lead for every new chat, with its source. The client's invoices, projects and tickets sit on their customer profile in Zutok CRM.",
     },
@@ -846,11 +896,12 @@ const clinics: Industry = {
     "Answer appointment chats on WhatsApp, let the AI quote your test or service price list, sell memberships and send repeat-visit reminders with Zutok.",
   keywords: [
     "WhatsApp automation for clinics and salons",
+    "WhatsApp for clinics India",
     "diagnostic lab WhatsApp price list",
-    "salon membership software",
-    "clinic WhatsApp inbox",
-    "repeat visit reminders",
+    "salon membership software India",
     "salon loyalty program India",
+    "repeat visit reminders for salons",
+    "clinic WhatsApp inbox",
   ],
   h1: ["WhatsApp automation for", "clinics, labs and salons"],
   answer:
@@ -954,7 +1005,7 @@ const clinics: Industry = {
       {
         icon: "users",
         title: "Human handoff",
-        body: "When a client asks for a person, the chat moves to your team in the same inbox, with the whole history.",
+        body: "With handoff on, when a client asks for a person, the chat moves to your team in the same inbox, with the whole history.",
         product: "zchat",
       },
       {
@@ -1011,12 +1062,20 @@ const clinics: Industry = {
       a: "Yes, with Zutok Zloya. Sell yearly perk bundles or prepaid wallets at the counter, like pay ₹5,000 and get ₹6,000 in credit, and track staff sales on a leaderboard. Memberships and wallets come with Zloya Growth.",
     },
     {
-      q: "How do I remind clients to come back for a repeat visit?",
-      a: "Zloya's segments flag clients who haven't visited for 30 days as Slipping. The 30-day win-back journey then sends them a message with a coupon locked to their phone number, and birthday messages add another reason to return.",
+      q: "Is the WhatsApp Business app enough for a clinic's front desk?",
+      a: "For a busy desk, ZChat runs on the official WhatsApp Business Platform instead, with a shared inbox for your team, the AI agent and Meta-approved templates. Free-form replies are allowed within 24 hours of the patient's last message, and later messages go out as approved templates. Zutok helps you set up and verify the number.",
     },
     {
-      q: "Can the AI hand a patient or client over to my staff?",
-      a: "Yes. Turn on handoff and the AI passes the conversation to a person whenever the customer asks for one or the question falls outside its instructions. Keep its instructions to prices, timings and directions so clinical questions always reach your staff.",
+      q: "What happens when a patient asks a medical question?",
+      a: "The AI answers only from the facts you give it, so keep those to prices, timings, directions and similar business details. A clinical question falls outside its instructions and goes to your staff through handoff, with the whole chat history, and staff also confirm appointment slots.",
+    },
+    {
+      q: "How do I win back salon clients who stopped coming?",
+      a: "Zloya flags clients who haven't visited for 30 days as Slipping, and the 30-day win-back journey sends them a coupon locked to their phone number. Birthday messages add another reason to return. Win-back and birthday journeys come with Zloya Growth.",
+    },
+    {
+      q: "How can a salon track prepaid credits and membership revenue?",
+      a: "Zloya's retention dashboard shows prepaid membership revenue next to your repeat guest rate and loyalty-tracked sales, and the staff leaderboard shows how many memberships each person has sold.",
     },
   ],
   related: ["restaurants-cafes", "retail-franchises", "agencies-services"],
@@ -1034,9 +1093,10 @@ const retail: Industry = {
   keywords: [
     "CRM for retail chains and franchises",
     "multi-outlet loyalty program",
-    "retail inventory and warehouse software",
-    "franchise customer 360",
+    "loyalty program for franchise",
+    "multi-warehouse inventory for retail chains",
     "staff attendance for retail stores",
+    "WhatsApp order updates without a website",
     "retail store CRM India",
   ],
   h1: ["CRM for retail stores,", "chains and franchises"],
@@ -1205,16 +1265,28 @@ const retail: Industry = {
       a: "Yes. Zutok CRM Growth and above include inventory and warehouse management, with a full history for every warehouse, alongside HRM, payroll, attendance and leave.",
     },
     {
+      q: "Can I see stock for each warehouse separately?",
+      a: "Yes. Zutok CRM keeps a full stock history for every warehouse, with warehouse reports, from CRM Growth.",
+    },
+    {
+      q: "How do I record damaged or lost stock?",
+      a: "Record it as a loss or an adjustment in the same inventory module, so that warehouse's history stays accurate.",
+    },
+    {
       q: "I only sell at the counter. Can I still send WhatsApp order updates?",
       a: "Yes. Choose ZShop's in-house shop, keep your items in the CRM and take orders at the counter. Every automation still works. ZShop needs ZChat to deliver the WhatsApp messages.",
+    },
+    {
+      q: "What does it cost to send WhatsApp updates for counter orders?",
+      a: `ZShop Starter costs ${inr("zshop", "Starter")}/month for 1 store and up to 500 orders a month, plus a ZChat plan from ${inr("zchat", "Starter")}/month for WhatsApp delivery. Meta's charges are billed separately, and prices exclude 18% GST.`,
     },
     {
       q: "Is there special pricing for franchises with many outlets?",
       a: "Yes. Zutok has special pricing for chains with 10 or more outlets; ask about it during your demo. The Complete Suite also bundles all four products for about 40% less than buying them separately.",
     },
     {
-      q: "Does it work with my existing POS?",
-      a: "Zloya's POS quick counter runs in any browser next to your current billing, so you don't need an integration to start. If you want your POS connected, API / POS integration is included in the Zloya Chain plan.",
+      q: "Does Zutok replace my billing or POS software?",
+      a: "No. Zloya's POS quick counter runs in any browser next to your current billing, so you don't need an integration to start. If you want your POS connected, API / POS integration is included in the Zloya Chain plan.",
     },
   ],
   related: ["restaurants-cafes", "d2c-fashion-brands", "real-estate"],

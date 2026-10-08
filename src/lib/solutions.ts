@@ -1,115 +1,254 @@
-import type { IconName } from "@/components/ui/Icon";
 import type { ProductSlug } from "@/lib/products";
-import { formatINR, pricing, YEARLY_MONTHS_CHARGED, type PricingGroup } from "@/lib/pricing";
+import { pricing } from "@/lib/pricing";
+import { perMonth, pricedPlan, priceLine, type Solution, type SolutionEntry, type SolutionSlug } from "@/lib/solution-kit";
+import { linkTargets } from "@/lib/inline-links";
+import { page as whatsappBusinessApi } from "@/lib/solution-pages/whatsapp-business-api";
+import { page as whatsappMessageTemplates } from "@/lib/solution-pages/whatsapp-message-templates";
+import { page as omnichannelTeamInbox } from "@/lib/solution-pages/omnichannel-team-inbox";
+import { page as whatsappCrm } from "@/lib/solution-pages/whatsapp-crm";
+import { page as facebookMessengerAutomation } from "@/lib/solution-pages/facebook-messenger-automation";
+
+export type { Solution, SolutionEntry, SolutionPlan, SolutionSection, SolutionSlug } from "@/lib/solution-kit";
 
 /**
  * Use-case landing pages under /solutions/. Every claim here restates src/lib/products.ts, src/lib/pricing.ts or
  * the product sections; prices are read from pricing.ts so the copy can't drift from the plans.
+ *
+ * Types and the price helpers (perMonth, priceLine) live in src/lib/solution-kit.ts. Newer pages live in their own
+ * files under src/lib/solution-pages/ and are registered in `data` below; the key order of `data` is the page order.
+ * Copy may link with "[label](/path/)" markup (src/lib/inline-links.ts); pages render it, JSON-LD gets plain text.
+ *
+ * OWNER TO CONFIRM (2026-10-09). The sources don't say either way, so these pages make no claim about them:
+ * - COD confirmation: whether ZShop offers OTP checks, IVR calls, COD-to-prepaid offers, partial COD, pincode checks
+ *   or RTO scores. (A "what it doesn't do" section was removed rather than guessed.)
+ * - GST invoicing: e-invoices (IRN), e-way bills, GSTR filing, HSN/SAC lookup, Tally sync, UPI/card collection, POS
+ *   billing. (The FAQ saying "no" to all of these was removed.)
+ * - HRM: what "payroll" in pricing.ts covers beyond salary records (payslips, PF/ESI/PT/TDS, salary runs, payouts).
+ *   Headings now say "HRM"; the plan label stays exactly as pricing.ts has it.
+ * - Zloya: which plan the post-visit feedback journey belongs to, and that no coupon depends on a Google review.
+ * - Zloya memberships: whether a membership or wallet balance can be redeemed at every outlet (pages only say the
+ *   member is recognised at each outlet).
  */
 
-export type SolutionSlug =
-  | "whatsapp-ai-sales-agent"
-  | "whatsapp-broadcast-campaigns"
-  | "instagram-comment-to-dm"
-  | "whatsapp-cod-confirmation"
-  | "abandoned-cart-recovery-whatsapp"
-  | "whatsapp-order-updates-courier-tracking"
-  | "restaurant-membership-prepaid-wallet"
-  | "restaurant-qr-code-customer-data"
-  | "automated-winback-birthday-campaigns"
-  | "gst-invoicing-crm"
-  | "indiamart-meta-lead-ads-crm"
-  | "crm-with-hrm-payroll";
-
-export type SolutionSection = {
-  /** Question-style H2, phrased the way people search. */
-  heading: string;
-  /** One or two sentences that answer the heading directly. Shown first. */
-  lead: string;
-  body?: string[];
-  bullets?: string[];
-};
-
-export type SolutionPlan = {
-  heading: string;
-  /** Direct answer naming the plan and its price. */
-  lead: string;
-  /** What this page is about, per plan. The first item's `from` is the plan the solution starts on. */
-  includes: { label: string; from: string }[];
-  /** One line per plan name, saying what matters about that plan for this use case. */
-  highlights: Record<string, string>;
-  /** Complete Suite plan that already contains the first item. */
-  suite?: string;
-};
-
-export type Solution = {
-  slug: SolutionSlug;
-  /** Short name for breadcrumbs, cards and links. */
-  name: string;
-  /** Pill above the H1. */
-  kicker: string;
-  relatedProduct: ProductSlug;
-  /** <title> (the layout adds " | Zutok"). */
-  title: string;
-  metaDescription: string;
-  keywords: string[];
-  h1: string;
-  /** Trailing words of `h1` set in serif italic. */
-  h1Accent?: string;
-  /** 40–70 word answer shown right under the H1: what it is, who it's for, the starting price. */
-  answer: string;
-  /** One line for cards and llms.txt. */
-  summary: string;
-  facts: { value: string; label: string }[];
-  problem: SolutionSection;
-  approach: SolutionSection;
-  extra?: SolutionSection[];
-  steps: { heading: string; lead: string; items: { title: string; body: string }[] };
-  features: { heading: string; lead?: string; items: { title: string; body: string; icon: IconName }[] };
-  plan: SolutionPlan;
-  faqs: { q: string; a: string }[];
-  related: SolutionSlug[];
-};
-
-type GroupId = PricingGroup["id"];
-
-function pricedPlan(group: GroupId, name: string) {
-  const plan = pricing.find((g) => g.id === group)?.plans.find((p) => p.name === name);
-  if (!plan || plan.monthly === null) throw new Error(`solutions.ts: no priced plan "${name}" in "${group}"`);
-  return { ...plan, monthly: plan.monthly };
-}
-
-/** "₹1,999/month" */
-const perMonth = (group: GroupId, plan: string) => `₹${formatINR(pricedPlan(group, plan).monthly)}/month`;
-
-/** "₹1,999/month billed monthly (₹19,990/year), excl. 18% GST" */
-const priceLine = (group: GroupId, plan: string) => {
-  const m = pricedPlan(group, plan).monthly;
-  return `₹${formatINR(m)}/month billed monthly (₹${formatINR(m * YEARLY_MONTHS_CHARGED)}/year), excl. 18% GST`;
-};
-
-const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
+const data: Record<SolutionSlug, SolutionEntry> = {
   /* ---------------------------------------------------------------- */
   /* ZChat                                                            */
   /* ---------------------------------------------------------------- */
+  /** The broad "WhatsApp automation" page: every WhatsApp automation across ZChat and ZShop, linking to each one. */
+  "whatsapp-automation": {
+    name: "WhatsApp automation",
+    kicker: "Zutok ZChat + ZShop · WhatsApp automation",
+    relatedProduct: "zchat",
+    title: "WhatsApp Automation Software for Indian Businesses",
+    metaDescription:
+      "Automate WhatsApp with Zutok: an AI agent that quotes from your catalogue, broadcasts on approved templates, COD confirmation, order updates and cart reminders.",
+    keywords: [
+      "WhatsApp automation",
+      "WhatsApp automation software India",
+      "24/7 WhatsApp auto reply",
+      "WhatsApp auto reply after business hours",
+      "automated WhatsApp messages for business",
+      "WhatsApp auto reply for business",
+      "WhatsApp marketing automation",
+    ],
+    h1: "WhatsApp automation for Indian businesses, from first reply to delivery",
+    h1Accent: "from first reply to delivery",
+    answer: `WhatsApp automation is software that sends and answers WhatsApp messages for your business. With Zutok, an AI agent answers product and price questions from your own catalogue, broadcasts go out on Meta-approved templates, and online stores confirm COD orders, send order updates and remind abandoned carts. It runs on the official WhatsApp Business Platform, from ZChat Growth at ${priceLine("zchat", "Growth")}.`,
+    summary:
+      "Everything Zutok automates on WhatsApp: AI replies from your catalogue, broadcasts, COD confirmation, order updates, cart reminders and handoff to your team.",
+    facts: [
+      { value: "24/7", label: "AI replies, day or night" },
+      { value: "5", label: "template formats: text, image, PDF, video and buttons" },
+      { value: "3", label: "cart reminders: after 1 hour, 1 day and 3 days" },
+    ],
+    problem: {
+      heading: "What is WhatsApp automation, and why do businesses use it?",
+      lead: "WhatsApp automation is software that sends and answers WhatsApp messages for you: replies to everyday questions, campaign messages, order confirmations and delivery updates. Businesses use it because customers ask on WhatsApp at all hours, and answering every chat by hand doesn't keep up.",
+      body: [
+        "WhatsApp has rules that automation has to follow. Business messaging at scale runs on the official WhatsApp Business Platform (the WhatsApp Business API), and free-form messages are only allowed within 24 hours of the customer's last message. Anything later, like most order updates and campaigns, goes out as a template Meta has approved.",
+        "Zutok is built around those rules, so every automated message is either a reply inside the 24-hour window or an approved template with the customer's details filled in.",
+      ],
+    },
+    approach: {
+      heading: "What can you automate on WhatsApp with Zutok?",
+      lead: "Five kinds of messages: answers to product and price questions, broadcasts, COD confirmations, order updates and abandoned-cart reminders. They all go out from your ZChat number, and every reply comes back to one shared inbox.",
+      bullets: [
+        "AI sales agent (ZChat Growth): asks each product choice as a numbered list and quotes the price, order link and files from the one catalogue row that matches.",
+        "Broadcasts (ZChat Growth): Text, Image, PDF, Video and Button templates to your leads, contacts or a custom audience, with sent, delivered and read numbers.",
+        "COD confirmation (ZShop Starter): buyers confirm cash-on-delivery orders on WhatsApp before anything ships, with a reminder after 4 hours by default.",
+        "Order updates (ZShop Starter): placed, packed, shipped and delivered messages, with courier tracking on ZShop Growth.",
+        "Abandoned-cart reminders (ZShop Growth): after 1 hour, 1 day and 3 days, with the discounts you set on the second and third.",
+      ],
+    },
+    extra: [
+      {
+        heading: "Can WhatsApp reply automatically after business hours?",
+        lead: "Yes. On ZChat Growth, the AI sales agent answers day or night from your catalogue and the business facts you add: timings, address, delivery areas, and payment and return policy. Anything it can't answer waits in the shared inbox for your team.",
+        body: [
+          "So questions that arrive overnight, like timings or directions, are already answered by the time you open. The inbox's All, Mine and Unassigned views and its Open, Pending and Resolved status show the morning shift exactly which chats still need a person.",
+        ],
+      },
+      {
+        heading: "Is an AI agent the same as a WhatsApp auto reply or chatbot?",
+        lead: "No. A fixed auto reply sends everyone the same message. ZChat's AI agent reads the question, asks each product choice as a numbered list and quotes only from the catalogue row that matches.",
+        body: [
+          "Instead of building a flow, you add your products with your own columns and rows, plus your business facts, and the agent works from those. It runs on OpenAI, Anthropic Claude, Google Gemini, Vertex AI or your own model, and with handoff on, it hands the chat to your team when a customer asks for a person.",
+        ],
+      },
+      {
+        heading: "Do I need the WhatsApp Business API for automation?",
+        lead: "Yes. ZChat runs on the official WhatsApp Business Platform, and Zutok helps you set up and verify your number during onboarding. The [WhatsApp Business API](/solutions/whatsapp-business-api/) page covers setup and what Meta charges on top of your plan.",
+      },
+      {
+        heading: "How does Zutok keep automated WhatsApp messages from spamming customers?",
+        lead: "ZShop's promotional store messages, such as discount cart reminders, wait outside the quiet hours you set (for example 9 pm to 9 am) and respect a daily limit (for example one promo per day). Order updates always go out when they happen, even at 11 pm.",
+        body: [
+          "When someone says “stop contacting me”, one do-not-contact list, shared by ZShop and ZChat, applies on every channel, so they don't hear from a different automation the next day.",
+          "You choose the quiet hours and daily limit when you set ZShop up. Cart reminders come with ZShop Growth.",
+        ],
+      },
+      {
+        heading: "What happens when a customer needs a person?",
+        lead: "The chat moves to your team. With handoff on, the AI agent passes the conversation over whenever a customer asks for a person or the question falls outside its instructions, and the whole history stays in the same inbox.",
+        body: [
+          "On ZChat Scale, auto-assign spreads new and waiting chats across your team, so nothing sits unanswered. Every new chat also creates a lead in Zutok CRM with its source.",
+        ],
+      },
+    ],
+    steps: {
+      heading: "How do you set up WhatsApp automation, step by step?",
+      lead: "You set each automation up once. After that it runs on its own, and your team only steps in when a customer needs them.",
+      items: [
+        {
+          title: "Connect your number",
+          body: "ZChat runs on the official WhatsApp Business Platform. Zutok helps you set up and verify your number during onboarding.",
+        },
+        {
+          title: "Add your catalogue and facts",
+          body: "Products with your own columns and rows, plus timings, address, delivery areas, and payment and return policy.",
+        },
+        {
+          title: "Create or sync templates",
+          body: "Text, Image, PDF, Video and Button templates, with Meta's approval status for each one.",
+        },
+        {
+          title: "Connect your store",
+          body: "Optional: Shopify, WooCommerce, any platform with an API, or an in-house shop, for COD, order updates and carts.",
+        },
+        {
+          title: "Set quiet hours and handoff",
+          body: "Choose when ZShop's promotional messages may go out, and when a chat should move to a person.",
+        },
+        {
+          title: "Go live",
+          body: "The agent answers, campaigns send and store messages run, while replies land in the shared inbox as CRM leads.",
+        },
+      ],
+    },
+    features: {
+      heading: "Which WhatsApp automations does Zutok include?",
+      lead: "Each one has its own page with the details. Together they cover a customer's whole journey on WhatsApp.",
+      items: [
+        { icon: "bot", title: "AI sales agent", body: "Quotes from the catalogue row that matches, day or night." },
+        { icon: "megaphone", title: "Broadcasts", body: "Approved templates to leads, contacts or custom lists." },
+        { icon: "template", title: "Template studio", body: "Text, Image, PDF, Video and Button templates." },
+        { icon: "receipt", title: "COD confirmation", body: "Confirm before dispatch, with an automatic reminder." },
+        { icon: "package", title: "Order updates", body: "Placed, packed, shipped and delivered." },
+        { icon: "cart", title: "Cart reminders", body: "After 1 hour, 1 day and 3 days." },
+        { icon: "moon", title: "Quiet hours & limits", body: "ZShop promotions wait; order updates don't." },
+        { icon: "users", title: "Chats → CRM leads", body: "Every new chat creates a lead with its source." },
+      ],
+    },
+    plan: {
+      heading: "How much does WhatsApp automation cost with Zutok?",
+      lead: `The AI sales agent and broadcasts come with ZChat Growth at ${priceLine("zchat", "Growth")}. Store automations run on [Zutok ZShop](/products/zshop/), which sends through ZChat: COD confirmation and order updates from ZShop Starter at ${perMonth("zshop", "Starter")}, and cart recovery and courier tracking from ZShop Growth at ${perMonth("zshop", "Growth")}. Meta's per-message charges for template messages are billed separately.`,
+      includes: [
+        { label: "AI sales agent & broadcasts", from: "Growth" },
+        { label: "Multiple AI agents & auto-assign", from: "Scale" },
+      ],
+      highlights: {
+        Starter: "Shared WhatsApp + Instagram inbox for 2 seats, with labels and quick replies.",
+        Growth: "All 4 channels, 5 seats, the AI sales agent, broadcasts and comment → DM.",
+        Scale: "15 seats, multiple AI agents, auto-assign and export / import.",
+      },
+      suite: "Suite Growth",
+    },
+    faqs: [
+      {
+        q: "What is WhatsApp automation?",
+        a: "Software that sends and answers WhatsApp messages for your business: replies to questions, broadcasts, order confirmations and delivery updates. Zutok runs it on the official WhatsApp Business Platform, and every reply lands in one shared inbox.",
+      },
+      {
+        q: "Can WhatsApp reply to customers automatically?",
+        a: "Yes. ZChat's AI sales agent answers product and price questions from your catalogue and business facts, day or night, and with handoff on, it hands the chat to your team when a customer asks for a person.",
+      },
+      {
+        q: "How do I set up auto reply on WhatsApp for my business?",
+        a: "Connect your number on the official WhatsApp Business Platform (Zutok helps you set it up and verify it during onboarding), add your products and business facts, then turn on ZChat's AI agent and handoff. The AI agent comes with ZChat Growth.",
+      },
+      {
+        q: "Is WhatsApp automation free?",
+        a: `Zutok's automation is a paid plan, but you can see it working in a free 30-minute demo first, and there is no setup fee. AI replies and broadcasts come with ZChat Growth at ${priceLine("zchat", "Growth")}. Meta bills its WhatsApp charges separately, and monthly plans can be cancelled at the end of any month.`,
+      },
+      {
+        q: "Can automated WhatsApp messages go out at night?",
+        a: "Order updates do, because buyers want them as soon as they happen. ZShop's promotional messages, like cart reminders, wait for your quiet hours to end, and the AI agent replies whenever a customer writes to you.",
+      },
+      {
+        q: "Do I need a website or a Shopify store for WhatsApp automation?",
+        a: "Not for chats and broadcasts. For order automations, ZShop works with Shopify, WooCommerce, any platform with an API, or an in-house shop whose items live in the CRM.",
+      },
+      {
+        q: "Can I automate Instagram as well as WhatsApp?",
+        a: "Yes. The AI sales agent also answers on Instagram, Messenger and Telegram, and ZChat replies to comments on your Instagram and Facebook posts and reels and sends a private DM to everyone who comments. See [Instagram automation](/solutions/instagram-comment-to-dm/) and [Facebook Messenger automation](/solutions/facebook-messenger-automation/).",
+      },
+    ],
+    related: [
+      "instagram-comment-to-dm",
+      "facebook-messenger-automation",
+      "whatsapp-ai-sales-agent",
+      "whatsapp-broadcast-campaigns",
+      "whatsapp-business-api",
+      "indiamart-meta-lead-ads-crm",
+    ],
+    spokes: {
+      heading: "Every WhatsApp automation, in detail",
+      lead: "Each page below covers one job: how it works step by step, which plan includes it and what it costs in rupees.",
+      items: [
+        "whatsapp-business-api",
+        "whatsapp-ai-sales-agent",
+        "whatsapp-broadcast-campaigns",
+        "whatsapp-message-templates",
+        "omnichannel-team-inbox",
+        "whatsapp-crm",
+        "whatsapp-cod-confirmation",
+        "abandoned-cart-recovery-whatsapp",
+        "whatsapp-order-updates-courier-tracking",
+      ],
+    },
+  },
+
+  "whatsapp-business-api": whatsappBusinessApi,
+
   "whatsapp-ai-sales-agent": {
     name: "WhatsApp AI sales agent",
     kicker: "Zutok ZChat · AI sales agent",
     relatedProduct: "zchat",
-    title: "WhatsApp AI Sales Agent That Quotes From Your Catalogue",
+    title: "WhatsApp AI Chatbot & Sales Agent for Your Catalogue",
     metaDescription:
-      "Zutok ZChat's AI sales agent asks each product choice on WhatsApp, then quotes the price, order link and files from the one catalogue row that matches.",
+      "Zutok ZChat's AI chatbot asks each product choice on WhatsApp, then quotes the price, order link and brochure from the one catalogue row that matches.",
     keywords: [
+      "WhatsApp AI chatbot for business",
       "WhatsApp AI sales agent",
-      "WhatsApp AI chatbot for business India",
-      "AI chatbot that quotes prices on WhatsApp",
+      "AI chatbot that doesn't make up prices",
       "WhatsApp chatbot with product catalogue",
-      "AI chatbot with human handoff",
-      "WhatsApp bot OpenAI Gemini Claude",
+      "ChatGPT for WhatsApp Business",
+      "chatbot with human handoff",
+      "send brochure automatically on WhatsApp",
     ],
-    h1: "A WhatsApp AI sales agent that quotes from your own catalogue",
+    h1: "A WhatsApp AI chatbot and sales agent that quotes from your own catalogue",
     h1Accent: "from your own catalogue",
-    answer: `Zutok ZChat's AI sales agent answers product and price questions on WhatsApp. You add each product with your own columns and rows. The agent asks the customer each choice as a numbered list, then replies with the price, order link and files from the one row that matches, so it never makes up a price. It comes with ZChat Growth at ${priceLine("zchat", "Growth")}.`,
+    answer: `Zutok ZChat's AI sales agent is a WhatsApp AI chatbot that answers product and price questions. You add each product with your own columns and rows. The agent asks each choice as a numbered list, then replies with the price, order link and files from the one row that matches, so it never makes up a price. It comes with ZChat Growth at ${priceLine("zchat", "Growth")}.`,
     summary:
       "How Zutok ZChat's AI agent asks each choice on WhatsApp and quotes the price, order link and files from your own catalogue rows, with human handoff.",
     facts: [
@@ -130,7 +269,7 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
       lead: "In ZChat the price only ever comes from your catalogue. You give each product its own columns and rows, the agent narrows down the customer's choices one at a time, and it quotes from the single row that matches all of them.",
       body: [
         "Every column has a type that tells the agent what to do with it. Columns set to “Customer chooses” are asked one by one as a numbered list, and the agent only offers values that exist with the earlier choices. “Information” columns, like delivery time, are shown with the price and answered when asked. The “Price” column is only ever read from the matched row.",
-        "Alongside the catalogue you give the agent your business knowledge: timings, address, delivery areas, and payment and return policy. It answers from those facts only and never guesses. If a question falls outside its instructions, or the customer asks for a person, the chat moves to your team with the whole history.",
+        "Alongside the catalogue you give the agent your business knowledge: timings, address, delivery areas, and payment and return policy. It answers from those facts only and never guesses. With handoff on, a chat moves to your team with the whole history when a question falls outside its instructions or the customer asks for a person.",
       ],
     },
     extra: [
@@ -139,6 +278,42 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
         lead: "The agent quotes the next bigger pack. Quantity columns hold packs like 100 and 500, and any other number gets the next pack up.",
         body: [
           "Say a printer sells glossy, standard-size visiting cards in packs of 100 and 500. A customer who picks Glossy, then Standard, then types 400 is told that 400 isn't a pack, and gets the price, order link and sample PDF from the 500-card row.",
+        ],
+      },
+      {
+        heading: "AI sales agent, keyword bot or a fixed auto reply: what's the difference?",
+        lead: "A fixed auto reply sends everyone the same message, and a keyword bot follows the paths someone built for it. ZChat's AI sales agent reads the question, asks each product choice as a numbered list and quotes only from the row that matches.",
+        body: [
+          "It only offers values that exist with the customer's earlier choices, so a buyer who picked Glossy is never offered a size that doesn't come in glossy. The price only ever comes from the matched row.",
+          "Questions that aren't about products are answered only from the business facts you add, and with handoff on, anything else goes to your team.",
+        ],
+      },
+      {
+        heading: "Which AI model can run your WhatsApp agent: OpenAI, Claude, Gemini or your own?",
+        lead: "You choose: OpenAI, Anthropic Claude, Google Gemini, Vertex AI or your own model. You also set the temperature and reply length during setup.",
+        body: [
+          "In plain terms, temperature changes how varied the agent's wording is, and reply length changes how long its answers are. Neither changes where the facts come from: whichever model you pick, prices, order links and files only come from the catalogue row that matches, and other answers only from the business facts you add.",
+          "The same agent, on the model you chose, replies on WhatsApp, Instagram, Messenger and Telegram, and hands chats to your team when needed.",
+        ],
+      },
+      {
+        heading: "When does the AI chatbot hand the chat to a human?",
+        lead: "In two cases: when the customer asks for a person, or when the question falls outside the agent's instructions. Handoff is a setting you turn on, and the chat stays in the same ZChat inbox with its whole history.",
+        body: [
+          "It works the same way on WhatsApp, Instagram, Messenger and Telegram, so your team picks up where the agent stopped, whatever the channel.",
+          "Narrow instructions keep the right questions with your team. A clinic, for example, can keep the agent to prices, timings and directions, so clinical questions always reach staff, and staff confirm appointment slots in the same chat.",
+        ],
+      },
+      {
+        heading: "Can the AI send a brochure, price list or video on WhatsApp?",
+        lead: "Yes. Add a File column, attach the brochure, price list, PDF or video to the right rows, and when the agent quotes from a row the customer gets the real file along with the quote.",
+        body: [
+          "It works the same on WhatsApp, Instagram, Messenger and Telegram. Sending a PDF to many people who haven't written to you is different: that's a broadcast of an approved PDF template.",
+        ],
+        bullets: [
+          "Example: a printer attaches a sample PDF to each visiting-card row, so the quote for 500 glossy cards arrives with its sample.",
+          "Example: a property business attaches each project's brochure to that project's row, so an enquiry about one project gets the right brochure.",
+          "Example: a diagnostic lab attaches its full price list, so a patient gets the PDF along with the price of the test they asked about.",
         ],
       },
     ],
@@ -195,55 +370,71 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
         a: "Yes. Turn on handoff and the agent passes the chat to your team whenever a customer asks for a person or the question falls outside its instructions. The conversation stays in the same ZChat inbox with its whole history.",
       },
       {
-        q: "Can I choose which AI model runs the agent, such as OpenAI, Claude or Gemini?",
-        a: "Yes. Run the agent on OpenAI, Anthropic Claude, Google Gemini, Vertex AI or your own model, and set your own temperature and reply length.",
+        q: "Does the AI sales agent work on Instagram, Messenger and Telegram too?",
+        a: "Yes. The same agent answers on WhatsApp, Instagram, Messenger and Telegram, all from ZChat's shared inbox, and quotes only from your catalogue.",
+      },
+      {
+        q: "Can I connect ChatGPT, Gemini or Claude to WhatsApp with ZChat?",
+        a: "Yes. ZChat's AI agent runs on OpenAI (the company behind ChatGPT), Anthropic Claude, Google Gemini, Vertex AI or your own model, with your own temperature and reply length. The AI agent comes with ZChat Growth.",
+      },
+      {
+        q: "Can the AI agent quote a price I haven't set or give its own discount?",
+        a: "No. It quotes only the price in the catalogue row that matches the customer's choices. With handoff on, a customer who asks for a person, or asks something outside the agent's instructions, goes to your team with the whole history.",
+      },
+      {
+        q: "Can I run more than one AI agent?",
+        a: `Yes, on ZChat Scale at ${perMonth("zchat", "Scale")}, which adds multiple AI agents and 15 team seats. ZChat Growth includes the AI sales agent with your catalogue.`,
       },
       {
         q: "Will the AI answer questions that aren't about products?",
         a: "Only from the business knowledge you give it: timings, address, delivery areas, and payment and return policy. It doesn't guess, and anything outside its instructions can go to your team.",
       },
       {
-        q: "Do I need the WhatsApp Business API?",
-        a: "Yes. ZChat connects to the official WhatsApp Business Platform, and Zutok helps you set up and verify your number during onboarding.",
-      },
-      {
-        q: "Are Meta's WhatsApp charges included in the price?",
-        a: "No. Meta bills template conversations separately at its published rates. Your ZChat plan covers the software, seats and AI agent.",
+        q: "Does the AI agent need the WhatsApp Business API?",
+        a: "For WhatsApp, yes: ZChat runs on the official WhatsApp Business Platform, and the [WhatsApp Business API](/solutions/whatsapp-business-api/) page covers setup and Meta's charges.",
       },
     ],
-    related: ["whatsapp-broadcast-campaigns", "instagram-comment-to-dm", "indiamart-meta-lead-ads-crm"],
+    related: [
+      "whatsapp-automation",
+      "whatsapp-broadcast-campaigns",
+      "instagram-comment-to-dm",
+      "omnichannel-team-inbox",
+      "whatsapp-crm",
+      "facebook-messenger-automation",
+    ],
   },
 
   "whatsapp-broadcast-campaigns": {
-    name: "WhatsApp broadcast campaigns",
-    kicker: "Zutok ZChat · Broadcasts",
+    name: "WhatsApp broadcasting",
+    kicker: "Zutok ZChat · Broadcasting",
     relatedProduct: "zchat",
-    title: "WhatsApp Broadcast Campaigns with Meta-Approved Templates",
+    title: "WhatsApp Broadcasting & Bulk Message Sender for India",
     metaDescription:
-      "Send Meta-approved WhatsApp templates with text, images, PDFs, video and buttons to leads or custom lists with Zutok ZChat, and track sent, delivered and read.",
+      "Send bulk WhatsApp campaigns on Meta-approved templates to leads, contacts or custom lists with Zutok ZChat, schedule or pause them, and track delivery live.",
     keywords: [
+      "WhatsApp broadcasting",
       "WhatsApp broadcast software India",
-      "bulk WhatsApp messages with approved templates",
-      "WhatsApp template message approval",
+      "bulk WhatsApp sender",
+      "bulk WhatsApp message sender India",
+      "schedule WhatsApp messages",
       "WhatsApp marketing campaign delivery report",
       "WhatsApp Business API broadcast",
-      "WhatsApp image video PDF templates",
     ],
-    h1: "WhatsApp broadcast software for Indian businesses, built on approved templates",
-    h1Accent: "built on approved templates",
-    answer: `Zutok ZChat sends WhatsApp broadcasts through the official WhatsApp Business Platform, using templates Meta has approved. Build Text, Image, PDF, Video and Button templates in the template studio, track their approval, send them to leads, contacts or a custom audience, and watch sent, delivered and read numbers as they arrive. Broadcasts come with ZChat Growth at ${priceLine("zchat", "Growth")}.`,
+    h1: "Bulk WhatsApp broadcasting software for Indian businesses",
+    h1Accent: "for Indian businesses",
+    answer: `Zutok ZChat is a bulk WhatsApp message sender built on the official WhatsApp Business Platform. Pick a Meta-approved template, send it to your leads, contacts or a custom audience now or on a schedule, pause it if plans change, and watch sent, delivered and read numbers as they arrive. Broadcasts come with ZChat Growth at ${priceLine("zchat", "Growth")}.`,
     summary:
       "How Zutok ZChat sends bulk WhatsApp campaigns with Meta-approved templates and shows sent, delivered and read numbers as they come in.",
     facts: [
-      { value: "5", label: "template formats: text, image, PDF, video and buttons" },
-      { value: "3", label: "template categories: Marketing, Utility and Authentication" },
+      { value: "3", label: "audiences: your leads, your contacts or a custom audience" },
+      { value: "Now or later", label: "send now or schedule it, and pause a campaign if plans change" },
       { value: "Live", label: "sent, delivered and read numbers" },
     ],
     problem: {
-      heading: "Why do WhatsApp broadcasts need Meta-approved templates?",
-      lead: "WhatsApp only allows free-form messages within 24 hours of a customer's last message. Most people on a broadcast list haven't written to you in that window, so the message has to go out as a template Meta has approved.",
+      heading: "What is a bulk WhatsApp sender, and why does it need templates?",
+      lead: "A bulk WhatsApp sender sends one message to many customers at once. On the official WhatsApp Business Platform that's a broadcast, and because most people on your list haven't messaged you in the last 24 hours, it goes out as a template Meta has approved.",
       body: [
-        "A template is a message you write in advance and submit to Meta under a category: Marketing, Utility or Authentication. Once it's approved, you can use it in your campaigns.",
+        "WhatsApp only allows free-form messages within 24 hours of a customer's last message. A template is a message you write in advance and submit to Meta under a category (Marketing, Utility or Authentication), and once it's approved you can use it in your campaigns.",
         "That's why every ZChat campaign starts in the template studio rather than in a chat window.",
       ],
     },
@@ -257,14 +448,30 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
     },
     extra: [
       {
-        heading: "What types of WhatsApp templates can I create?",
-        lead: "Five: Text, Image, PDF, Video and Button templates. You can create each one in ZChat's template studio or sync it from Meta, under the Marketing, Utility or Authentication category.",
+        heading: "What types of WhatsApp templates can I use in a broadcast?",
+        lead: "Five formats, Text, Image, PDF, Video and Button, under Meta's three categories: Marketing, Utility and Authentication. How to create each one, get it approved and know when you need one is covered on the [WhatsApp template messages](/solutions/whatsapp-message-templates/) page.",
+      },
+      {
+        heading: "Is sending bulk WhatsApp messages allowed, and will my number get banned?",
+        lead: "ZChat sends broadcasts through the official WhatsApp Business Platform, the route Meta provides for business messaging at scale, using templates Meta has approved. Zutok helps you connect and verify your number. No tool can promise that a number will never be restricted, though.",
+        body: [
+          "The plain advice is to message people who expect to hear from you, like your own leads and customers, and to keep each campaign relevant to them. Their replies come back to your shared inbox, where your team can answer them.",
+        ],
+      },
+      {
+        heading: "What do sent, delivered and read mean?",
+        lead: "They're the three stages of each message, and ZChat shows all three for every campaign, live, as they come in.",
         bullets: [
-          "Text: a written message, for announcements, updates and reminders.",
-          "Image: a picture with your message, such as a new collection or an offer.",
-          "PDF: a document like a catalogue, menu or price list.",
-          "Video: a short video with your message.",
-          "Button: a message with buttons the customer can tap to respond.",
+          "Sent: the message has gone out from your number.",
+          "Delivered: it has reached the customer's phone.",
+          "Read: WhatsApp has reported it as opened.",
+        ],
+      },
+      {
+        heading: "What happens after you hit send?",
+        lead: "Replies land in ZChat's shared inbox, where your team already works, and every new chat creates a lead in Zutok CRM with its source.",
+        body: [
+          "On ZChat Growth, the AI sales agent answers in the same inbox, quoting from your catalogue and handing chats to your team when a customer asks for a person. On ZChat Scale, auto-assign spreads new and waiting chats across the team, so replies to a big campaign don't sit unanswered.",
         ],
       },
     ],
@@ -305,7 +512,7 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
     },
     plan: {
       heading: "Which ZChat plan includes WhatsApp broadcasts, and what does it cost?",
-      lead: `Broadcasts and Meta templates come with ZChat Growth at ${priceLine("zchat", "Growth")}. Meta charges for template conversations separately, at its published rates.`,
+      lead: `Broadcasts and Meta templates come with ZChat Growth at ${priceLine("zchat", "Growth")}. Meta's per-message charges for template messages are billed separately, at its published rates.`,
       includes: [{ label: "Broadcasts & Meta templates", from: "Growth" }],
       highlights: {
         Starter: "Shared WhatsApp + Instagram inbox for 2 seats.",
@@ -316,12 +523,16 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
     },
     faqs: [
       {
-        q: "Can I see how many people received and read my broadcast?",
-        a: "Yes. ZChat shows sent, delivered and read numbers for each campaign as they come in.",
+        q: "How do I send one WhatsApp message to thousands of customers?",
+        a: "Use a broadcast. Pick a Meta-approved template, choose your audience from your leads, contacts or a custom list, then send it now or schedule it, and follow the sent, delivered and read numbers as they come in.",
       },
       {
-        q: "Are Meta's WhatsApp message charges included in the plan?",
-        a: "No. Meta bills template conversations separately at its published rates for India. Your ZChat plan covers the software and seats.",
+        q: "How much does it cost to send bulk WhatsApp messages?",
+        a: `Broadcasts come with ZChat Growth at ${priceLine("zchat", "Growth")}. On top of that, Meta charges per template message, billed separately at its published rates for India.`,
+      },
+      {
+        q: "Can I see how many people received and read my broadcast?",
+        a: "Yes. ZChat shows sent, delivered and read numbers for each campaign as they come in.",
       },
       {
         q: "Where do customer replies to a broadcast go?",
@@ -332,37 +543,51 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
         a: "Yes. Zutok guides you through connecting your number to the official WhatsApp Business Platform and getting your message templates approved by Meta.",
       },
       {
-        q: "Can I schedule a broadcast for later?",
-        a: "Yes. Campaigns can be scheduled, paused and filtered.",
+        q: "Can I pause a scheduled broadcast?",
+        a: "Yes. Campaigns can be scheduled for later, paused if your plans change, and filtered.",
       },
     ],
-    related: ["whatsapp-ai-sales-agent", "instagram-comment-to-dm", "abandoned-cart-recovery-whatsapp"],
+    related: [
+      "whatsapp-message-templates",
+      "whatsapp-business-api",
+      "whatsapp-ai-sales-agent",
+      "whatsapp-crm",
+      "omnichannel-team-inbox",
+      "whatsapp-automation",
+    ],
   },
 
+  "whatsapp-message-templates": whatsappMessageTemplates,
+
+  "omnichannel-team-inbox": omnichannelTeamInbox,
+
+  "whatsapp-crm": whatsappCrm,
+
   "instagram-comment-to-dm": {
-    name: "Instagram comment-to-DM automation",
-    kicker: "Zutok ZChat · Comment → DM",
+    name: "Instagram automation",
+    kicker: "Zutok ZChat · Instagram automation",
     relatedProduct: "zchat",
-    title: "Instagram & Facebook Comment-to-DM Automation",
+    title: "Instagram Automation: Comment-to-DM & AI DM Replies",
     metaDescription:
-      "When someone comments on your Instagram or Facebook post or reel, Zutok ZChat replies publicly and sends a private DM. Trigger on keywords or any comment.",
+      "Instagram automation with Zutok ZChat: reply to comments on posts and reels, DM every commenter, and let the AI agent answer DMs from your catalogue.",
     keywords: [
+      "Instagram automation",
+      "Instagram DM auto reply",
       "Instagram comment to DM automation",
-      "auto DM Instagram comments",
+      "Instagram comment auto reply",
+      "Instagram AI chatbot for business",
       "Instagram reel comment auto reply",
-      "Facebook comment auto reply",
-      "keyword comment to DM India",
-      "Instagram DM automation for business",
+      "Instagram keyword comment DM",
     ],
-    h1: "Instagram and Facebook comment-to-DM automation for posts and reels",
-    h1Accent: "for posts and reels",
-    answer: `Zutok ZChat replies automatically when someone comments on your Instagram or Facebook posts and reels. On any comment, or only on keywords you choose like “price”, it posts a public reply and sends that person a private DM with the details. Every auto-reply is logged, and the DM lands in your shared inbox. It comes with ZChat Growth at ${priceLine("zchat", "Growth")}.`,
+    h1: "Instagram automation that DMs every commenter and answers with AI",
+    h1Accent: "and answers with AI",
+    answer: `Instagram automation in Zutok ZChat works in two places. When someone comments on your Instagram posts and reels, on any comment or only on keywords like “price”, it posts a public reply and sends them a private DM. In the DMs, ZChat's AI sales agent answers product and price questions from your catalogue. It comes with ZChat Growth at ${priceLine("zchat", "Growth")}.`,
     summary:
-      "How Zutok ZChat answers Instagram and Facebook comments with a public reply and a private DM, triggered by keywords or by any comment.",
+      "How Zutok ZChat automates Instagram: a public reply and a private DM for every comment on posts and reels, and an AI agent that answers DMs from your catalogue.",
     facts: [
-      { value: "2", label: "platforms: Instagram and Facebook posts and reels" },
+      { value: "2", label: "triggers: any comment, or only keywords you choose" },
       { value: "1 + 1", label: "a public reply and a private DM for each comment" },
-      { value: "Every", label: "auto-reply recorded in the activity log" },
+      { value: "4", label: "channels the AI agent answers: Instagram, WhatsApp, Messenger, Telegram" },
     ],
     problem: {
       heading: "What happens to “price?” comments when nobody answers them?",
@@ -379,21 +604,56 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
         "The DM conversation lands in ZChat's unified inbox alongside WhatsApp, Messenger and Telegram, and every new chat creates a lead in Zutok CRM with its source. From there your team carries the conversation on, with labels and quick replies for the questions you get every day.",
       ],
     },
+    extra: [
+      {
+        heading: "How does AI auto reply to Instagram DMs work?",
+        lead: "ZChat's AI sales agent reads each Instagram DM and answers it, the same way it answers WhatsApp, Messenger and Telegram. Unlike a fixed instant reply, which sends everyone the same message, it asks each product choice as a numbered list and quotes the price, order link and files from the one catalogue row that matches.",
+        body: [
+          "It answers other questions only from the business facts you give it, like timings, address, delivery areas, and payment and return policy, and it never guesses. With handoff on, when a customer asks for a person or a question falls outside its instructions, the chat moves to your team with the whole history.",
+          `Instagram DMs reach the shared inbox from ZChat Starter at ${perMonth("zchat", "Starter")}, which covers WhatsApp and Instagram for 2 seats. AI replies to those DMs need ZChat Growth.`,
+        ],
+      },
+      {
+        heading: "Keyword or any comment, and what should the two replies say?",
+        lead: "Trigger on any comment when nearly every comment is a buyer, as on a product reel, and on keywords like “price” or “link” when a post also draws general chatter. Either way you write two short texts: the public reply under the comment and the private DM.",
+        body: [
+          "Put the call to action in the caption, such as “Comment PRICE for details”, so people know which word gets them the DM. Here are three example pairs.",
+        ],
+        bullets: [
+          "Example for a product reel. Public reply: “Sent you a DM with the price!” DM: “Thanks for asking! Here are the price and sizes for the kurta in this reel. Tell us your size and we'll share the order link.”",
+          "Example for a launch post. Public reply: “Check your DMs for the link.” DM: “Here's the link to the new collection. Reply here if you'd like help picking a size.”",
+          "Example for a property listing reel. Public reply: “We've sent you the details in a DM.” DM: “Thanks for your interest! Here are the location and price range for this listing. Would you like the brochure?”",
+        ],
+      },
+      {
+        heading: "What else can I automate on Instagram with Zutok?",
+        lead: "The conversations that comment-to-DM and the AI agent start. Instagram DMs land in ZChat's shared inbox with WhatsApp, Messenger and Telegram, where every new chat becomes a lead in Zutok CRM with its source.",
+        bullets: [
+          "Labels and quick replies: tag conversations and answer everyday questions with saved replies.",
+          "Auto-assign (ZChat Scale): new and waiting chats are spread across your team, so nothing sits unanswered.",
+          "Team reports: conversations, resolution rate and load per channel and per agent.",
+        ],
+      },
+    ],
     steps: {
-      heading: "How do you set up comment-to-DM, step by step?",
-      lead: "It takes one rule. After that, every matching comment is handled the same way.",
+      heading: "How do you set up Instagram automation, step by step?",
+      lead: "One comment rule and one catalogue. After that, every matching comment and every DM is handled the same way.",
       items: [
         { title: "Connect your accounts", body: "Link Instagram and Messenger to ZChat in a few clicks." },
         { title: "Choose the trigger", body: "Any comment, or only comments with keywords like “price”." },
         { title: "Write both replies", body: "A short public reply to go under the comment, and the private DM with the details." },
-        { title: "Let it run", body: "Each matching comment gets the public reply and the DM, and the activity log records it." },
+        {
+          title: "Turn on the AI agent",
+          body: "Add your products and business facts once, and the agent answers DMs from them, with handoff to your team.",
+        },
         { title: "Follow up in the inbox", body: "DMs land in the shared inbox and become leads in Zutok CRM." },
       ],
     },
     features: {
-      heading: "What does ZChat's comment automation include?",
+      heading: "What does ZChat's Instagram automation include?",
       items: [
-        { icon: "comment", title: "Posts and reels", body: "Comments on both Instagram and Facebook posts and reels." },
+        { icon: "bot", title: "AI replies in DMs", body: "The AI sales agent answers Instagram DMs from your catalogue." },
+        { icon: "comment", title: "Posts and reels", body: "Comments on your Instagram posts and your reels." },
         { icon: "tags", title: "Keyword or any comment", body: "Trigger on the words you choose, or on every comment." },
         { icon: "megaphone", title: "Public reply + private DM", body: "A visible reply under the comment and the details in a DM." },
         { icon: "file", title: "Activity log", body: "A record of every auto-reply." },
@@ -403,11 +663,14 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
       ],
     },
     plan: {
-      heading: "Which ZChat plan includes comment-to-DM automation?",
-      lead: `Comment → DM automation comes with ZChat Growth at ${priceLine("zchat", "Growth")}, along with all four channels and 5 team seats.`,
-      includes: [{ label: "Comment → DM automation", from: "Growth" }],
+      heading: "Which ZChat plan includes Instagram automation?",
+      lead: `Comment → DM automation and the AI sales agent come with ZChat Growth at ${priceLine("zchat", "Growth")}, along with all four channels and 5 team seats.`,
+      includes: [
+        { label: "Comment → DM automation", from: "Growth" },
+        { label: "AI sales agent in Instagram DMs", from: "Growth" },
+      ],
       highlights: {
-        Starter: "Shared WhatsApp + Instagram inbox for 2 seats.",
+        Starter: "Shared WhatsApp + Instagram inbox for 2 seats, so Instagram DMs reach your team.",
         Growth: "All 4 channels, 5 seats, comment → DM, broadcasts and the AI sales agent.",
         Scale: "Everything in Growth with 15 seats and multiple AI agents.",
       },
@@ -415,12 +678,28 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
     },
     faqs: [
       {
+        q: "Can the comment DM include the price or a link?",
+        a: "Yes. You write the private DM yourself, so it can carry the price, sizes or a link. When the person replies, the conversation carries on in ZChat's shared inbox, where the AI sales agent can answer from your catalogue.",
+      },
+      {
+        q: "Which ZChat plan includes AI replies to Instagram DMs?",
+        a: `ZChat Growth, at ${priceLine("zchat", "Growth")}. ZChat Starter at ${perMonth("zchat", "Starter")} brings Instagram DMs into the shared inbox with WhatsApp for 2 seats, and Growth adds the AI agent, comment → DM and all four channels.`,
+      },
+      {
+        q: "Can my team still reply to Instagram DMs themselves?",
+        a: "Yes. DMs land in ZChat's shared inbox with All, Mine and Unassigned views, so the team can see every DM and which ones nobody has taken yet. When the AI hands a chat over, the whole history stays with it.",
+      },
+      {
         q: "Can the DM trigger only when someone comments a keyword like “price”?",
         a: "Yes. Each rule can trigger on keywords you choose, or on any comment.",
       },
       {
+        q: "Does comment-to-DM work on reels?",
+        a: "Yes. A rule covers comments on your posts and your reels.",
+      },
+      {
         q: "Does comment-to-DM work on Facebook posts too?",
-        a: "Yes. ZChat auto-replies to comments on both Instagram and Facebook posts and reels, and sends a private DM to everyone who comments.",
+        a: "Yes. The same rules work on comments on Facebook posts and reels. The [Facebook Messenger automation](/solutions/facebook-messenger-automation/) page covers the Facebook side, including Messenger.",
       },
       {
         q: "Where do the DM conversations go, and are they saved as leads?",
@@ -431,8 +710,17 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
         a: "Yes. The activity log records every auto-reply.",
       },
     ],
-    related: ["whatsapp-ai-sales-agent", "whatsapp-broadcast-campaigns", "indiamart-meta-lead-ads-crm"],
+    related: [
+      "whatsapp-ai-sales-agent",
+      "facebook-messenger-automation",
+      "omnichannel-team-inbox",
+      "whatsapp-crm",
+      "whatsapp-automation",
+      "whatsapp-broadcast-campaigns",
+    ],
   },
+
+  "facebook-messenger-automation": facebookMessengerAutomation,
 
   /* ---------------------------------------------------------------- */
   /* ZShop                                                            */
@@ -446,6 +734,8 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
       "Zutok ZShop asks COD buyers to confirm on WhatsApp before you ship, sends reminders and tags confirmed orders. Auto-cancel is off unless you turn it on.",
     keywords: [
       "COD order confirmation on WhatsApp",
+      "COD order verification",
+      "COD verification on WhatsApp",
       "COD verification Shopify WhatsApp",
       "WooCommerce COD confirmation",
       "confirm cash on delivery orders before shipping",
@@ -478,6 +768,28 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
       ],
     },
     extra: [
+      {
+        heading: "What happens to each buyer response?",
+        lead: "Every answer, including no answer, leads somewhere definite, and nothing is cancelled unless you've chosen that.",
+        bullets: [
+          "The buyer confirms: the order is tagged as confirmed and goes out as normal.",
+          "The buyer replies with a question: the reply lands in your ZChat inbox for your team to answer.",
+          "No reply: a reminder goes out after 4 hours by default, and ZShop stops asking after 24 hours.",
+          "Still no reply: the order is tagged so your team can see it wasn't confirmed and decide what to do. Auto-cancel is optional and off by default.",
+        ],
+      },
+      {
+        heading: "Should you auto-cancel unconfirmed COD orders?",
+        lead: "It's a trade-off. Cancelling automatically saves your team from chasing buyers who never meant to order, but it also drops orders from genuine buyers who simply missed the message.",
+        body: [
+          "ZShop's defaults lean towards keeping orders: unanswered orders are tagged, not cancelled, and your team decides. If you'd rather cancel them, switch on “Cancel if nobody replies”.",
+        ],
+      },
+      {
+        heading: "Does COD confirmation work for WooCommerce, custom sites and in-house stores?",
+        lead: "Yes. ZShop connects Shopify through a custom app, WooCommerce or any platform with an API, and in-house shops whose items live in the CRM, and COD confirmation works the same way on all of them.",
+        body: ["Webhooks register themselves, and you map your confirmation template once, whichever kind of store you run."],
+      },
       {
         heading: "Do COD confirmation messages need approved WhatsApp templates?",
         lead: "Usually, yes. WhatsApp only allows free-form messages within 24 hours of the customer's last message. A buyer who ordered on your website hasn't messaged you on WhatsApp, so the confirmation goes out as an approved template that ZShop fills in.",
@@ -517,7 +829,7 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
     },
     plan: {
       heading: "How much does WhatsApp COD confirmation cost with ZShop?",
-      lead: `COD confirmation is part of ZShop Starter at ${priceLine("zshop", "Starter")}, for 1 store and up to 500 orders a month. ZShop sends WhatsApp messages through ZChat, so you'll need ZChat too, and Meta's conversation charges are billed separately.`,
+      lead: `COD confirmation is part of ZShop Starter at ${priceLine("zshop", "Starter")}, for 1 store and up to 500 orders a month. ZShop sends WhatsApp messages through ZChat, so you'll need ZChat too, and Meta's per-message charges for template messages are billed separately.`,
       includes: [{ label: "COD confirmation", from: "Starter" }],
       highlights: {
         Starter: "1 store, up to 500 orders a month, order updates and COD confirmation.",
@@ -532,8 +844,16 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
         a: "Not by default. Buyers who don't confirm are tagged, and your team decides. You can switch on auto-cancel if you want it.",
       },
       {
-        q: "Does WhatsApp COD confirmation work with WooCommerce or without a website?",
-        a: "Yes. ZShop works with Shopify through a custom app, WooCommerce or any platform with an API, and in-house shops whose items live in the CRM. Every feature works the same on all three.",
+        q: "Can WhatsApp confirmation stop all fake COD orders?",
+        a: "No. It gives you a signal before you commit stock and courier charges: confirmed orders go out as normal, and unanswered ones wait for your team to check. No tool can guarantee that every COD buyer accepts the parcel.",
+      },
+      {
+        q: "What goes in the confirmation message?",
+        a: "Your own Meta-approved template, mapped once during setup. ZShop shows which order fields fill each numbered blank, and buttons like ✅ Confirm and ❌ Cancel are one way to let the buyer answer.",
+      },
+      {
+        q: "Can I confirm COD orders without a website?",
+        a: "Yes. Choose an in-house shop, keep your items in the CRM and take orders at the counter. COD confirmation works the same way as it does for Shopify and WooCommerce.",
       },
       {
         q: "When does the reminder go out?",
@@ -541,21 +861,30 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
       },
       {
         q: "Do I need ZChat as well as ZShop?",
-        a: "Yes. ZShop sends WhatsApp messages from your ZChat number, so it needs ZChat for WhatsApp delivery. Meta's conversation charges are billed separately.",
+        a: "Yes. ZShop sends WhatsApp messages from your ZChat number, so it needs ZChat for WhatsApp delivery. Meta's per-message charges for template messages are billed separately.",
       },
     ],
-    related: ["abandoned-cart-recovery-whatsapp", "whatsapp-order-updates-courier-tracking", "whatsapp-ai-sales-agent"],
+    related: [
+      "whatsapp-automation",
+      "abandoned-cart-recovery-whatsapp",
+      "whatsapp-order-updates-courier-tracking",
+      "whatsapp-message-templates",
+      "omnichannel-team-inbox",
+      "whatsapp-business-api",
+    ],
   },
 
   "abandoned-cart-recovery-whatsapp": {
     name: "Abandoned cart recovery on WhatsApp",
     kicker: "Zutok ZShop · Cart recovery",
     relatedProduct: "zshop",
-    title: "Abandoned Cart Recovery on WhatsApp in 3 Reminders",
+    title: "WhatsApp Abandoned Cart Recovery for Online Stores",
     metaDescription:
       "Zutok ZShop sends 3 WhatsApp cart reminders, after 1 hour, 1 day and 3 days, with a discount you set per step and none on the first. Shopify & WooCommerce.",
     keywords: [
+      "WhatsApp abandoned cart recovery",
       "abandoned cart recovery WhatsApp",
+      "WhatsApp cart reminder",
       "Shopify abandoned cart WhatsApp",
       "WooCommerce abandoned cart WhatsApp reminder",
       "abandoned cart discount sequence",
@@ -589,15 +918,32 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
     },
     extra: [
       {
-        heading: "When should abandoned cart reminders be sent, and should the first one include a discount?",
-        lead: "ZShop uses one hour, one day and three days, and keeps the first reminder free of any discount, since most buyers come back anyway. The discount is saved for the later reminders, when a shopper needs more of a reason to return.",
+        heading: "What's the difference between an abandoned cart and an abandoned checkout?",
+        lead: "An abandoned cart is a shopper who added items and left; an abandoned checkout is one who started paying and left before finishing. ZShop works from the abandoned carts and checkouts your connected store reports, and reminds the shopper on WhatsApp.",
+      },
+      {
+        heading: "Why 1 hour, 1 day and 3 days, and why no discount on the first reminder?",
+        lead: "Because each reminder has a different job. The first, after an hour, is a nudge for someone who got interrupted; the second, after a day, carries a small offer; the third, after three days, is a final, larger one.",
         body: [
-          "Spacing the reminders out also gives each one a different job: the first is a nudge, the second a small offer and the third a final, larger one.",
+          "The first reminder carries no discount on purpose: most buyers who come back after a nudge would have come back anyway, so they don't need one. That keeps the discounts for shoppers who need a reason to return.",
         ],
       },
       {
-        heading: "Will cart reminders go out late at night?",
-        lead: "Not during your quiet hours. Promotional messages, such as discount reminders, respect quiet hours and a daily limit, for example 9 pm to 9 am and one promo per day. Only order updates go out whenever they happen.",
+        heading: "What does each WhatsApp cart reminder say?",
+        lead: "Whatever your approved templates say. Each reminder is mapped to a Meta-approved template, with the shopper's details filled into its numbered blanks.",
+        body: ["Here is example wording for the three steps. The 5% and 10% are examples too: you set the discount on the second and third reminders."],
+        bullets: [
+          "Friendly nudge, after 1 hour (example): “Hi! You left a few things in your cart. They're saved for you whenever you're ready.”",
+          "Still thinking?, after 1 day (example): “Still thinking it over? Here's 5% off if you complete your order.”",
+          "Last chance, after 3 days (example): “Last chance: your cart is still waiting, now with 10% off.”",
+        ],
+      },
+      {
+        heading: "Is a cart reminder a promotional message?",
+        lead: "Yes. ZShop treats cart reminders as promotional, so they wait outside your quiet hours, respect your daily limit and follow the do-not-contact list, for example no promotions from 9 pm to 9 am and one promo per day.",
+        body: [
+          "Order updates are different: they always go out when they happen. And a shopper who says “stop contacting me” is covered on every channel, because ZShop and ZChat share one do-not-contact list.",
+        ],
       },
     ],
     steps: {
@@ -658,8 +1004,23 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
         q: "Can I change the discounts?",
         a: "Yes. You set the discount on the second and third reminders, for example 5% and 10%. The first reminder carries no discount.",
       },
+      {
+        q: "Do cart reminders need the WhatsApp Business API?",
+        a: "Yes. Reminders go out from your ZChat number on the official WhatsApp Business Platform, using Meta-approved templates. The [WhatsApp Business API](/solutions/whatsapp-business-api/) page covers setup and Meta's charges.",
+      },
+      {
+        q: "What happens when a shopper replies to a reminder?",
+        a: "The reply lands in your ZChat inbox, where your team can answer it.",
+      },
     ],
-    related: ["whatsapp-cod-confirmation", "whatsapp-order-updates-courier-tracking", "whatsapp-broadcast-campaigns"],
+    related: [
+      "whatsapp-automation",
+      "whatsapp-cod-confirmation",
+      "whatsapp-order-updates-courier-tracking",
+      "whatsapp-message-templates",
+      "whatsapp-business-api",
+      "omnichannel-team-inbox",
+    ],
   },
 
   "whatsapp-order-updates-courier-tracking": {
@@ -671,11 +1032,13 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
       "Zutok ZShop sends placed, packed, shipped and delivered updates on WhatsApp, tracks courier status and quotes delivery times learned from your real deliveries.",
     keywords: [
       "WhatsApp order status updates",
+      "WhatsApp order confirmation message",
+      "WhatsApp order tracking notifications",
       "WhatsApp shipping notifications Shopify",
       "courier tracking updates on WhatsApp",
       "out for delivery WhatsApp message",
       "WooCommerce order notification WhatsApp",
-      "delivery time estimate",
+      "where is my order automation",
     ],
     h1: "WhatsApp order status updates and courier tracking for online stores",
     h1Accent: "for online stores",
@@ -711,11 +1074,25 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
         ],
       },
       {
+        heading: "What does each WhatsApp order update say?",
+        lead: "Your approved templates set the exact words. As a guide, here is what each stage carries, with example wording.",
+        bullets: [
+          "Placed (example): “Thanks! Your order has been placed.”",
+          "Packed (example): “Your order is packed and ships tomorrow.”",
+          "Shipped (example): “Your order is on its way. Track it with your tracking link. It usually arrives in 3–5 days.” The delivery estimate comes with courier tracking on ZShop Growth.",
+          "Out for delivery (example, ZShop Growth): “Your parcel is out for delivery and arrives today.”",
+          "Delivered (example): “Your order has been delivered.”",
+        ],
+      },
+      {
+        heading: "Which courier statuses send a message, and how often is status checked?",
+        lead: "With courier tracking on ZShop Growth, ZShop checks courier status for out-for-delivery, delivered and failed attempts. It checks every few hours, so a message can arrive a few hours after the courier's scan rather than the moment it happens.",
+        body: ["Tracking links are the ones you set, never guessed."],
+      },
+      {
         heading: "How are delivery time estimates like “3–5 days” worked out?",
         lead: "From your own deliveries. ZShop's courier tracking learns how long your parcels really take and uses that for estimates like “usually 3–5 days”.",
-        body: [
-          "Courier status is checked every few hours for out-for-delivery, delivered and failed attempts. Tracking links are the ones you set, never guessed.",
-        ],
+        body: ["So the estimate a buyer sees reflects your own deliveries, not a general promise."],
       },
     ],
     steps: {
@@ -775,11 +1152,26 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
         a: "Yes. Test messages only go to your own test number.",
       },
       {
-        q: "Do I need a website to send order updates?",
-        a: "No. Choose an in-house shop, keep your items in the CRM and take orders at the counter. Every automation still works.",
+        q: "Can I add my own tracking link or a Track button?",
+        a: "Yes. The shipped update carries the tracking link you set, never a guessed one, and your approved template can include a button.",
+      },
+      {
+        q: "What happens on a failed delivery attempt?",
+        a: "Courier tracking on ZShop Growth checks for failed attempts as well as out-for-delivery and delivered, so the buyer's updates follow what actually happened to the parcel. If the buyer replies, the reply lands in your ZChat inbox for your team.",
+      },
+      {
+        q: "Do updates work for WooCommerce and counter orders?",
+        a: "Yes. WooCommerce, any platform with an API and in-house shops get the same updates as Shopify. With no website, keep your items in the CRM and take orders at the counter in ZShop's in-house shop.",
       },
     ],
-    related: ["whatsapp-cod-confirmation", "abandoned-cart-recovery-whatsapp", "whatsapp-ai-sales-agent"],
+    related: [
+      "whatsapp-automation",
+      "whatsapp-cod-confirmation",
+      "abandoned-cart-recovery-whatsapp",
+      "whatsapp-message-templates",
+      "whatsapp-business-api",
+      "omnichannel-team-inbox",
+    ],
   },
 
   /* ---------------------------------------------------------------- */
@@ -794,15 +1186,16 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
       "Zutok Zloya sells yearly perk memberships and prepaid wallets (pay ₹5,000, get ₹6,000 credit) with OTP-protected redemptions and a staff sales leaderboard.",
     keywords: [
       "restaurant membership program software",
+      "restaurant membership program",
       "prepaid wallet for restaurants",
       "café membership card",
+      "café prepaid card",
       "prepaid dining credit",
-      "salon membership software India",
       "staff membership sales leaderboard",
     ],
-    h1: "Membership and prepaid wallet software for restaurants, cafés and salons",
-    h1Accent: "for restaurants, cafés and salons",
-    answer: `Zutok Zloya lets restaurants, cafés, salons and stores sell memberships at the counter: yearly perk bundles, or prepaid wallets like pay ₹5,000 and get ₹6,000 in credit. Every redemption needs a one-time password sent to the guest's phone, and a live leaderboard shows which staff sell the most. Memberships come with Zloya Growth at ${priceLine("zloya", "Growth")}.`,
+    h1: "Membership and prepaid wallet software for restaurants and cafés",
+    h1Accent: "for restaurants and cafés",
+    answer: `Zutok Zloya lets restaurants, cafés and stores sell memberships at the counter: yearly perk bundles, or prepaid wallets like pay ₹5,000 and get ₹6,000 in credit. Every redemption needs a one-time password sent to the guest's phone, and a live leaderboard shows which staff sell the most. Memberships come with Zloya Growth at ${priceLine("zloya", "Growth")}.`,
     summary:
       "How Zutok Zloya sells yearly perk memberships and prepaid wallets at the counter, with OTP-protected redemptions and a staff sales leaderboard.",
     facts: [
@@ -826,6 +1219,23 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
       ],
     },
     extra: [
+      {
+        heading: "Points, paid membership or prepaid wallet: which should a restaurant use?",
+        lead: "Use points to reward visits as they happen, and a membership or wallet when you want the cash up front. You can run both: points and VIP tiers come with every Zloya plan, and memberships and wallets come with Zloya Growth.",
+        bullets: [
+          "Points and 4 VIP tiers (from Zloya Single Outlet): the guest earns on every bill, at 1× to 2× depending on their tier, and the reward follows the visit.",
+          "Perk-bundle membership (Zloya Growth): the guest pays once for a year of benefits, like a discount on every order, so you're paid before the visits.",
+          "Prepaid wallet (Zloya Growth): the guest pays a fixed amount for a bigger credit with a validity period, and the balance itself brings them back.",
+        ],
+      },
+      {
+        heading: "How do you structure a prepaid wallet?",
+        lead: "Decide four things: the price, the credit (including any bonus), how long the credit stays valid and any perks on top. Then sell it at the counter.",
+        bullets: [
+          "Example, “Prepaid Wallet 5K”: the guest pays ₹5,000 and gets ₹6,000 of dining credit over 180 days, including ₹1,000 bonus credit, plus 5% off every order.",
+          "Example, “Club Dine-In 365”: a ₹1,999 yearly perk bundle with ₹500 of wallet credit, 15% off every order, a free appetiser every month and a birthday cake.",
+        ],
+      },
       {
         heading: "Can staff sell memberships at the counter, with each sale tracked?",
         lead: "Yes. Memberships are sold at the counter, and a live staff sales leaderboard shows how many each person has sold, so your team competes to sell them.",
@@ -874,16 +1284,24 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
         a: "Every redemption needs a one-time password sent to the guest's phone, and every coupon is locked to one phone number.",
       },
       {
-        q: "Does Zloya work across multiple outlets?",
-        a: "Yes. The same guest profile is shared across every outlet. Growth covers up to three outlets and Chain has no limit.",
+        q: "Is there an expiry date on the wallet balance?",
+        a: "Wallet credit comes with a validity period. In the “Prepaid Wallet 5K” example, the ₹6,000 of credit is valid for 180 days.",
+      },
+      {
+        q: "How do I track which staff sell memberships?",
+        a: "On Zloya's live staff sales leaderboard, which ranks membership sales by staff member. It comes with Zloya Growth.",
       },
       {
         q: "Do I need a POS integration to sell memberships?",
         a: "No. The POS quick counter runs in any browser, so the cashier enters the bill amount and Zloya handles the rest. API / POS integration is available on Chain.",
       },
       {
-        q: "Can a salon or store sell memberships too, not just a restaurant?",
-        a: "Yes. Zloya is built for restaurants, cafés, salons and stores.",
+        q: "Is a member recognised at every outlet?",
+        a: "Yes. The guest profile is shared across every outlet, so a member is recognised at each branch. Zloya Growth covers up to three outlets and Chain has no limit.",
+      },
+      {
+        q: "Is this only for restaurants?",
+        a: "No. Zloya is built for restaurants, cafés, salons and stores, and memberships work the same way at each counter.",
       },
     ],
     related: ["automated-winback-birthday-campaigns", "restaurant-qr-code-customer-data"],
@@ -893,16 +1311,17 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
     name: "Smart QR codes for guest data",
     kicker: "Zutok Zloya · Smart QR codes",
     relatedProduct: "zloya",
-    title: "Smart QR Codes on Tables & Delivery Boxes for Guest Data",
+    title: "Restaurant QR Codes to Collect Customer Phone Numbers",
     metaDescription:
-      "Put Zutok Zloya smart QR codes on table standees, Swiggy and Zomato boxes and partner stores to collect guest numbers, then track scans, sign-ups and opt-ins.",
+      "Zutok Zloya QR codes on tables, Swiggy and Zomato boxes and partner stores collect guests' phone numbers with consent, and track scans and sign-ups per code.",
     keywords: [
+      "collect customer phone numbers restaurant",
       "QR code to collect customer data for restaurants",
       "QR code on Swiggy and Zomato delivery boxes",
-      "turn delivery customers into dine-in guests",
+      "Swiggy Zomato customer data",
+      "convert delivery customers to dine-in",
       "table standee QR sign-up",
       "QR code opt-in tracking",
-      "restaurant customer database",
     ],
     h1: "Collect restaurant customer data with QR codes on tables and Swiggy/Zomato boxes",
     h1Accent: "on tables and Swiggy/Zomato boxes",
@@ -931,10 +1350,29 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
     },
     extra: [
       {
-        heading: "What perk should I offer guests for scanning a QR code?",
-        lead: "Match the perk to where the code is. On a delivery box, offer something that brings the guest in, like flat ₹150 off when they dine in. On a table standee, offer something they can use with you, like 50 bonus points.",
+        heading: "Can I get my Swiggy and Zomato customers' phone numbers?",
+        lead: "Not from the apps through Zutok: Zutok has no Swiggy or Zomato integration and no access to their data. What you can do is print a Zloya QR code on your own delivery boxes and let guests choose to share their number with you for a perk.",
         body: [
-          "You choose the perk for each code. Because every code is tracked separately, you can compare scans, sign-ups and opt-in rate side by side and see which placement and perk bring in the most guests.",
+          "That keeps it consent-first: the guest scans, sees the offer and decides. Whatever the delivery apps do or don't share, a guest who signs up through your code is on a list you built yourself.",
+        ],
+      },
+      {
+        heading: "How do you turn delivery customers into dine-in guests, step by step?",
+        lead: "Give every delivery guest a reason to come in, and a way to tell you who they are.",
+        bullets: [
+          "Create a code for your delivery boxes, separate from your table codes.",
+          "Attach a dine-in perk to it, for example flat ₹150 off when they dine in.",
+          "Stick the code on every Swiggy and Zomato box you send out.",
+          "The guest scans, shares their phone number and gets the perk.",
+          "They appear in Zloya's New segment, and when they visit, the cashier finds them by mobile number at the POS quick counter.",
+        ],
+      },
+      {
+        heading: "Which QR code placement works best?",
+        lead: "The one your numbers point to. Give each placement its own code (Swiggy boxes, Zomato boxes, table standees, a partner store) and compare their scans, sign-ups and opt-in rate side by side.",
+        body: [
+          "Match the perk to the placement: a dine-in offer like flat ₹150 off on a delivery box, and something guests use with you, like 50 bonus points, on a table standee. If a code gets plenty of scans but few sign-ups, the offer may not be worth sharing a number for, so try a different perk on that code.",
+          "These are sign-up codes, not a QR menu or online ordering: each one exists to collect a guest's number with their agreement.",
         ],
       },
     ],
@@ -979,12 +1417,20 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
         a: "On table standees, on Swiggy and Zomato delivery boxes and at partner stores. Each placement gets its own code.",
       },
       {
-        q: "How do I measure which QR code works best?",
-        a: "Compare each code's scans, sign-ups and opt-in rate. Zloya tracks them for every code separately.",
+        q: "What should I offer in exchange for a phone number?",
+        a: "Something worth it where the code sits. For example, 50 bonus points on a table standee, or a dine-in offer like flat ₹150 off on a delivery box.",
+      },
+      {
+        q: "Can I see who scanned a code?",
+        a: "Scans are counted for each code. A guest joins your list when they share their phone number to claim the perk, so you see who signed up, not everyone who scanned.",
+      },
+      {
+        q: "Can someone reuse the coupon?",
+        a: "No. Every Zloya coupon is locked to one phone number, and redeeming it needs a one-time password sent to the guest's phone.",
       },
       {
         q: "What happens after a guest signs up?",
-        a: "They appear in Zloya's smart segments, which update automatically: New, Regulars, Potential VIPs, Slipping, Lost and upcoming birthdays.",
+        a: "They appear in Zloya's smart segments, starting with New, which update automatically. On Zloya Growth, journeys like the first-visit welcome and the 30-day win-back then run on their own.",
       },
       {
         q: "Do I need a POS system?",
@@ -998,20 +1444,21 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
     name: "Birthday, win-back & expiry journeys",
     kicker: "Zutok Zloya · Automated journeys",
     relatedProduct: "zloya",
-    title: "Automated Birthday, Win-Back & Points-Expiry Journeys",
+    title: "Customer Win-Back & Birthday Offer Automation",
     metaDescription:
-      "Zutok Zloya sends welcome, birthday, 30-day win-back, points-expiry and feedback messages on its own, each with a coupon locked to the guest's phone number.",
+      "Zutok Zloya spots guests who stop visiting at 30 days and sends a win-back voucher, plus birthday, welcome and expiry offers locked to each guest's phone.",
     keywords: [
-      "customer win-back campaign automation",
-      "birthday offer automation for restaurants",
+      "customer win-back campaign",
+      "win back lost customers",
+      "birthday offer automation",
+      "welcome offer for new customers",
       "points expiry reminder",
-      "lapsed customer re-engagement",
-      "customer retention automation India",
-      "customer segmentation slipping lost",
+      "customer retention software India",
+      "customer segmentation for restaurants",
     ],
     h1: "Automated win-back, birthday and points-expiry campaigns for your regulars",
     h1Accent: "for your regulars",
-    answer: `Zutok Zloya runs five ready-made retention journeys on its own: a first-visit welcome, a birthday greeting, a 30-day “we miss you” win-back, a points-expiry alert and post-visit feedback. Each message carries a coupon locked to the guest's phone number, and guests are sorted automatically into segments like Slipping (30 days) and Lost (60+ days). Journeys come with Zloya Growth at ${priceLine("zloya", "Growth")}.`,
+    answer: `Zutok Zloya runs five ready-made retention journeys on its own: a first-visit welcome, a birthday greeting, a 30-day “we miss you” win-back, a points-expiry alert and post-visit feedback. Offers are locked to the guest's phone number, and guests are sorted automatically into segments like Slipping (30 days) and Lost (60+ days). Birthday, win-back and expiry journeys come with Zloya Growth at ${priceLine("zloya", "Growth")}.`,
     summary:
       "How Zutok Zloya's five automated journeys (welcome, birthday, 30-day win-back, points expiry and feedback) bring guests back with phone-locked coupons.",
     facts: [
@@ -1031,23 +1478,42 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
       lead: "Turn on Zloya's “We miss you (30 days)” journey. Guests who haven't been back for 30 days get a message with a voucher, for example flat ₹100 off, locked to their phone number.",
       body: [
         "The same 30-day mark puts them in the Slipping segment, and after 60 days without a visit they move to Lost, so you can see at a glance who still needs a reason to return. Redeeming the voucher at the counter needs a one-time password sent to the guest's phone.",
-        "Win-back is one of five journeys that run the same way, each with its own coupon: a welcome after the first visit, a birthday greeting, a points-expiry alert and a post-visit feedback request.",
+        "Win-back is one of five ready-made journeys, alongside a welcome after the first visit, a birthday greeting, a points-expiry alert and a post-visit feedback request. The welcome, birthday and win-back messages carry offers like the examples on this page, and every coupon is locked to one phone number.",
       ],
     },
     extra: [
       {
-        heading: "What should a restaurant birthday offer include?",
-        lead: "Something personal that they use by coming in. Zloya's birthday journey sends a personal greeting with a gift and double points, for example a free dessert plus double points.",
-        body: ["Anniversaries work the same way, and upcoming birthdays are their own smart segment, so you can see whose day is coming."],
+        heading: "When does a customer count as lapsed?",
+        lead: "In Zloya, a guest moves to Slipping after 30 days without a visit, and to Lost after 60 days or more. It happens automatically, with no tagging by hand.",
+        body: [
+          "The same 30-day mark works for salons and clinics, where clients who haven't come back get the win-back coupon; the [clinics, labs and salons guide](/industries/clinics-labs-salons/) covers that in more detail.",
+        ],
+      },
+      {
+        heading: "Which segments does Zloya create automatically?",
+        lead: "Six, kept up to date without manual tagging. Each one pairs with a Zloya tool that gives those guests a reason to come back.",
+        bullets: [
+          "New guests: the first-visit welcome journey.",
+          "Regulars: points and the four VIP tiers, Bronze to Platinum.",
+          "Potential VIPs: VIP tiers, with perks unlocked by spend and visits.",
+          "Slipping (30 days): the 30-day “we miss you” win-back journey.",
+          "Lost (60+ days): guests who haven't been back in two months or more.",
+          "Upcoming birthdays: the birthday journey.",
+        ],
+      },
+      {
+        heading: "What offer should a win-back message carry?",
+        lead: "Something simple enough to act on, like the example flat ₹100 off voucher. Every coupon is locked to one phone number, and redeeming it at the counter needs a one-time password sent to the guest's phone.",
+        body: ["Offers can carry a validity period too: the example first-visit welcome is 15% off, valid for 14 days."],
+      },
+      {
+        heading: "How do birthday, anniversary and welcome offers work?",
+        lead: "Each is a ready-made journey. The birthday journey sends a personal greeting with a gift and double points, for example a free dessert; anniversaries work the same way; and the first-visit welcome sends an offer after a guest's first visit, for example 15% off for 14 days.",
+        body: ["Upcoming birthdays are their own smart segment, so you can see whose day is coming."],
       },
       {
         heading: "How do I remind customers before their loyalty points expire?",
         lead: "Turn on the points-expiry journey. Zloya alerts the guest to use their points before they expire, which is a reason to visit that they've already earned.",
-      },
-      {
-        heading: "How are customers grouped into segments like Slipping or Lost?",
-        lead: "Automatically. Zloya keeps six smart segments up to date without any manual tagging. Slipping means 30 days without a visit, and Lost means 60 days or more.",
-        bullets: ["New guests", "Regulars", "Potential VIPs", "Slipping (30 days)", "Lost (60+ days)", "Upcoming birthdays"],
       },
     ],
     steps: {
@@ -1089,6 +1555,18 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
     },
     faqs: [
       {
+        q: "Do I need to tag customers manually?",
+        a: "No. Zloya keeps its six segments, from New to Lost, up to date on its own.",
+      },
+      {
+        q: "Can anniversaries get the same offer as birthdays?",
+        a: "Yes. Anniversaries work the same way as birthdays: a personal greeting with a gift and double points.",
+      },
+      {
+        q: "What welcome offer should a new customer get?",
+        a: "One that brings them back for a second visit soon. The example first-visit welcome is 15% off, valid for 14 days, and like every Zloya coupon it's locked to the guest's phone number.",
+      },
+      {
         q: "Can loyalty coupons be shared or misused?",
         a: "No. Every coupon is locked to one phone number, and every redemption needs a one-time password sent to the guest's phone.",
       },
@@ -1115,19 +1593,20 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
     name: "CRM with GST invoicing",
     kicker: "Zutok CRM · GST invoicing",
     relatedProduct: "crm",
-    title: "CRM with GST Invoicing, Proposals & Estimates in ₹",
-    metaDescription: `Send proposals and estimates, turn accepted ones into GST invoices with CGST and SGST, record payments and export PDFs in bulk. Zutok CRM from ${perMonth("crm", "Starter")}.`,
+    title: "GST Billing Software with CRM: Quotation to Payment",
+    metaDescription: `Send quotes and estimates, turn accepted ones into GST invoices with CGST and SGST, record payments, chase overdue bills and export PDFs. From ${perMonth("crm", "Starter")}.`,
     keywords: [
-      "CRM with GST invoicing",
-      "GST invoice software with CRM",
-      "proposal and estimate software India",
-      "quotation to invoice",
-      "recurring invoices India",
+      "GST billing software with CRM",
+      "GST invoicing software with CRM",
+      "quotation to invoice software",
+      "quotation and invoice CRM India",
+      "recurring invoice software India",
       "CGST SGST invoice",
+      "track income and expenses",
     ],
-    h1: "A CRM with GST invoicing, from proposal to payment",
-    h1Accent: "from proposal to payment",
-    answer: `Zutok CRM keeps billing in the same place as your leads and customers. Send a proposal or estimate, turn it into a GST invoice once it's accepted and record the payment. Invoices are in rupees with tax rates like CGST and SGST on every line, plus recurring invoices, credit notes and bulk PDF export. It's in every plan, from CRM Starter at ${priceLine("crm", "Starter")}.`,
+    h1: "GST billing software with a built-in CRM, from quote to payment",
+    h1Accent: "from quote to payment",
+    answer: `Zutok CRM is GST billing software with the CRM built in. Send a quotation as an estimate, or a proposal, turn it into a GST invoice once it's accepted and record the payment. Invoices are in rupees with CGST and SGST on every line, plus recurring invoices, credit notes and bulk PDF export. It's in every plan, from CRM Starter at ${priceLine("crm", "Starter")}.`,
     summary:
       "How Zutok CRM turns accepted proposals and estimates into GST invoices with CGST and SGST lines, payments, credit notes and bulk PDF export.",
     facts: [
@@ -1143,15 +1622,39 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
       heading: "Can I convert an accepted proposal or estimate into an invoice?",
       lead: "Yes. In Zutok CRM you send a proposal or estimate, turn it into a GST invoice once the customer accepts it, and record the payment against it.",
       body: [
-        "Estimate requests can also come from your website, so a request becomes an estimate and then an invoice in one place. Recurring invoices handle repeat billing, credit notes handle corrections, and overdue reminders follow up on unpaid invoices.",
+        "Recurring invoices handle repeat billing, credit notes handle corrections, and overdue reminders follow up on unpaid invoices.",
         "Every invoice sits on the customer's profile alongside their contacts, projects and support tickets, so sales and accounts work from the same record.",
       ],
     },
     extra: [
       {
+        heading: "Quotation, estimate, proposal or invoice: what's the difference?",
+        lead: "A quotation or estimate prices a specific job, a proposal sets out what you'll do and for how much, and an invoice asks for payment once the work or sale is agreed. In Zutok CRM a quotation is created as an estimate, and both estimates and proposals turn into GST invoices once accepted.",
+        body: [
+          "Estimate requests from your website arrive in the CRM as leads, so a request can become an estimate and then an invoice in one place.",
+        ],
+      },
+      {
         heading: "Can Zutok CRM create GST invoices with CGST and SGST?",
         lead: "Yes. Invoices are in rupees with tax fields, and tax rates such as CGST and SGST go on every line.",
         body: ["You set up your tax rates and invoice format once, when you set up the CRM, and every invoice uses them."],
+      },
+      {
+        heading: "How do I chase unpaid invoices?",
+        lead: "With overdue reminders, which follow up on unpaid invoices. Every payment is recorded against its invoice, so you can see what's still owed.",
+      },
+      {
+        heading: "How do recurring invoices and subscriptions work?",
+        lead: "They're two separate tools. Recurring invoices, in every plan from CRM Starter, bill a customer on a schedule, such as a monthly retainer. The Subscriptions module, from CRM Growth, handles recurring billing alongside expense tracking.",
+        body: ["Either way, payments are recorded against each invoice when they arrive."],
+      },
+      {
+        heading: "Can I track expenses against income?",
+        lead: "Yes, from CRM Growth. The Subscriptions & Expenses module adds expense tracking and an expenses vs income view, next to your invoices and payments.",
+      },
+      {
+        heading: "What do I send my accountant at month end?",
+        lead: "Export proposals, estimates, invoices and credit notes in bulk as PDF, and customers, leads and invoices as CSV, whenever you need them.",
       },
     ],
     steps: {
@@ -1194,12 +1697,20 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
     },
     faqs: [
       {
-        q: "Does it support recurring invoices and credit notes?",
-        a: "Yes. Recurring invoices and credit notes are built in, along with overdue reminders.",
+        q: "Can I convert a quotation into a GST invoice?",
+        a: "Yes. Create the quotation as an estimate or a proposal, and once the customer accepts it, turn it into a GST invoice with tax on every line and record the payment.",
       },
       {
-        q: "How do I send all my invoices to my accountant?",
-        a: "Export them in bulk as PDF. You can also export customers, leads and invoices to CSV whenever you like.",
+        q: "Which plan includes recurring invoices and the Subscriptions module?",
+        a: `Recurring invoices and credit notes are in every Zutok CRM plan, from CRM Starter at ${perMonth("crm", "Starter")}. The Subscriptions module starts with CRM Growth at ${perMonth("crm", "Growth")}.`,
+      },
+      {
+        q: "Which plan includes expense tracking?",
+        a: `CRM Growth, at ${perMonth("crm", "Growth")}, and CRM Enterprise. Expense tracking isn't in CRM Starter.`,
+      },
+      {
+        q: "Can I bill a monthly retainer?",
+        a: "Yes. Set the client up with a recurring invoice and record each payment against it. If one goes unpaid, overdue reminders follow up.",
       },
       {
         q: "Can I control who sees invoices?",
@@ -1210,27 +1721,27 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
         a: "Yes. Import customers, leads and items from Excel or CSV, or from your old CRM. Zutok helps with the import during onboarding.",
       },
     ],
-    related: ["indiamart-meta-lead-ads-crm", "crm-with-hrm-payroll"],
+    related: ["indiamart-meta-lead-ads-crm", "crm-with-hrm-payroll", "whatsapp-crm"],
   },
 
   "indiamart-meta-lead-ads-crm": {
-    name: "IndiaMART & Meta Lead Ads CRM",
-    kicker: "Zutok CRM · Leads & pipeline",
+    name: "Lead management: IndiaMART & Meta Lead Ads",
+    kicker: "Zutok CRM · Lead management",
     relatedProduct: "crm",
-    title: "CRM for IndiaMART & Meta Lead Ads Leads in One Pipeline",
-    metaDescription:
-      "Leads from IndiaMART, Meta Lead Ads, WhatsApp and Instagram chats and your website land on one Zutok CRM board, from Enquiry to Follow-up, Hot and Customer.",
+    title: "Lead Management CRM: IndiaMART & Facebook Leads",
+    metaDescription: `IndiaMART enquiries and Facebook and Instagram lead forms sync into one Zutok CRM pipeline, from Enquiry to Customer, with tasks and reminders. From ${perMonth("crm", "Starter")}.`,
     keywords: [
-      "IndiaMART lead management CRM",
-      "Meta Lead Ads CRM integration",
-      "Facebook lead ads to CRM India",
-      "IndiaMART leads to CRM automatically",
-      "lead pipeline software India",
-      "WhatsApp leads CRM",
+      "lead management CRM",
+      "lead management software India",
+      "IndiaMART CRM integration",
+      "IndiaMART lead management",
+      "Facebook lead ads CRM integration",
+      "Instagram lead ads to CRM",
+      "sales pipeline software",
     ],
-    h1: "Manage IndiaMART and Meta Lead Ads leads in one CRM pipeline",
+    h1: "Lead management for IndiaMART and Facebook Lead Ads enquiries in one CRM pipeline",
     h1Accent: "in one CRM pipeline",
-    answer: `Zutok CRM syncs leads from IndiaMART and Meta Lead Ads into one pipeline, next to estimate requests from your website and, with ZChat, leads from WhatsApp and Instagram chats. Every lead moves through four stages, Enquiry, Follow-up, Hot and Customer, with tasks and reminders on each. Both integrations are in every plan, from CRM Starter at ${priceLine("crm", "Starter")}.`,
+    answer: `Lead management means capturing every enquiry and following it up until it becomes a customer. Zutok CRM syncs IndiaMART enquiries and Meta Lead Ads (Facebook and Instagram lead forms) into one pipeline, beside website requests and, with ZChat, chat leads. Every lead moves from Enquiry to Follow-up, Hot and Customer, with tasks and reminders. It's in every plan, from CRM Starter at ${priceLine("crm", "Starter")}.`,
     summary:
       "How Zutok CRM syncs IndiaMART and Meta Lead Ads leads into one pipeline with chat and website leads, from Enquiry to Customer.",
     facts: [
@@ -1243,14 +1754,34 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
       lead: "Because they arrive in different places. IndiaMART enquiries sit in your IndiaMART account, ad leads sit in Meta, and chats sit on someone's phone, so follow-ups depend on someone remembering to check each one.",
     },
     approach: {
-      heading: "How do I get IndiaMART leads into a CRM automatically?",
-      lead: "Use Zutok CRM's Leads & Pipeline module. IndiaMART and Meta Lead Ads leads sync in on their own, with field mapping for their details, and land as enquiries on the same board as every other lead.",
+      heading: "How does Zutok CRM bring every lead source into one pipeline?",
+      lead: "Through its Leads & Pipeline module. IndiaMART enquiries and Meta Lead Ads leads sync in on their own and land as enquiries on the same board as every other lead.",
       body: [
         "Other sources join the same pipeline: estimate requests from your website, imports from Excel or CSV and, if you use ZChat, every WhatsApp, Instagram, Messenger or Telegram conversation, which becomes a lead with its source.",
         "From there, tasks and reminders on every lead keep follow-ups on time, and lead reports and goals tracking sit in the same CRM.",
       ],
     },
     extra: [
+      {
+        heading: "What is lead management, and how is it different from a CRM?",
+        lead: "Lead management is the part of sales that runs from first enquiry to a won customer. In Zutok it's the Leads & Pipeline module inside a full CRM, so a lead can go on to a proposal or estimate, a GST invoice and a customer profile without leaving the system.",
+      },
+      {
+        heading: "How do IndiaMART enquiries get into Zutok CRM?",
+        lead: "They sync in on their own. Field mapping puts each enquiry's details into your own lead fields, and the lead lands in the Enquiry stage with its source.",
+      },
+      {
+        heading: "Do Facebook and Instagram lead forms sync automatically, or do I download CSVs?",
+        lead: "They sync automatically. Leads from your Facebook and Instagram lead forms (Meta Lead Ads) land in the Enquiry stage with their source and mapped fields, so there's no CSV to download and re-upload.",
+        body: [
+          "Leads you've already downloaded can still come in: import them from Excel or CSV, and Zutok helps with the import during onboarding.",
+          "A real estate business, for example, can run a site-visit lead form: each request arrives in Enquiry, ready for a call-back reminder.",
+        ],
+      },
+      {
+        heading: "How do follow-up reminders work?",
+        lead: "Every lead carries its own tasks and reminders, from Enquiry through to Customer, so call-backs and next steps don't depend on someone remembering.",
+      },
       {
         heading: "What lead stages does Zutok CRM use?",
         lead: "The pipeline runs Enquiry → Follow-up → Hot → Customer. Every lead starts as an enquiry and moves along the board until it becomes a customer.",
@@ -1297,8 +1828,20 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
     },
     faqs: [
       {
-        q: "Can Facebook and Instagram Lead Ads go straight into my CRM?",
-        a: "Yes. Meta Lead Ads leads sync into Zutok CRM and land in the same pipeline as your IndiaMART, chat and website leads.",
+        q: "Do Instagram lead form leads come in too?",
+        a: "Yes. Meta Lead Ads covers both Facebook and Instagram lead forms, and leads from both sync into the same pipeline.",
+      },
+      {
+        q: "Which stage does a new ad lead land in?",
+        a: "Enquiry, with its source and mapped fields, on the same board as your IndiaMART, chat and website leads.",
+      },
+      {
+        q: "How much does lead management cost?",
+        a: `Lead management is in every Zutok CRM plan, from CRM Starter at ${priceLine("crm", "Starter")}. That is a flat plan price for up to 3 users, not a price per user. Lead reports and goals tracking come with CRM Growth at ${perMonth("crm", "Growth")}.`,
+      },
+      {
+        q: "Is the IndiaMART integration in every plan?",
+        a: "Yes. IndiaMART and Meta Lead Ads leads are included from CRM Starter, and in every higher CRM plan and Suite plan.",
       },
       {
         q: "Can I import my existing leads from Excel?",
@@ -1306,34 +1849,42 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
       },
       {
         q: "Do WhatsApp chats become leads too?",
-        a: "Yes, with ZChat. Every new conversation creates a lead in Zutok CRM with its source, so sales can follow it up from one place.",
+        a: "Yes, with ZChat: every new conversation creates a lead in Zutok CRM with its source. The [WhatsApp CRM](/solutions/whatsapp-crm/) page covers how chat leads work.",
       },
       {
         q: "Can I limit what each salesperson sees?",
         a: "Yes. Each staff member gets a role with its own permissions, so everyone sees only what they need.",
       },
     ],
-    related: ["gst-invoicing-crm", "whatsapp-ai-sales-agent", "crm-with-hrm-payroll"],
+    related: [
+      "whatsapp-crm",
+      "gst-invoicing-crm",
+      "facebook-messenger-automation",
+      "whatsapp-ai-sales-agent",
+      "crm-with-hrm-payroll",
+      "instagram-comment-to-dm",
+    ],
   },
 
   "crm-with-hrm-payroll": {
-    name: "CRM with HRM & payroll",
-    kicker: "Zutok CRM · HRM & payroll",
+    name: "CRM with HRM",
+    kicker: "Zutok CRM · HRM, attendance & leave",
     relatedProduct: "crm",
-    title: "CRM with HRM, Payroll, Attendance & Leave in One Place",
+    title: "CRM with HRM: Staff Records, Shifts, Attendance & Leave",
     metaDescription:
-      "Zutok CRM Growth adds HRM and payroll: staff records, contracts, insurance, salary, shift planner, attendance and leave, beside your leads and invoices.",
+      "Zutok CRM Growth adds HRM: staff records with contracts, insurance and salary, a shift planner, attendance and leave requests, beside your leads and invoices.",
     keywords: [
-      "CRM with HRM and payroll",
-      "staff attendance and leave software",
+      "CRM with HRM",
+      "HR and CRM in one software",
+      "staff attendance software",
+      "leave management system for small business",
       "shift planner software India",
-      "employee contract expiry alerts",
-      "HR and sales software in one",
-      "CRM with attendance management",
+      "employee contract expiry alert",
+      "staff duty roster software",
     ],
-    h1: "A CRM with HRM, payroll, attendance and leave built in",
-    h1Accent: "built in",
-    answer: `Zutok CRM Growth adds HR to the same system as your leads and invoices: staff records, contracts, insurance and salary, with alerts before a contract expires, plus a shift planner, attendance and leave requests. Roles and permissions keep HR details with the people who need them. HRM starts with CRM Growth at ${priceLine("crm", "Growth")}, for up to 10 users.`,
+    h1: "A CRM with HRM built in: staff records, shifts, attendance and leave",
+    h1Accent: "staff records, shifts, attendance and leave",
+    answer: `Zutok CRM Growth adds HR to the same system as your leads and invoices: staff records with contracts, insurance and salary, alerts before a contract expires, a shift planner for your duty roster, and attendance and leave requests. Roles and permissions keep HR details with the people who need them. HRM starts with CRM Growth at ${priceLine("crm", "Growth")}, for up to 10 users.`,
     summary:
       "How Zutok CRM Growth keeps staff records, contracts, salary, shifts, attendance and leave in the same system as your sales.",
     facts: [
@@ -1349,24 +1900,31 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
       ],
     },
     approach: {
-      heading: "Can I manage staff attendance and leave inside my CRM?",
-      lead: "Yes. From CRM Growth, Zutok CRM includes a shift planner with shift tables, attendance and leave requests, plus attendance reports, without the spreadsheets.",
+      heading: "How do I track staff attendance and leave without a register or spreadsheet?",
+      lead: "Record them in Zutok CRM. From CRM Growth, attendance is tracked in the CRM with attendance reports, and staff leave requests and approvals happen there too, instead of in a register or spreadsheet.",
       body: [
-        "Staff records live in the same CRM: each person's contract, insurance and salary, with alerts before a contract expires.",
         "Each staff member gets a role with its own permissions, so sales, accounts and HR only see what they need.",
       ],
     },
     extra: [
       {
-        heading: "Does Zutok CRM keep payroll and salary records?",
-        lead: "Yes. HRM & payroll keeps staff records, contracts, insurance and salary for each person, and alerts you before a contract expires.",
+        heading: "What does a staff record in Zutok hold?",
+        lead: "Each person's details, their contract (with an alert before it expires), their insurance records and their salary records.",
+        body: ["If you need fields of your own, custom fields for every module come with CRM Enterprise."],
+      },
+      {
+        heading: "Can I plan staff shifts and build a duty roster in Zutok CRM?",
+        lead: "Yes. The shift planner lets you plan staff shifts and build shift tables, next to attendance, leave and each person's records.",
+        body: [
+          "A retail chain, for example, sets each outlet's shifts in the shift planner and records attendance and leave requests in Zutok CRM rather than in a register at each store. The [retail and franchise guide](/industries/retail-franchises/) walks through a whole day.",
+        ],
       },
     ],
     steps: {
       heading: "How do you set up HR in Zutok CRM, step by step?",
       lead: "HR sits next to the rest of the CRM, so setup is mostly adding your people.",
       items: [
-        { title: "Choose CRM Growth", body: "HRM, payroll, attendance and leave start with Growth, for up to 10 users." },
+        { title: "Choose CRM Growth", body: "HRM, attendance and leave start with Growth, for up to 10 users." },
         { title: "Add your staff", body: "Records with contracts, insurance and salary." },
         { title: "Set roles and permissions", body: "So sales, accounts and HR each see only what they need." },
         { title: "Plan shifts", body: "Build shift tables in the shift planner." },
@@ -1375,12 +1933,12 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
       ],
     },
     features: {
-      heading: "What's in Zutok CRM's HRM and payroll?",
+      heading: "What's in Zutok CRM's HRM?",
       items: [
         { icon: "usercog", title: "Staff records", body: "Every staff member's details in one place." },
         { icon: "file", title: "Contracts with alerts", body: "An alert before a contract expires." },
         { icon: "support", title: "Insurance", body: "Insurance details on each staff record." },
-        { icon: "wallet", title: "Salary & payroll", body: "Salary records for each person." },
+        { icon: "wallet", title: "Salary records", body: "Salary records for each person." },
         { icon: "calendar", title: "Shift planner", body: "Shifts and shift tables." },
         { icon: "timer", title: "Attendance", body: "Attendance tracking with reports." },
         { icon: "moon", title: "Leave requests", body: "Requests and approvals without the spreadsheets." },
@@ -1389,15 +1947,15 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
       ],
     },
     plan: {
-      heading: "Which plan includes HRM and payroll?",
-      lead: `HRM, payroll, attendance and leave come with CRM Growth at ${priceLine("crm", "Growth")}, for up to 10 users, together with inventory, contracts, expenses and subscriptions. They are not in CRM Starter.`,
+      heading: "Which plan includes HRM, shifts, attendance and leave?",
+      lead: `HRM (staff records with contracts, insurance and salary), the shift planner, attendance and leave come with CRM Growth at ${priceLine("crm", "Growth")}, for up to 10 users, together with inventory, contracts, expenses and subscriptions. They are not in CRM Starter.`,
       includes: [
         { label: "HRM, payroll, attendance & leave", from: "Growth" },
         { label: "Inventory & warehouse", from: "Growth" },
       ],
       highlights: {
         Starter: "Up to 3 users. Leads, invoices, projects and tickets.",
-        Growth: "Up to 10 users. HRM, payroll, attendance & leave, plus inventory.",
+        Growth: "Up to 10 users. HRM, shifts, attendance & leave, plus inventory.",
         Enterprise: "Unlimited users, Real Estate suite and custom fields for every module.",
       },
       suite: "Suite Growth",
@@ -1405,15 +1963,23 @@ const data: Record<SolutionSlug, Omit<Solution, "slug">> = {
     faqs: [
       {
         q: "Can I get alerts before staff contracts expire?",
-        a: "Yes. HRM & payroll alerts you before a staff contract expires.",
+        a: "Yes. Zutok's HRM alerts you before a staff contract expires.",
       },
       {
         q: "Can I limit what HR, sales and accounts staff can see?",
         a: "Yes. Each staff member gets a role with its own permissions, so sales, accounts and HR only see what they need.",
       },
       {
-        q: "Is HRM included in CRM Starter?",
-        a: `No. HRM, payroll, attendance and leave start with CRM Growth at ${perMonth("crm", "Growth")}. Starter, at ${perMonth("crm", "Starter")}, covers leads, sales and projects for up to 3 users.`,
+        q: "Is HRM an add-on, or part of the CRM Growth price?",
+        a: `Part of the price. CRM Growth costs ${perMonth("crm", "Growth")} as a flat plan price for up to 10 users, not a price per user, and HRM, the shift planner, attendance and leave are included. CRM Enterprise at ${perMonth("crm", "Enterprise")} includes them with unlimited users, and so does Suite Growth. They aren't in CRM Starter.`,
+      },
+      {
+        q: "How do leave requests and approvals work?",
+        a: "Staff leave requests and their approvals are handled in Zutok CRM, so there's no separate leave register or spreadsheet to keep in sync.",
+      },
+      {
+        q: "Does it work across outlets?",
+        a: "Yes. A chain can set each outlet's shifts in the shift planner and record attendance and leave requests in the same Zutok CRM, rather than in a register at each store.",
       },
       {
         q: "What else comes with CRM Growth?",
@@ -1447,17 +2013,17 @@ export function startingPlan(s: Solution) {
 export const SOLUTIONS_HUB = {
   title: "Solutions: WhatsApp, Store, Loyalty & CRM Use Cases",
   description:
-    "How Zutok handles WhatsApp AI sales, broadcasts, comment-to-DM, COD confirmation, cart recovery, order tracking, memberships, loyalty journeys, GST and HRM.",
+    "How Zutok handles WhatsApp CRM, AI sales, broadcasts, templates, team inbox, comment-to-DM, COD, cart recovery, order tracking, loyalty, GST and HRM.",
   h1: "WhatsApp, store, loyalty and CRM solutions for Indian businesses",
   h1Accent: "for Indian businesses",
   intro:
-    "Each page below explains one job Zutok does, such as confirming COD orders on WhatsApp or selling prepaid memberships: how it works step by step, and which plan includes it, with prices in rupees. Every solution runs on Zutok CRM and its three products: ZChat for chats and AI, ZShop for online stores and Zloya for loyalty.",
+    "Each page below explains one job Zutok does, such as confirming COD orders on WhatsApp or selling prepaid memberships: how it works step by step, and which plan includes it, with prices in rupees. Every solution runs on Zutok CRM and its three products: ZChat for chats and AI, ZShop for online stores and Zloya for loyalty. The ZChat pages also cover the WhatsApp Business API, message templates, the omnichannel team inbox and WhatsApp CRM.",
   keywords: [
     "Zutok solutions",
     "WhatsApp automation for business India",
     "WhatsApp COD confirmation",
     "abandoned cart recovery WhatsApp",
-    "restaurant loyalty and membership software",
+    "WhatsApp CRM India",
     "CRM with GST invoicing",
   ],
 };
@@ -1474,4 +2040,21 @@ for (const s of solutions) {
   if (bad.length) throw new Error(`solutions.ts: "${s.slug}" names unknown plans: ${bad.join(", ")}`);
   if (s.h1Accent && !s.h1.endsWith(s.h1Accent)) throw new Error(`solutions.ts: "${s.slug}" h1Accent is not the end of h1`);
   if (s.related.some((r) => r === s.slug || !(r in data))) throw new Error(`solutions.ts: "${s.slug}" has a bad related slug`);
+  if (new Set(s.related).size !== s.related.length || s.related.length > 6)
+    throw new Error(`solutions.ts: "${s.slug}" related must be at most 6 distinct slugs`);
+  const spokes = s.spokes?.items ?? [];
+  if (spokes.some((r) => r === s.slug || !(r in data)) || new Set(spokes).size !== spokes.length)
+    throw new Error(`solutions.ts: "${s.slug}" has a bad or repeated spoke slug`);
+  // In-copy links: a site path with a trailing slash (optionally #fragment), or an https URL.
+  const copy = [
+    s.answer,
+    s.plan.lead,
+    s.spokes?.lead ?? "",
+    ...[s.problem, s.approach, ...(s.extra ?? [])].flatMap((x) => [x.lead, ...(x.body ?? []), ...(x.bullets ?? [])]),
+    ...s.faqs.flatMap((f) => [f.q, f.a]),
+  ];
+  const badLink = copy.flatMap(linkTargets).find((h) => !/^(https:\/\/|\/([a-z0-9-]+\/)*(#[a-z0-9-]+)?$)/.test(h));
+  if (badLink) throw new Error(`solutions.ts: "${s.slug}" has a malformed link "${badLink}"`);
+  const self = copy.flatMap(linkTargets).find((h) => h === solutionPath(s.slug));
+  if (self) throw new Error(`solutions.ts: "${s.slug}" links to itself`);
 }

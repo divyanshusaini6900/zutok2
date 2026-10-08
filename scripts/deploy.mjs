@@ -16,7 +16,7 @@ const REPO = "https://github.com/divyanshusaini6900/zutok2.git";
 const DOMAIN = "www.zutok.in";
 const root = process.cwd();
 const out = join(root, "out");
-const notSource = new Set(["node_modules", ".next", "out", ".claude", ".git"]);
+const notSource = new Set(["node_modules", ".next", "out", ".claude", ".git", "seo-research"]);
 const extra = process.argv.slice(2);
 const today = new Date().toISOString().slice(0, 10);
 

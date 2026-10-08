@@ -4,6 +4,7 @@ import { formatINR, pricing, YEARLY_MONTHS_CHARGED, type PricingGroup } from "@/
 import { platformModules, products, type Product } from "@/lib/products";
 import { SOLUTIONS_HUB, solutionPath, solutions } from "@/lib/solutions";
 import { site } from "@/lib/site";
+import { isExternal, mapLinks } from "@/lib/inline-links";
 import {
   BRAND_SUMMARY,
   PRICING_DESCRIPTION,
@@ -23,14 +24,16 @@ const family: Product[] = [products.crm, products.zchat, products.zshop, product
 
 const price = (n: number) => `₹${formatINR(n)}`;
 const link = (label: string, path: string, note?: string) => `- [${label}](${absoluteUrl(path)})${note ? `: ${note}` : ""}`;
-const faqBlock = (items: QA[]) => items.map((f) => `**${f.q}**\n${f.a}`).join("\n\n");
+/** Copy with "[label](/path/)" links (src/lib/inline-links.ts) as Markdown with absolute URLs. */
+const md = (s: string) => mapLinks(s, (href) => (isExternal(href) ? href : absoluteUrl(href)));
+const faqBlock = (items: QA[]) => items.map((f) => `**${md(f.q)}**\n${md(f.a)}`).join("\n\n");
 
 const keyFacts = [
   `- Website: ${absoluteUrl("/")}`,
   `- Company: ${site.company}, also called ${site.name}. Its products are always named with the brand: ${family.map(brandedName).join(", ")}.`,
   "- Market: businesses in India that sell on WhatsApp, Instagram and at the counter.",
   `- Prices: in Indian Rupees (INR), excluding 18% GST. Billed monthly, or yearly at ${YEARLY_MONTHS_CHARGED} months for 12. No setup fee.`,
-  "- WhatsApp: ZChat connects to the official WhatsApp Business Platform. Meta's WhatsApp conversation charges are billed separately at Meta's published rates.",
+  "- WhatsApp: ZChat connects to the official WhatsApp Business Platform. Meta's per-message charges for WhatsApp template messages are billed separately at Meta's published rates.",
   `- Contact: ${site.email}. Book a demo at ${absoluteUrl("/#demo")}. Customers log in at ${new URL(site.loginUrl).href}.`,
 ];
 
@@ -144,8 +147,8 @@ export function llmsFullTxt(): string {
           `### ${s.name}`,
           `URL: ${absoluteUrl(solutionPath(s.slug))}`,
           `Product: ${brandedName(products[s.relatedProduct])}`,
-          s.answer,
-          s.plan.lead,
+          md(s.answer),
+          md(s.plan.lead),
           "#### FAQ",
           faqBlock(s.faqs),
         ].join("\n\n"),

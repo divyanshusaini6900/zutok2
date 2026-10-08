@@ -84,7 +84,7 @@ export default function SolutionsPage() {
                     className="inline-block rounded-full border-2 border-ink px-4 py-2 text-sm font-bold text-ink shadow-[3px_3px_0_#0b0b0b] transition hover:-translate-y-0.5"
                     style={{ background: p.theme.pop }}
                   >
-                    {brandedName(p)}
+                    {brandedName(p)} <span className="text-ink/60">· {solutionsFor(p.slug).length}</span>
                   </a>
                 </li>
               ))}

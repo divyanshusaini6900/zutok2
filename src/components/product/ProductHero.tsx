@@ -5,7 +5,7 @@ import { useRef, type ComponentType } from "react";
 import { Bot, Boxes, Briefcase, Crown, Gift, PackageCheck, Receipt, ShoppingCart, Star, Truck, Users } from "lucide-react";
 import { Breadcrumbs, type Crumb } from "@/components/industries/Breadcrumbs";
 import { Button } from "@/components/ui/Button";
-import { InstagramIcon, MessengerIcon, WhatsAppIcon } from "@/components/ui/BrandIcons";
+import { InstagramIcon, MessengerIcon, TelegramIcon, WhatsAppIcon } from "@/components/ui/BrandIcons";
 import { Wave } from "@/components/ui/Wave";
 import { DashboardMock } from "@/components/mock/DashboardMock";
 import { InboxMock } from "@/components/mock/InboxMock";
@@ -22,6 +22,7 @@ const stickers: Record<ProductSlug, { Icon: ComponentType<{ className?: string }
     { Icon: WhatsAppIcon, bg: "#25d366", pos: "left-[-2%] top-[-6%]" },
     { Icon: InstagramIcon, bg: "linear-gradient(135deg,#f58529,#dd2a7b 55%,#8134af)", pos: "right-[4%] top-[-8%]" },
     { Icon: MessengerIcon, bg: "linear-gradient(135deg,#0099ff,#a033ff)", pos: "right-[-2%] bottom-[10%]" },
+    { Icon: TelegramIcon, bg: "#229ed9", pos: "left-[42%] bottom-[-6%]" },
     { Icon: Bot, bg: "#6c2bd9", pos: "left-[-3%] bottom-[14%]" },
   ],
   zshop: [

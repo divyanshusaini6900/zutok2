@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Check, Minus } from "lucide-react";
 import { Breadcrumbs } from "@/components/industries/Breadcrumbs";
 import { PricingTable } from "@/components/sections/PricingTable";
@@ -9,6 +10,7 @@ import { SplitText } from "@/components/ui/SplitText";
 import { Wave } from "@/components/ui/Wave";
 import { pricingFaqs as faqs } from "@/lib/company";
 import { YEARLY_MONTHS_CHARGED } from "@/lib/pricing";
+import { solutionPath } from "@/lib/solutions";
 import { cx } from "@/lib/cx";
 import {
   JsonLd,
@@ -52,7 +54,7 @@ const compare: { feature: string; cells: (boolean | string)[] }[] = [
   { feature: "WhatsApp + Instagram inbox (ZChat)", cells: [false, false, false, true] },
   { feature: "AI sales agent with your catalogue", cells: [false, false, false, "Growth+"] },
   { feature: "Store automation (ZShop)", cells: [false, false, false, true] },
-  { feature: "Loyalty & memberships (Zloya)", cells: [false, false, false, true] },
+  { feature: "Loyalty & memberships (Zloya)", cells: [false, false, false, "Loyalty all, memberships Growth+"] },
   { feature: "Dedicated account manager", cells: [false, false, true, "Enterprise"] },
 ];
 
@@ -98,12 +100,12 @@ export default function PricingPage() {
           <div className="mb-8 flex justify-center">
             <Breadcrumbs items={crumbs} tone="light" />
           </div>
-          <Reveal>
-            <span className="inline-block rounded-full border-2 border-white bg-[#22c55e] px-4 py-1.5 text-xs font-extrabold uppercase tracking-[0.3em] text-ink shadow-[3px_3px_0_#ffffff]">
-              Pricing in ₹
+          <h1 className="text-6xl font-extrabold leading-[0.9] tracking-tight sm:text-8xl">
+            <span className="mb-6 block">
+              <span className="inline-block rounded-full border-2 border-white bg-[#22c55e] px-4 py-1.5 text-xs font-extrabold uppercase leading-normal tracking-[0.3em] text-ink shadow-[3px_3px_0_#ffffff]">
+                Zutok pricing in rupees
+              </span>
             </span>
-          </Reveal>
-          <h1 className="mt-6 text-6xl font-extrabold leading-[0.9] tracking-tight sm:text-8xl">
             <SplitText text="Pay for what" className="block" immediate />
             <span className="block">
               <SplitText text="you" immediate delay={0.1} />{" "}
@@ -137,8 +139,19 @@ export default function PricingPage() {
             {YEARLY_MONTHS_CHARGED} months for 12. All prices are in Indian Rupees and exclude 18% GST.
           </p>
           <Reveal delay={0.1} className="mt-10">
-            <PlanPriceTable />
+            <PlanPriceTable linkProducts />
           </Reveal>
+          <p className="mx-auto mt-8 max-w-2xl text-center text-sm font-medium text-ink/65">
+            ZChat and ZShop plans cover the software. Meta&apos;s per-message charges for WhatsApp template messages are billed
+            separately at Meta&apos;s published rates.{" "}
+            <Link
+              href={solutionPath("whatsapp-business-api")}
+              className="font-bold text-ink underline decoration-2 underline-offset-4"
+            >
+              How the WhatsApp Business API works and what Meta charges
+            </Link>
+            .
+          </p>
         </div>
       </section>
 

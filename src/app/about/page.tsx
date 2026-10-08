@@ -3,6 +3,7 @@ import { ArrowUpRight } from "lucide-react";
 import { DemoCTA } from "@/components/sections/DemoCTA";
 import { Breadcrumbs } from "@/components/solutions/Breadcrumbs";
 import { Button } from "@/components/ui/Button";
+import { InlineText } from "@/components/ui/InlineText";
 import { Reveal } from "@/components/ui/Reveal";
 import { SplitText } from "@/components/ui/SplitText";
 import { homeFaqs, onboardingSteps, pricingFaqs } from "@/lib/company";
@@ -28,7 +29,7 @@ import {
  * site already shows; there is deliberately no history, team, address or customer claim, because the source has none.
  */
 
-const TITLE = "About Zutok Softwares: Makers of Zutok CRM, ZChat, ZShop & Zloya";
+const TITLE = "About Zutok Softwares: Zutok CRM, ZChat, ZShop & Zloya";
 const DESCRIPTION =
   "Zutok Softwares builds Zutok CRM for Indian businesses, plus ZChat for WhatsApp and Instagram, ZShop for store orders and Zloya for loyalty. Priced in ₹.";
 const path = "/about/";
@@ -239,7 +240,7 @@ export default function AboutPage() {
             <h2 className="text-4xl font-extrabold leading-[1] tracking-tight text-ink sm:text-5xl">How is Zutok priced?</h2>
             <p className="mt-5 text-lg font-medium leading-relaxed text-ink/70">
               In Indian Rupees, excluding 18% GST, billed monthly or yearly. Yearly billing charges {YEARLY_MONTHS_CHARGED}{" "}
-              months for 12. {answer(homeFaqs, "Is there a setup fee or lock-in?")}
+              months for 12. <InlineText text={answer(homeFaqs, "Is there a setup fee or lock-in?")} />
             </p>
             <ul className="mt-10 overflow-hidden rounded-[1.75rem] border-[2.5px] border-ink bg-white shadow-[5px_5px_0_#0b0b0b]">
               {pricing.map((g) => (
@@ -255,7 +256,9 @@ export default function AboutPage() {
               ))}
             </ul>
             <div className="mt-6 space-y-3 text-[15px] font-medium leading-relaxed text-ink/70">
-              <p>{answer(pricingFaqs, "What does WhatsApp messaging cost on top?")}</p>
+              <p>
+                <InlineText text={answer(pricingFaqs, "What does WhatsApp messaging cost on top?")} />
+              </p>
               <p>There is special pricing for non-profits, early-stage startups and chains with 10+ outlets. Ask during your demo.</p>
               <p>
                 <Link href="/pricing/" className="font-bold text-ink underline decoration-2 underline-offset-4">
@@ -272,7 +275,7 @@ export default function AboutPage() {
           <div>
             <h2 className="text-4xl font-extrabold leading-[1] tracking-tight text-ink sm:text-5xl">Who owns the data?</h2>
             <p className="mt-5 text-lg font-medium leading-relaxed text-ink/70">
-              {answer(homeFaqs, "Is my data safe, and who owns it?")}
+              <InlineText text={answer(homeFaqs, "Is my data safe, and who owns it?")} />
             </p>
           </div>
           <div>

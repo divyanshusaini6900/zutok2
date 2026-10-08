@@ -1,11 +1,13 @@
+import Link from "next/link";
 import { formatINR, priceFor, pricing, YEARLY_MONTHS_CHARGED, type PricingGroup } from "@/lib/pricing";
 import { groupName } from "@/lib/seo";
 
 /**
  * Every plan's monthly and yearly price as a plain table. The tabbed PricingTable only renders one group at a time,
  * so this is what puts all of them in the page's HTML, matching the OfferCatalog JSON-LD on /pricing/.
+ * With `linkProducts`, each product's group heading links to its product page.
  */
-export function PlanPriceTable({ ids }: { ids?: PricingGroup["id"][] }) {
+export function PlanPriceTable({ ids, linkProducts = false }: { ids?: PricingGroup["id"][]; linkProducts?: boolean }) {
   const groups = ids ? pricing.filter((g) => ids.includes(g.id)) : pricing;
   return (
     <div className="overflow-x-auto rounded-[2rem] border-[2.5px] border-ink bg-white shadow-[6px_6px_0_#0b0b0b]">
@@ -33,7 +35,13 @@ export function PlanPriceTable({ ids }: { ids?: PricingGroup["id"][] }) {
                 <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
                   <span className="flex items-center gap-2">
                     <span className="size-2.5 shrink-0 rounded-full ring-1 ring-ink/20" style={{ background: g.stripe }} />
-                    {groupName(g)}
+                    {linkProducts && g.id !== "suite" ? (
+                      <Link href={`/products/${g.id}/`} className="underline decoration-2 underline-offset-4 hover:decoration-[3px]">
+                        {groupName(g)} plans
+                      </Link>
+                    ) : (
+                      groupName(g)
+                    )}
                   </span>
                   {g.note && <span className="text-xs font-medium text-ink/60">{g.note}</span>}
                 </span>

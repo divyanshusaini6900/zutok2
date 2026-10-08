@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { productList, type Product, type ProductSlug } from "@/lib/products";
 import { formatINR, pricing, YEARLY_MONTHS_CHARGED, type Plan, type PricingGroup } from "@/lib/pricing";
 import { site } from "@/lib/site";
+import { plainText } from "@/lib/inline-links";
 
 export const SITE_URL = "https://www.zutok.in";
 export const ORG_ID = `${SITE_URL}/#organization`;
@@ -61,11 +62,11 @@ export const BRAND_SUMMARY =
   `Plans start at ₹${formatINR(Math.min(startingPrice("crm"), startingPrice("zchat")))}/month (billed monthly, excluding 18% GST), ` +
   `and the Complete Suite of all four starts at ₹${formatINR(startingPrice("suite"))}/month.`;
 
-export const HOME_TITLE = "Zutok: All-in-One CRM with WhatsApp AI for Indian Businesses";
+export const HOME_TITLE = "Zutok: WhatsApp & Instagram Automation and CRM for India";
 export const HOME_DESCRIPTION =
-  "Zutok is an all-in-one CRM for India: a WhatsApp, Instagram, Messenger and Telegram inbox with an AI sales agent, store automation and loyalty, in ₹.";
+  "Zutok automates WhatsApp and Instagram for Indian businesses: an AI sales agent, broadcasts, comment-to-DM, COD and cart reminders, loyalty and a CRM, in ₹.";
 
-export const PRICING_TITLE = "Zutok Pricing in ₹: CRM, ZChat, ZShop, Zloya & Suite Plans";
+export const PRICING_TITLE = "Zutok Pricing in ₹: CRM, WhatsApp, Store & Loyalty Plans";
 /** The direct answer to "How much does Zutok cost?", shown under the /pricing/ h1 and as its first FAQ. */
 export const PRICING_SUMMARY =
   `Zutok CRM starts at ₹${formatINR(startingPrice("crm"))}/month, ZChat at ₹${formatINR(startingPrice("zchat"))}, ` +
@@ -83,48 +84,50 @@ export const productSeo: Record<ProductSlug, { title: string; description: strin
     description: `Zutok ZChat puts WhatsApp, Instagram, Messenger and Telegram in one shared inbox, with an AI sales agent that quotes from your catalogue. From ₹${formatINR(startingPrice("zchat"))}/mo.`,
     keywords: [
       "Zutok ZChat",
-      "WhatsApp CRM inbox",
-      "WhatsApp AI sales agent",
-      "omnichannel inbox for WhatsApp Instagram Messenger Telegram",
-      "WhatsApp shared team inbox",
-      "WhatsApp Business API platform India",
+      "WhatsApp Instagram Messenger Telegram inbox with AI",
+      "Telegram AI chatbot for business",
+      "Telegram and WhatsApp in one inbox",
+      "Messenger and Telegram AI replies",
+      "AI sales agent for WhatsApp and Instagram",
     ],
   },
   zshop: {
-    title: "Zutok ZShop: WhatsApp Automation for Shopify & WooCommerce",
-    description: `Connect Shopify, WooCommerce or an in-house store. Zutok ZShop sends WhatsApp order updates, confirms COD and recovers abandoned carts. From ₹${formatINR(startingPrice("zshop"))}/mo.`,
+    title: "Shopify & WooCommerce WhatsApp Integration | Zutok ZShop",
+    description: `Connect Shopify, WooCommerce or an in-house counter. Zutok ZShop sends WhatsApp order updates, COD confirmations and cart reminders, from ₹${formatINR(startingPrice("zshop"))}/mo.`,
     keywords: [
       "Zutok ZShop",
-      "Shopify WhatsApp integration India",
-      "WooCommerce WhatsApp notifications",
-      "COD confirmation on WhatsApp",
-      "abandoned cart recovery on WhatsApp",
-      "WhatsApp order updates",
+      "Shopify WhatsApp integration",
+      "WooCommerce WhatsApp integration",
+      "WhatsApp automation for ecommerce",
+      "Shopify WhatsApp order notifications",
+      "WhatsApp for online store India",
     ],
   },
   zloya: {
-    title: "Zutok Zloya: Loyalty Points, Memberships & Retention Software",
-    description:
-      "Zutok Zloya runs loyalty for restaurants, cafés, salons and stores: points at the POS counter, 4 VIP tiers, memberships, prepaid wallets and auto journeys.",
+    title: `Zutok Zloya: Loyalty Program Software India, from ₹${formatINR(startingPrice("zloya"))}`,
+    description: `Zutok Zloya runs loyalty at the billing counter in any browser: points, 4 VIP tiers, OTP-protected redemptions, memberships and journeys, from ₹${formatINR(startingPrice("zloya"))}/mo.`,
     keywords: [
       "Zutok Zloya",
       "loyalty program software India",
-      "restaurant loyalty software",
-      "salon loyalty program",
+      "customer loyalty program software",
+      "loyalty points software for shops",
       "VIP tier loyalty program",
-      "prepaid wallet memberships",
+      "digital loyalty card",
+      "loyalty program without POS integration",
+      "OTP loyalty redemption",
     ],
   },
   crm: {
-    title: "Zutok CRM for Indian Businesses: Leads, GST Invoices, HRM",
-    description: `Zutok CRM brings leads, proposals, GST invoices, projects, HRM, payroll and inventory into one CRM built for Indian businesses. Plans from ₹${formatINR(startingPrice("crm"))}/month.`,
+    title: "CRM Software for Small Business in India | Zutok CRM",
+    description: `Zutok CRM for Indian businesses: leads, proposals, GST invoices, projects, HRM, inventory and support tickets in one CRM, with flat plans from ₹${formatINR(startingPrice("crm"))}/month.`,
     keywords: [
       "Zutok CRM",
       "CRM software for small business India",
-      "CRM with GST invoicing",
-      "CRM with HRM and payroll",
-      "IndiaMART and Meta Lead Ads CRM",
       "CRM with inventory management",
+      "CRM with support tickets",
+      "CRM automation software India",
+      "CRM with roles and permissions",
+      "migrate from Excel to CRM",
     ],
   },
 };
@@ -295,15 +298,15 @@ export function breadcrumbLd(items: { name: string; path: string }[]): Node {
   };
 }
 
-/** Only for Q&As whose answers are in the page's HTML. */
+/** Only for Q&As whose answers are in the page's HTML. Link markup is dropped, leaving the words a reader sees. */
 export function faqLd(items: { q: string; a: string }[], path?: string): Node {
   return {
     "@type": "FAQPage",
     ...(path ? { "@id": `${absoluteUrl(path)}#faq` } : {}),
     mainEntity: items.map((it) => ({
       "@type": "Question",
-      name: it.q,
-      acceptedAnswer: { "@type": "Answer", text: it.a },
+      name: plainText(it.q),
+      acceptedAnswer: { "@type": "Answer", text: plainText(it.a) },
     })),
   };
 }

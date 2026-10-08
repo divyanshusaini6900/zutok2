@@ -7,6 +7,7 @@ import { ArrowUpRight, Bot, Check, Crown, Gift, PackageCheck, QrCode, ShoppingCa
 import { InstagramIcon, MessengerIcon, ShopifyIcon, WhatsAppIcon } from "@/components/ui/BrandIcons";
 import { ChatScreen, PhoneShell, type ChatMsg } from "@/components/mock/Phone";
 import { PassScreen } from "@/components/mock/PassScreen";
+import { InlineText } from "@/components/ui/InlineText";
 import { products, type ProductSlug } from "@/lib/products";
 import { scrollToY } from "@/lib/scroll";
 import { cx } from "@/lib/cx";
@@ -15,7 +16,10 @@ type Item = {
   slug: ProductSlug;
   verb: string;
   line: string;
+  /** May link to the page that covers the feature, with "[label](/path/)" markup (src/lib/inline-links.ts). */
   bullets: string[];
+  /** Optional text link after the product button. */
+  more?: { label: string; href: string };
   price: string;
   stickers: { Icon: ComponentType<{ className?: string }>; bg: string; pos: string }[];
 };
@@ -25,7 +29,12 @@ const items: Item[] = [
     slug: "zchat",
     verb: "SELL",
     line: "Every chat in one inbox, and an AI agent that answers, quotes and closes.",
-    bullets: ["WhatsApp, Instagram, Messenger & Telegram", "AI sales agent trained on your catalogue", "Broadcasts and comment → DM automation"],
+    bullets: [
+      "[One inbox](/solutions/omnichannel-team-inbox/) for WhatsApp, Instagram, Messenger & Telegram",
+      "[AI sales agent](/solutions/whatsapp-ai-sales-agent/) that quotes from your catalogue",
+      "[WhatsApp broadcasts](/solutions/whatsapp-broadcast-campaigns/) and [Instagram comment → DM](/solutions/instagram-comment-to-dm/)",
+    ],
+    more: { label: "Everything Zutok automates on WhatsApp", href: "/solutions/whatsapp-automation/" },
     price: "From ₹799/mo",
     stickers: [
       { Icon: WhatsAppIcon, bg: "#25d366", pos: "left-[-18%] top-[8%]" },
@@ -38,7 +47,11 @@ const items: Item[] = [
     slug: "zshop",
     verb: "SHIP",
     line: "Orders flow in from any store, and buyers hear from you on WhatsApp until the parcel lands.",
-    bullets: ["Shopify, WooCommerce or your own counter", "COD confirmation before you ship", "3-step abandoned-cart recovery"],
+    bullets: [
+      "Shopify, WooCommerce or your own counter",
+      "[COD confirmation](/solutions/whatsapp-cod-confirmation/) before you ship",
+      "3-step [abandoned-cart recovery](/solutions/abandoned-cart-recovery-whatsapp/)",
+    ],
     price: "From ₹1,299/mo",
     stickers: [
       { Icon: ShoppingCart, bg: "#ff6b1a", pos: "left-[-18%] top-[10%]" },
@@ -51,7 +64,11 @@ const items: Item[] = [
     slug: "zloya",
     verb: "RETAIN",
     line: "Points at the counter, VIP tiers and journeys that bring first-timers back again and again.",
-    bullets: ["Points and 4 VIP tiers at the POS", "Birthday, win-back and expiry journeys", "Smart QR and a Google review booster"],
+    bullets: [
+      "Points and 4 VIP tiers at the POS",
+      "[Birthday, win-back and expiry journeys](/solutions/automated-winback-birthday-campaigns/)",
+      "[Smart QR](/solutions/restaurant-qr-code-customer-data/) and a Google review booster",
+    ],
     price: "From ₹999/mo",
     stickers: [
       { Icon: Crown, bg: "#ff4d8d", pos: "left-[-18%] top-[8%]" },
@@ -149,7 +166,9 @@ function Details({ item, compact = false }: { item: Item; compact?: boolean }) {
             <span className="grid size-6 shrink-0 place-items-center rounded-full" style={{ background: t.pop, color: t.popOn }}>
               <Check className="size-3.5" aria-hidden />
             </span>
-            {b}
+            <span>
+              <InlineText text={b} linkClassName="underline decoration-2 underline-offset-4 transition hover:opacity-75" />
+            </span>
           </li>
         ))}
       </ul>
@@ -165,6 +184,11 @@ function Details({ item, compact = false }: { item: Item; compact?: boolean }) {
         <span className="rounded-full border-2 px-5 py-3 text-sm font-bold" style={{ borderColor: t.on }}>
           {item.price}
         </span>
+        {item.more && (
+          <Link href={item.more.href} className="text-sm font-bold underline decoration-2 underline-offset-4 transition hover:opacity-75">
+            {item.more.label}
+          </Link>
+        )}
       </div>
     </div>
   );

@@ -37,7 +37,7 @@ export const metadata = pageMetadata({
     "Zutok",
     "Zutok Softwares",
     "all-in-one CRM for Indian businesses",
-    "CRM with WhatsApp integration India",
+    "all-in-one CRM for small business India",
     "WhatsApp and Instagram inbox with CRM",
     "CRM with GST invoices",
     "ZChat ZShop Zloya",
@@ -99,8 +99,8 @@ export default function Home() {
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-4 sm:px-6 lg:grid-cols-[1fr_1.6fr]">
           <div>
             <h2 className="font-display text-6xl uppercase leading-none tracking-wide sm:text-8xl">
-              Got <br />
-              <span className="text-outline">questions?</span>
+              Zutok, <br />
+              <span className="text-outline">explained</span>
             </h2>
             <p className="mt-6 max-w-sm font-medium text-ink/65">If your question isn&apos;t answered here, ask us during a free demo.</p>
           </div>

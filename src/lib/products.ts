@@ -1,6 +1,14 @@
 import type { IconName } from "@/components/ui/Icon";
+import { formatINR, pricing } from "@/lib/pricing";
 
 export type ProductSlug = "zchat" | "zshop" | "zloya" | "crm";
+
+/** "₹1,299": a plan's monthly price, billed monthly, excluding GST. Throws at build time if the plan is renamed. */
+function price(group: ProductSlug, name: string) {
+  const monthly = pricing.find((g) => g.id === group)?.plans.find((p) => p.name === name)?.monthly;
+  if (monthly == null) throw new Error(`products.ts: no priced plan "${name}" in "${group}"`);
+  return `₹${formatINR(monthly)}`;
+}
 
 export type Theme = {
   color: string;
@@ -69,7 +77,7 @@ export const products: Record<ProductSlug, Product> = {
       {
         icon: "bot",
         title: "AI sales agent",
-        body: "Add your products once. The agent asks each choice as a numbered list and replies with the price, order link and files from the one row that matches.",
+        body: "Add your products once. On WhatsApp, Instagram, Messenger or Telegram, the agent asks each choice as a numbered list and replies with the price, order link and files from the one row that matches.",
       },
       {
         icon: "layers",
@@ -134,12 +142,12 @@ export const products: Record<ProductSlug, Product> = {
     ],
     faqs: [
       {
-        q: "Do I need the WhatsApp Business API?",
-        a: "Yes. ZChat connects to the official WhatsApp Business Platform, and we help you set up and verify your number during onboarding.",
+        q: "Does ZChat need the WhatsApp Business API?",
+        a: "Yes. ZChat connects to the official WhatsApp Business Platform, and we help you set up and verify your number during onboarding. The [WhatsApp Business API](/solutions/whatsapp-business-api/) page covers setup and Meta's charges.",
       },
       {
-        q: "Are Meta's WhatsApp conversation charges included?",
-        a: "No. Meta bills template conversations separately at its published rates. Your ZChat plan covers the software, seats and AI agent.",
+        q: "Are Meta's WhatsApp charges included?",
+        a: "No. Meta's per-message charges for template messages are billed separately at its published rates. Your ZChat plan covers the software, seats and AI agent.",
       },
       {
         q: "How does the AI know my prices?",
@@ -149,13 +157,25 @@ export const products: Record<ProductSlug, Product> = {
         q: "Can the AI agent hand a chat to my team?",
         a: "Yes. Turn on handoff and the agent passes the conversation to a person whenever a customer asks for one or the question falls outside its instructions.",
       },
+      {
+        q: "Does the AI agent work on Instagram, Messenger and Telegram too?",
+        a: "Yes. The same AI agent answers on WhatsApp, Instagram, Messenger and Telegram, all from one shared inbox, and quotes only from the catalogue and business facts you add.",
+      },
+      {
+        q: "Can ZChat be my Telegram bot for business?",
+        a: "Yes. The same AI agent that answers WhatsApp, Instagram and Messenger also replies on Telegram: it asks each choice as a numbered list, quotes only from the catalogue row that matches, answers other questions only from your business facts and hands the chat to your team when needed. Telegram chats sit in the same shared inbox, and every new chat becomes a CRM lead with its source.",
+      },
+      {
+        q: "Which ZChat plan includes Telegram and Messenger?",
+        a: `ZChat Growth (${price("zchat", "Growth")}/month) and Scale (${price("zchat", "Scale")}/month), billed monthly and excluding 18% GST. ZChat Starter (${price("zchat", "Starter")}/month) covers WhatsApp and Instagram.`,
+      },
     ],
   },
 
   zshop: {
     slug: "zshop",
     name: "ZShop",
-    kicker: "Orders, COD and carts on WhatsApp",
+    kicker: "Shopify & WooCommerce WhatsApp integration",
     headline: ["Orders in.", "Updates out.", "Revenue back."],
     summary:
       "Connect Shopify, WooCommerce or your in-house counter. ZShop brings every order into the CRM, confirms cash-on-delivery on WhatsApp, recovers abandoned carts and keeps buyers updated until the parcel arrives.",
@@ -251,16 +271,36 @@ export const products: Record<ProductSlug, Product> = {
         q: "I don't have a website. Can I still use ZShop?",
         a: "Yes. Choose an in-house shop, keep your items in the CRM and take orders at the counter. Every automation still works.",
       },
+      {
+        q: "Do I need a developer to connect Shopify or WooCommerce?",
+        a: "Shopify connects through a custom app whose webhooks register themselves, and WooCommerce or any platform with an API connects too. You map your Meta templates once, and Zutok sets the store up with you on the onboarding call.",
+      },
+      {
+        q: "Which number do the messages come from, and where do replies go?",
+        a: "Your ZChat number, on the official WhatsApp Business Platform. Buyer replies land in the same ZChat inbox, which is why ZShop needs ZChat for WhatsApp delivery.",
+      },
+      {
+        q: "What does ZShop cost?",
+        a: `ZShop Starter is ${price("zshop", "Starter")}/month for 1 store and up to 500 orders a month, Growth is ${price("zshop", "Growth")}/month and Scale is ${price("zshop", "Scale")}/month, billed monthly and excluding 18% GST. You also need a ZChat plan for WhatsApp delivery, Meta's charges are billed separately, and there is no setup fee.`,
+      },
+      {
+        q: "Can I connect more than one store?",
+        a: "Yes. ZShop Starter covers 1 store, Growth up to 3 stores and Scale unlimited stores, with a multi-store dashboard on Scale.",
+      },
+      {
+        q: "Is this the same as a WhatsApp chat button?",
+        a: "No. A chat button only opens a chat. ZShop sends messages triggered by your store's own events, such as new orders, COD orders, abandoned carts and courier status, from your ZChat number.",
+      },
     ],
   },
 
   zloya: {
     slug: "zloya",
     name: "Zloya",
-    kicker: "Loyalty, memberships & retention",
+    kicker: "Loyalty program software",
     headline: ["First visit.", "Second visit.", "Regular for life."],
     summary:
-      "A loyalty and retention system for restaurants, cafés, salons and stores. Award points at the counter, sell memberships, run automated win-back journeys and collect guest feedback and Google reviews.",
+      "Loyalty program software for restaurants, cafés, salons and stores. Award points at the counter, sell memberships, run automated win-back journeys and collect guest feedback and Google reviews.",
     theme: {
       color: "#0b0b0b",
       color2: "#1c1c1c",
@@ -279,6 +319,7 @@ export const products: Record<ProductSlug, Product> = {
       "Birthday journeys",
       "Win-back",
       "Smart QR",
+      "Zloya Pass",
       "Google reviews",
       "POS counter",
       "OTP redemption",
@@ -312,7 +353,7 @@ export const products: Record<ProductSlug, Product> = {
       {
         icon: "star",
         title: "Reputation booster",
-        body: "Guests rate food, service, ambience and cleanliness, and low ratings alert you first so a manager can follow up. The booster also points guests to your Google review page.",
+        body: "Guests rate food, service, ambience and cleanliness, and low ratings alert a manager, who can follow up with that guest. Separately, the booster points guests to your Google review page.",
       },
       {
         icon: "pie",
@@ -323,6 +364,11 @@ export const products: Record<ProductSlug, Product> = {
         icon: "chart",
         title: "Retention analytics",
         body: "Repeat guest rate, loyalty-tracked sales and prepaid membership revenue on one dashboard.",
+      },
+      {
+        icon: "gift",
+        title: "Zloya Pass",
+        body: "A digital loyalty pass on the guest's phone: their VIP tier, points balance, progress to the next tier, unlocked perks and coupons to show at the counter.",
       },
       {
         icon: "cake",
@@ -343,7 +389,23 @@ export const products: Record<ProductSlug, Product> = {
     faqs: [
       {
         q: "Does Zloya work without a POS integration?",
-        a: "Yes. The POS quick counter runs in any browser, so the cashier enters the bill amount and Zloya handles the rest.",
+        a: "Yes. The POS quick counter runs in any browser next to your current billing, so the cashier enters the bill amount and Zloya handles the rest. If you want your POS connected, API / POS integration comes with Zloya Chain.",
+      },
+      {
+        q: "How do Zloya loyalty points work?",
+        a: "The cashier enters the bill amount at the POS quick counter, and points are added at the guest's tier multiplier, from 1× on Bronze to 2× on Platinum. The balance sits on the guest's record. Points can expire, and the points-expiry journey on Zloya Growth reminds guests to use them first.",
+      },
+      {
+        q: "Do I have to replace my billing software?",
+        a: "No. Zloya's POS quick counter runs in any browser next to the billing you already use.",
+      },
+      {
+        q: "Do guests get a digital loyalty card?",
+        a: "Yes. Guests get a Zloya Pass, a digital loyalty pass on their phone that shows your business name, their VIP tier and points balance, how far they are from the next tier, the perks they've unlocked and coupons to show at the counter.",
+      },
+      {
+        q: "How many VIP tiers are there?",
+        a: "Four: Bronze, Silver, Gold and Platinum, with point multipliers from 1× to 2× and perks unlocked by spend and visits.",
       },
       {
         q: "How are redemptions protected from misuse?",
@@ -353,16 +415,20 @@ export const products: Record<ProductSlug, Product> = {
         q: "Can I run it across multiple outlets?",
         a: "Yes. Growth covers up to three outlets and Chain has no limit, with the same guest profile shared across every outlet.",
       },
+      {
+        q: "What does Zloya cost?",
+        a: `Zloya Single Outlet is ${price("zloya", "Single Outlet")}/month, Growth ${price("zloya", "Growth")}/month and Chain ${price("zloya", "Chain")}/month, billed monthly and excluding 18% GST.`,
+      },
     ],
   },
 
   crm: {
     slug: "crm",
     name: "Zutok CRM",
-    kicker: "Sales, people, stock & support",
+    kicker: "CRM software for small businesses",
     headline: ["Every lead.", "Every invoice.", "One CRM."],
     summary:
-      "Leads, customers, proposals, GST invoices, projects, HRM, payroll and inventory in one CRM built for Indian businesses. Chats from ZChat, orders from ZShop and guests from Zloya land in the same place.",
+      "CRM software for small businesses in India: leads, customers, proposals, GST invoices, projects, HRM, payroll and inventory in one CRM. Chats from ZChat, orders from ZShop and guests from Zloya land in the same place.",
     theme: {
       color: "#ffffff",
       color2: "#f2f2f2",
@@ -476,6 +542,38 @@ export const products: Record<ProductSlug, Product> = {
       {
         q: "Do I need ZChat, ZShop or Zloya to use the CRM?",
         a: "No. Zutok CRM works on its own. When you add a product, its chats, orders or guests land in the same CRM.",
+      },
+      {
+        q: "How much does Zutok CRM cost?",
+        a: `CRM Starter is ${price("crm", "Starter")}/month for up to 3 users, Growth ${price("crm", "Growth")}/month for up to 10 users and Enterprise ${price("crm", "Enterprise")}/month with unlimited users, billed monthly and excluding 18% GST. These are flat plan prices, not prices per user.`,
+      },
+      {
+        q: "How many users can I add?",
+        a: "Up to 3 on CRM Starter, up to 10 on Growth and as many as you like on Enterprise.",
+      },
+      {
+        q: "Can I try Zutok before I buy?",
+        a: "Book a free 30-minute demo and we'll show you Zutok using your own products, channels and outlets. There is no setup fee, and monthly plans can be cancelled at the end of any month.",
+      },
+      {
+        q: "Is Zutok CRM cloud-based?",
+        a: "Yes. It's web-based: your team logs in at crm.zutok.in from a browser, with nothing to install.",
+      },
+      {
+        q: "Does Zutok CRM include a help desk for support tickets?",
+        a: "Yes. The Support & Knowledge Base module keeps support tickets on each customer's profile, next to their contacts, invoices and projects, from CRM Starter, so follow-up requests stay with the rest of that customer's history. The same module also has a knowledge base and surveys.",
+      },
+      {
+        q: "What can Zutok CRM automate?",
+        a: "From CRM Growth, an automation manager, scheduled jobs and custom email and SMS templates. Built-in reminders also cover lead follow-ups, contract renewals, staff contracts that are about to expire and overdue invoices.",
+      },
+      {
+        q: "Which plan includes reports and goals?",
+        a: "CRM Growth and Enterprise: reports on sales, orders, quantities, leads and timesheets, plus company goals tracking.",
+      },
+      {
+        q: "Can I add my own fields?",
+        a: "Yes, on CRM Enterprise, which adds custom fields to every module.",
       },
     ],
   },

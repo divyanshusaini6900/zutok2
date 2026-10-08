@@ -10,6 +10,7 @@ import { PlanCards } from "@/components/solutions/PlanCards";
 import { SolutionCard } from "@/components/solutions/SolutionCard";
 import { SolutionProse } from "@/components/solutions/SolutionProse";
 import { Button } from "@/components/ui/Button";
+import { InlineText } from "@/components/ui/InlineText";
 import { Reveal } from "@/components/ui/Reveal";
 import { SplitText } from "@/components/ui/SplitText";
 import { formatINR, YEARLY_MONTHS_CHARGED } from "@/lib/pricing";
@@ -30,6 +31,7 @@ import {
   webPageLd,
 } from "@/lib/seo";
 import { cx } from "@/lib/cx";
+import { plainText } from "@/lib/inline-links";
 
 export const dynamicParams = false;
 
@@ -77,7 +79,7 @@ export default async function SolutionPage(props: Props) {
     webPageLd({
       path,
       name: s.title,
-      description: s.answer,
+      description: plainText(s.answer),
       about: { "@id": softwareAppId(s.relatedProduct) },
       image: ogImage(s.relatedProduct),
       breadcrumb: true,
@@ -120,7 +122,7 @@ export default async function SolutionPage(props: Props) {
             className="mt-8 max-w-3xl border-l-[5px] pl-5 text-lg font-medium leading-relaxed text-ink/80 sm:text-xl"
             style={{ borderColor: pop }}
           >
-            {s.answer}
+            <InlineText text={s.answer} />
           </p>
           <Reveal delay={0.2} className="mt-8 flex flex-wrap gap-3">
             <Button href="#demo">Book a free demo</Button>
@@ -156,6 +158,27 @@ export default async function SolutionPage(props: Props) {
             {[s.problem, s.approach, ...(s.extra ?? [])].map((sec) => (
               <SolutionProse key={sec.heading} section={sec} pop={pop} />
             ))}
+            {s.spokes && (
+              <section>
+                <h2 className="text-3xl font-extrabold leading-[1.05] tracking-tight text-ink sm:text-4xl">{s.spokes.heading}</h2>
+                <p className="mt-5 text-lg font-semibold leading-relaxed text-ink">
+                  <InlineText text={s.spokes.lead} />
+                </p>
+                <ul className="mt-6 flex flex-wrap gap-3">
+                  {s.spokes.items.map((sl) => (
+                    <li key={sl}>
+                      <Link
+                        href={solutionPath(sl)}
+                        className="group inline-flex items-center gap-2 rounded-full border-2 border-ink bg-white px-4 py-2 text-sm font-bold text-ink shadow-[3px_3px_0_#0b0b0b] transition hover:-translate-y-0.5"
+                      >
+                        {solutionBySlug[sl].name}
+                        <ArrowUpRight className="size-4 transition group-hover:rotate-45" aria-hidden />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
           </div>
           <aside>
             <div className="rounded-[2rem] border-[2.5px] border-ink p-7 shadow-[6px_6px_0_#0b0b0b] lg:sticky lg:top-28" style={{ background: pop }}>
@@ -231,7 +254,9 @@ export default async function SolutionPage(props: Props) {
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="max-w-3xl">
             <h2 className="text-4xl font-extrabold leading-[1] tracking-tight text-ink sm:text-5xl">{s.plan.heading}</h2>
-            <p className="mt-5 text-lg font-semibold leading-relaxed text-ink">{s.plan.lead}</p>
+            <p className="mt-5 text-lg font-semibold leading-relaxed text-ink">
+              <InlineText text={s.plan.lead} />
+            </p>
           </div>
           <div className="mt-12">
             <PlanCards product={s.relatedProduct} plan={s.plan} pop={pop} />
@@ -259,6 +284,7 @@ export default async function SolutionPage(props: Props) {
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-4 sm:px-6 lg:grid-cols-[1fr_1.6fr]">
           <div>
             <h2 className="font-display text-6xl uppercase leading-none tracking-wide text-ink sm:text-7xl">
+              <span className="mb-3 block text-2xl leading-tight tracking-wide text-ink/70 sm:text-3xl">{s.name}</span>
               Questions,
               <br />
               <span className="text-outline">answered</span>

@@ -235,8 +235,8 @@ export function ReviewMock() {
       >
         <GoogleIcon className="size-7" />
         <div className="flex-1 text-[12px]">
-          <div className="font-semibold">Loved it? Share on Google</div>
-          <div className="opacity-60">Happy guests go straight to your review page</div>
+          <div className="font-semibold">Share your experience on Google</div>
+          <div className="opacity-60">A link to your Google review page</div>
         </div>
       </motion.div>
     </div>

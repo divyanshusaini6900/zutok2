@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { Plus } from "lucide-react";
 import { useId, useState } from "react";
+import { InlineText } from "@/components/ui/InlineText";
 
 export type QA = { q: string; a: string };
 
@@ -71,7 +72,9 @@ export function FAQ({
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               className="overflow-hidden"
             >
-              <p className="max-w-3xl px-6 pb-6 font-medium leading-relaxed opacity-85">{it.a}</p>
+              <p className="max-w-3xl px-6 pb-6 font-medium leading-relaxed opacity-85">
+                <InlineText text={it.a} />
+              </p>
             </motion.div>
           </motion.div>
         );

@@ -19,6 +19,24 @@ type Route = {
   lastModified?: string;
 };
 
+/**
+ * The day each page's content last really changed, by path. Footer or navigation edits alone don't count.
+ * 2026-10-09: six new solution pages, and rewritten copy, sections and FAQs on every other solution page, the
+ * product pages, the industry guides, home, /pricing/ and /solutions/. (/about/ and /industries/ only picked up
+ * renamed product taglines, so they keep no date.)
+ */
+const RELEASE_2026_10_09 = "2026-10-09";
+const contentDates: Record<string, string> = Object.fromEntries(
+  [
+    "/",
+    "/pricing/",
+    "/solutions/",
+    ...productList.map((p) => `/products/${p.slug}/`),
+    ...solutionSlugs.map(solutionPath),
+    ...industrySlugs.map(industryPath),
+  ].map((path) => [path, RELEASE_2026_10_09]),
+);
+
 // One group per section of the site, read from the same data modules as the pages so new pages are listed
 // automatically. To add a section, import its data module here and add a group.
 // The public/*.html redirect stubs (contact, services, case-studies) are noindex and stay out.
@@ -40,10 +58,13 @@ const groups: Route[][] = [
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return groups.flat().map((r) => ({
-    url: absoluteUrl(r.path),
-    ...(r.lastModified ? { lastModified: r.lastModified } : {}),
-    changeFrequency: r.changeFrequency,
-    priority: r.priority,
-  }));
+  return groups.flat().map((r) => {
+    const lastModified = r.lastModified ?? contentDates[r.path];
+    return {
+      url: absoluteUrl(r.path),
+      ...(lastModified ? { lastModified } : {}),
+      changeFrequency: r.changeFrequency,
+      priority: r.priority,
+    };
+  });
 }
