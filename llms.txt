@@ -6,22 +6,28 @@
 - Company: Zutok Softwares, also called Zutok. Its products are always named with the brand: Zutok CRM, Zutok ZChat, Zutok ZShop, Zutok Zloya.
 - Market: businesses in India that sell on WhatsApp, Instagram and at the counter.
 - Prices: in Indian Rupees (INR), excluding 18% GST. Billed monthly, or yearly at 10 months for 12. No setup fee.
-- WhatsApp: ZChat connects to the official WhatsApp Business Platform. Meta's WhatsApp conversation charges are billed separately at Meta's published rates.
+- WhatsApp: ZChat connects to the official WhatsApp Business Platform. Meta's per-message charges for WhatsApp template messages are billed separately at Meta's published rates.
 - Contact: admin@zutok.in. Book a demo at https://www.zutok.in/#demo. Customers log in at https://crm.zutok.in/.
 
 ## Products
 
-- [Zutok CRM](https://www.zutok.in/products/crm/): Sales, people, stock & support. Leads, customers, proposals, GST invoices, projects, HRM, payroll and inventory in one CRM built for Indian businesses. Chats from ZChat, orders from ZShop and guests from Zloya land in the same place. Plans from ₹799/month billed monthly, excl. 18% GST.
+- [Zutok CRM](https://www.zutok.in/products/crm/): CRM software for small businesses. CRM software for small businesses in India: leads, customers, proposals, GST invoices, projects, HRM, payroll and inventory in one CRM. Chats from ZChat, orders from ZShop and guests from Zloya land in the same place. Plans from ₹799/month billed monthly, excl. 18% GST.
 - [Zutok ZChat](https://www.zutok.in/products/zchat/): Omnichannel inbox + AI agent. WhatsApp, Instagram, Messenger and Telegram land in one shared inbox. An AI agent answers in seconds, your team takes over when it matters, and every chat becomes a lead in your CRM. Plans from ₹799/month billed monthly, excl. 18% GST.
-- [Zutok ZShop](https://www.zutok.in/products/zshop/): Orders, COD and carts on WhatsApp. Connect Shopify, WooCommerce or your in-house counter. ZShop brings every order into the CRM, confirms cash-on-delivery on WhatsApp, recovers abandoned carts and keeps buyers updated until the parcel arrives. Plans from ₹1,299/month billed monthly, excl. 18% GST.
-- [Zutok Zloya](https://www.zutok.in/products/zloya/): Loyalty, memberships & retention. A loyalty and retention system for restaurants, cafés, salons and stores. Award points at the counter, sell memberships, run automated win-back journeys and collect guest feedback and Google reviews. Plans from ₹999/month billed monthly, excl. 18% GST.
+- [Zutok ZShop](https://www.zutok.in/products/zshop/): Shopify & WooCommerce WhatsApp integration. Connect Shopify, WooCommerce or your in-house counter. ZShop brings every order into the CRM, confirms cash-on-delivery on WhatsApp, recovers abandoned carts and keeps buyers updated until the parcel arrives. Plans from ₹1,299/month billed monthly, excl. 18% GST.
+- [Zutok Zloya](https://www.zutok.in/products/zloya/): Loyalty program software. Loyalty program software for restaurants, cafés, salons and stores. Award points at the counter, sell memberships, run automated win-back journeys and collect guest feedback and Google reviews. Plans from ₹999/month billed monthly, excl. 18% GST.
 
 ## Solutions
 
-- [All Zutok solutions](https://www.zutok.in/solutions/): How Zutok handles WhatsApp AI sales, broadcasts, comment-to-DM, COD confirmation, cart recovery, order tracking, memberships, loyalty journeys, GST and HRM.
+- [All Zutok solutions](https://www.zutok.in/solutions/): How Zutok handles WhatsApp CRM, AI sales, broadcasts, templates, team inbox, comment-to-DM, COD, cart recovery, order tracking, loyalty, GST and HRM.
+- [WhatsApp automation](https://www.zutok.in/solutions/whatsapp-automation/): Everything Zutok automates on WhatsApp: AI replies from your catalogue, broadcasts, COD confirmation, order updates, cart reminders and handoff to your team.
+- [WhatsApp Business API](https://www.zutok.in/solutions/whatsapp-business-api/): Getting the WhatsApp Business API with Zutok ZChat: help setting up and verifying your number, what runs on it, and the two costs, your ZChat plan and Meta's charges at cost.
 - [WhatsApp AI sales agent](https://www.zutok.in/solutions/whatsapp-ai-sales-agent/): How Zutok ZChat's AI agent asks each choice on WhatsApp and quotes the price, order link and files from your own catalogue rows, with human handoff.
-- [WhatsApp broadcast campaigns](https://www.zutok.in/solutions/whatsapp-broadcast-campaigns/): How Zutok ZChat sends bulk WhatsApp campaigns with Meta-approved templates and shows sent, delivered and read numbers as they come in.
-- [Instagram comment-to-DM automation](https://www.zutok.in/solutions/instagram-comment-to-dm/): How Zutok ZChat answers Instagram and Facebook comments with a public reply and a private DM, triggered by keywords or by any comment.
+- [WhatsApp broadcasting](https://www.zutok.in/solutions/whatsapp-broadcast-campaigns/): How Zutok ZChat sends bulk WhatsApp campaigns with Meta-approved templates and shows sent, delivered and read numbers as they come in.
+- [WhatsApp message templates](https://www.zutok.in/solutions/whatsapp-message-templates/): What a WhatsApp template message is, when the 24-hour rule means you need one, and how to create, categorise and get templates approved in Zutok ZChat.
+- [Omnichannel team inbox](https://www.zutok.in/solutions/omnichannel-team-inbox/): How a team of 2, 5 or 15 answers WhatsApp, Instagram, Messenger and Telegram from one Zutok ZChat inbox, with views, statuses, labels, auto-assign and team reports.
+- [WhatsApp CRM](https://www.zutok.in/solutions/whatsapp-crm/): How Zutok turns every WhatsApp, Instagram, Messenger and Telegram chat into a CRM lead with its source, then follows it from Enquiry to Customer and invoice.
+- [Instagram automation](https://www.zutok.in/solutions/instagram-comment-to-dm/): How Zutok ZChat automates Instagram: a public reply and a private DM for every comment on posts and reels, and an AI agent that answers DMs from your catalogue.
+- [Facebook Messenger automation](https://www.zutok.in/solutions/facebook-messenger-automation/): How Zutok ZChat automates a Facebook Page: AI answers in Messenger, a public reply and private DM for post and reel comments, and every chat saved as a CRM lead.
 - [WhatsApp COD confirmation](https://www.zutok.in/solutions/whatsapp-cod-confirmation/): How Zutok ZShop asks COD buyers to confirm on WhatsApp before dispatch, reminds them and tags the order, with auto-cancel off by default.
 - [Abandoned cart recovery on WhatsApp](https://www.zutok.in/solutions/abandoned-cart-recovery-whatsapp/): How Zutok ZShop sends three WhatsApp cart reminders (after 1 hour, 1 day and 3 days) with discounts on the later two, quiet hours and one do-not-contact list.
 - [WhatsApp order updates & courier tracking](https://www.zutok.in/solutions/whatsapp-order-updates-courier-tracking/): How Zutok ZShop sends placed, packed, shipped and delivered updates on WhatsApp, checks courier status and learns your real delivery times.
@@ -29,8 +35,8 @@
 - [Smart QR codes for guest data](https://www.zutok.in/solutions/restaurant-qr-code-customer-data/): How Zutok Zloya smart QR codes on tables, Swiggy and Zomato boxes and partner stores collect guest numbers, with scans and opt-ins tracked per code.
 - [Birthday, win-back & expiry journeys](https://www.zutok.in/solutions/automated-winback-birthday-campaigns/): How Zutok Zloya's five automated journeys (welcome, birthday, 30-day win-back, points expiry and feedback) bring guests back with phone-locked coupons.
 - [CRM with GST invoicing](https://www.zutok.in/solutions/gst-invoicing-crm/): How Zutok CRM turns accepted proposals and estimates into GST invoices with CGST and SGST lines, payments, credit notes and bulk PDF export.
-- [IndiaMART & Meta Lead Ads CRM](https://www.zutok.in/solutions/indiamart-meta-lead-ads-crm/): How Zutok CRM syncs IndiaMART and Meta Lead Ads leads into one pipeline with chat and website leads, from Enquiry to Customer.
-- [CRM with HRM & payroll](https://www.zutok.in/solutions/crm-with-hrm-payroll/): How Zutok CRM Growth keeps staff records, contracts, salary, shifts, attendance and leave in the same system as your sales.
+- [Lead management: IndiaMART & Meta Lead Ads](https://www.zutok.in/solutions/indiamart-meta-lead-ads-crm/): How Zutok CRM syncs IndiaMART and Meta Lead Ads leads into one pipeline with chat and website leads, from Enquiry to Customer.
+- [CRM with HRM](https://www.zutok.in/solutions/crm-with-hrm-payroll/): How Zutok CRM Growth keeps staff records, contracts, salary, shifts, attendance and leave in the same system as your sales.
 
 ## Industries
 
@@ -47,8 +53,8 @@
 - [Zutok plans and prices](https://www.zutok.in/pricing/): Zutok CRM from ₹799/month, ZChat from ₹799, Zloya from ₹999, ZShop from ₹1,299, Complete Suite from ₹2,299. Excl. GST; yearly plans give 2 months free.
 - [Zutok Complete Suite](https://www.zutok.in/pricing/#all-plans): from ₹2,299/month billed monthly, excl. 18% GST. Zutok CRM + ZChat + ZShop + Zloya together, about 40% less than buying them separately.
 - [Zutok CRM](https://www.zutok.in/products/crm/#pricing): from ₹799/month billed monthly, excl. 18% GST.
-- [Zutok ZChat](https://www.zutok.in/products/zchat/#pricing): from ₹799/month billed monthly, excl. 18% GST. Meta's WhatsApp conversation charges are billed separately at Meta's published rates.
-- [Zutok ZShop](https://www.zutok.in/products/zshop/#pricing): from ₹1,299/month billed monthly, excl. 18% GST. Needs ZChat for WhatsApp delivery. Meta conversation charges are billed separately.
+- [Zutok ZChat](https://www.zutok.in/products/zchat/#pricing): from ₹799/month billed monthly, excl. 18% GST. Meta's per-message charges for WhatsApp template messages are billed separately at Meta's published rates.
+- [Zutok ZShop](https://www.zutok.in/products/zshop/#pricing): from ₹1,299/month billed monthly, excl. 18% GST. Needs ZChat for WhatsApp delivery. Meta's per-message charges for template messages are billed separately.
 - [Zutok Zloya](https://www.zutok.in/products/zloya/#pricing): from ₹999/month billed monthly, excl. 18% GST.
 
 ## About
