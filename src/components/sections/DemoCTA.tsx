@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { Marquee } from "@/components/ui/Marquee";
 import { Reveal } from "@/components/ui/Reveal";
 import { Wave } from "@/components/ui/Wave";
@@ -16,24 +16,61 @@ const interests = [
   { id: "Zutok CRM", color: "#a78bfa" },
 ];
 
+/** "sent": saved to the Google Sheet. "emailed": the visitor's email app was opened instead. */
+type Status = "idle" | "sending" | "sent" | "emailed" | "error";
+
+function mailtoHref(data: FormData, interests: string) {
+  const body = [
+    `Name: ${data.get("name")}`,
+    `Business: ${data.get("business")}`,
+    `Phone / WhatsApp: ${data.get("phone")}`,
+    `Interested in: ${interests}`,
+    "",
+    String(data.get("message") || ""),
+  ].join("\n");
+  const subject = `Demo request: ${data.get("business") || data.get("name")}`;
+  return `mailto:${site.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
 export function DemoCTA() {
   const [picked, setPicked] = useState<string[]>(["ZChat"]);
-  const [sent, setSent] = useState(false);
+  const [status, setStatus] = useState<Status>("idle");
+  const formRef = useRef<HTMLFormElement>(null);
+  const interestText = picked.join(", ") || "Not sure yet";
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
-    const body = [
-      `Name: ${data.get("name")}`,
-      `Business: ${data.get("business")}`,
-      `Phone / WhatsApp: ${data.get("phone")}`,
-      `Interested in: ${picked.join(", ") || "Not sure yet"}`,
-      "",
-      String(data.get("message") || ""),
-    ].join("\n");
-    const subject = `Demo request: ${data.get("business") || data.get("name")}`;
-    window.location.href = `mailto:${site.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    setSent(true);
+    if (!site.demoEndpoint) {
+      window.location.assign(mailtoHref(data, interestText));
+      setStatus("emailed");
+      return;
+    }
+    setStatus("sending");
+    try {
+      const res = await fetch(site.demoEndpoint, {
+        method: "POST",
+        // A plain form body keeps this a "simple" request, so the browser sends no CORS preflight to Apps Script.
+        body: new URLSearchParams({
+          name: String(data.get("name") ?? ""),
+          business: String(data.get("business") ?? ""),
+          phone: String(data.get("phone") ?? ""),
+          interests: interestText,
+          message: String(data.get("message") ?? ""),
+          page: window.location.pathname,
+          website: String(data.get("website") ?? ""),
+        }),
+      });
+      const result: { ok?: boolean } | null = await res.json().catch(() => null);
+      if (!res.ok || !result?.ok) throw new Error("Demo request was not saved");
+      setStatus("sent");
+    } catch {
+      setStatus("error");
+    }
+  };
+
+  const emailInstead = () => {
+    if (formRef.current) window.location.assign(mailtoHref(new FormData(formRef.current), interestText));
   };
 
   const field =
@@ -97,7 +134,21 @@ export function DemoCTA() {
           transition={{ type: "spring", stiffness: 110, damping: 16 }}
         >
           <div className="rounded-[2rem] border-[2.5px] border-white bg-paper p-6 text-ink shadow-[8px_8px_0_#a78bfa] sm:p-8">
-            {sent ? (
+            {status === "sent" ? (
+              <motion.div
+                className="py-12 text-center"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                role="status"
+              >
+                <CheckCircle2 className="mx-auto size-14 text-[#16a34a]" aria-hidden />
+                <h3 className="mt-5 text-2xl font-extrabold">Thanks, we&apos;ve got your request</h3>
+                <p className="mt-2 text-ink/65">We&apos;ll get back to you within one working day to fix a time for your demo.</p>
+                <button type="button" onClick={() => setStatus("idle")} className="mt-6 text-sm font-bold text-ink underline">
+                  Send another request
+                </button>
+              </motion.div>
+            ) : status === "emailed" ? (
               <motion.div className="py-12 text-center" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
                 <CheckCircle2 className="mx-auto size-14 text-[#16a34a]" aria-hidden />
                 <h3 className="mt-5 text-2xl font-extrabold">Your email app is open</h3>
@@ -108,12 +159,17 @@ export function DemoCTA() {
                   </a>
                   .
                 </p>
-                <button type="button" onClick={() => setSent(false)} className="mt-6 text-sm font-bold text-ink underline">
+                <button type="button" onClick={() => setStatus("idle")} className="mt-6 text-sm font-bold text-ink underline">
                   Edit my details
                 </button>
               </motion.div>
             ) : (
-              <form onSubmit={onSubmit} className="space-y-4">
+              <form ref={formRef} onSubmit={onSubmit} className="relative space-y-4">
+                {/* Spam trap: hidden from people and screen readers, but bots fill it in. */}
+                <label className="absolute -left-[9999px] top-0 size-px overflow-hidden" aria-hidden="true">
+                  Website
+                  <input name="website" tabIndex={-1} autoComplete="off" />
+                </label>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <label className="block">
                     <span className="mb-1.5 block text-xs font-bold text-ink/60">Your name</span>
@@ -159,12 +215,27 @@ export function DemoCTA() {
                 </label>
                 <button
                   type="submit"
-                  className="group flex w-full items-center justify-center gap-2 rounded-full border-2 border-ink bg-ink py-4 font-extrabold text-white shadow-[4px_4px_0_#a78bfa] transition hover:-translate-y-0.5"
+                  disabled={status === "sending"}
+                  className="group flex w-full items-center justify-center gap-2 rounded-full border-2 border-ink bg-ink py-4 font-extrabold text-white shadow-[4px_4px_0_#a78bfa] transition hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-70 disabled:hover:translate-y-0"
                 >
-                  Book my free demo
+                  {status === "sending" ? "Sending…" : "Book my free demo"}
                   <ArrowRight className="size-4 transition group-hover:translate-x-1" aria-hidden />
                 </button>
-                <p className="text-center text-xs font-medium text-ink/50">Opens your email app with these details filled in.</p>
+                {status === "error" ? (
+                  <p className="text-center text-sm font-semibold text-[#b91c1c]" role="alert">
+                    We couldn&apos;t send that. Please try again, or{" "}
+                    <button type="button" onClick={emailInstead} className="underline">
+                      email these details to {site.email}
+                    </button>
+                    .
+                  </p>
+                ) : (
+                  <p className="text-center text-xs font-medium text-ink/50">
+                    {site.demoEndpoint
+                      ? "We'll get back to you within one working day."
+                      : "Opens your email app with these details filled in."}
+                  </p>
+                )}
               </form>
             )}
           </div>

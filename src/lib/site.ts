@@ -5,6 +5,11 @@ export const site = {
   loginUrl: "https://crm.zutok.in",
   email: "admin@zutok.in",
   tagline: "One CRM for every conversation, order and customer.",
+  /**
+   * Google Apps Script web app (scripts/demo-requests.gs) that saves demo requests to the Google Sheet.
+   * Empty means the demo form falls back to opening the visitor's email app.
+   */
+  demoEndpoint: "",
 };
 
 export const nav = [
